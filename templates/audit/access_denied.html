@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Kirish taqiqlangan{% endblock %}
+{% block content %}
+<main style="flex:1;display:flex;align-items:center;justify-content:center">
+  <div style="text-align:center;padding:3rem">
+    <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
+    <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:.5rem">Kirish taqiqlangan</h2>
+    <p style="color:var(--fg-muted)">Bu sahifaga kirish uchun yetarli huquq yo'q.</p>
+    <a href="{% url 'dashboard' %}" style="display:inline-block;margin-top:1.5rem;padding:.65rem 1.5rem;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border-radius:var(--radius);font-weight:600">Kabinetga qaytish</a>
+  </div>
+</main>
+{% endblock %}
