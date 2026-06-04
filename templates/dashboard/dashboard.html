@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kabinet{% endblock %}
+
+{% block extra_style %}
+  body{background:radial-gradient(ellipse 80% 50% at 50% -10%,hsla(162,72%,36%,.08) 0%,transparent 70%),var(--bg)}
+  .page-container{min-height:calc(100vh - 4rem)}
+  .content-container{padding-block:2rem}
+  @media(min-width:768px){.content-container{padding-block:3rem}}
+  .dashboard-header{display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem}
+  @media(min-width:640px){.dashboard-header{flex-direction:row;align-items:center;justify-content:space-between}}
+  .dashboard-header h1{font-size:1.875rem;font-weight:800;line-height:1.2;letter-spacing:-.03em}
+  .dashboard-header p{color:var(--muted-fg);font-size:.875rem;margin-top:.25rem}
+  .balance-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:2rem;box-shadow:var(--shadow-sm)}
+  .balance-inner{display:flex;flex-direction:column;gap:1.25rem}
+  @media(min-width:768px){.balance-inner{flex-direction:row;align-items:center;justify-content:space-between}}
+  .balance-info{display:flex;align-items:center;gap:.875rem}
+  .balance-icon{width:3.25rem;height:3.25rem;border-radius:calc(var(--radius)+4px);background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .balance-icon svg{width:1.6rem;height:1.6rem;color:#fff}
+  .balance-label{font-size:.8rem;font-weight:500;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem}
+  .balance-amount{font-size:2.25rem;font-weight:800;line-height:1}
+  .balance-amount .cur{font-size:1rem;font-weight:500;color:var(--muted-fg);margin-left:.25rem}
+  .balance-actions{display:flex;flex-direction:column;gap:.5rem;flex-shrink:0}
+  @media(min-width:480px){.balance-actions{flex-direction:row}}
+  .btn-bal{padding:.65rem 1.35rem;font-size:.875rem;font-weight:600;border-radius:calc(var(--radius)+4px);display:inline-flex;align-items:center;gap:.5rem;transition:all .2s;cursor:pointer;border:none;font-family:var(--font)}
+  .btn-topup{background:linear-gradient(135deg,var(--success),hsl(145,55%,38%));color:#fff}
+  .btn-topup:hover{opacity:.9;transform:translateY(-1px)}
+  .btn-hist{border:1px solid var(--border);background:var(--card);color:var(--fg)}
+  .btn-hist:hover{background:var(--muted);border-color:var(--primary)}
+  .stats-grid{display:grid;gap:1rem;margin-bottom:2rem}
+  @media(min-width:640px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center;transition:border-color .2s}
+  .stat-card:hover{border-color:var(--primary)}
+  .stat-val{font-size:1.75rem;font-weight:800;color:var(--primary);font-family:var(--mono)}
+  .stat-lbl{font-size:.75rem;color:var(--muted-fg);margin-top:.25rem}
+  .section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:2rem;box-shadow:var(--shadow-sm)}
+  .section-title{display:flex;align-items:center;gap:.5rem;font-size:1.125rem;font-weight:700;margin-bottom:1.25rem}
+  .section-title svg{width:1.25rem;height:1.25rem;color:var(--primary)}
+  .table-wrap{overflow-x:auto}
+  .htable{width:100%;border-collapse:collapse}
+  .htable th{text-align:left;padding:.75rem .5rem;font-size:.7rem;font-weight:600;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid var(--border)}
+  .htable td{padding:.75rem .5rem;font-size:.8rem;border-bottom:1px solid var(--border);white-space:nowrap}
+  .htable tr:hover{background:var(--muted)}
+  .badge{display:inline-block;padding:.2rem .5rem;border-radius:20px;font-size:.7rem;font-weight:600}
+  .badge-ok{background:var(--primary-light);color:var(--primary)}
+  .badge-warn{background:hsl(38,92%,90%);color:hsl(38,85%,38%)}
+  .badge-danger{background:hsla(4,74%,55%,.1);color:var(--danger)}
+  .badge-pending{background:var(--muted);color:var(--muted-fg)}
+  .view-link{color:var(--primary);font-weight:500}
+  .view-link:hover{text-decoration:underline}
+  .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;font-size:.75rem;font-weight:700}
+  .rank-gold{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#7c2d12}
+  .rank-silver{background:linear-gradient(135deg,#cbd5e1,#94a3b8);color:#1e293b}
+  .rank-bronze{background:linear-gradient(135deg,#fdba74,#f97316);color:#7c2d12}
+  .rank-default{background:var(--muted);color:var(--muted-fg)}
+  .user-cell{display:flex;align-items:center;gap:.5rem}
+  .avatar{width:2rem;height:2rem;border-radius:10px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);font-size:.85rem;flex-shrink:0}
+  @keyframes fadeSlideUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+  .anim{animation:fadeSlideUp .4s ease-out forwards}
+  .d1{animation-delay:.05s;opacity:0}.d2{animation-delay:.1s;opacity:0}.d3{animation-delay:.15s;opacity:0}.d4{animation-delay:.2s;opacity:0}
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="page-container">
+    <div class="container content-container">
+
+      <div class="dashboard-header anim">
+        <div>
+          <h1>Mening kabinetim</h1>
+          <p>Salom, <strong>{{ user.get_full_name|default:user.username }}</strong> — xush kelibsiz
+            <span style="font-size:.75rem;background:var(--primary-light);color:var(--primary);padding:2px 8px;border-radius:20px;margin-left:.5rem;font-family:var(--mono)">{{ user.get_role_display }}</span>
+          </p>
+        </div>
+        <a href="{% url 'upload_analyze' %}">
+          <button class="btn btn-outline" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            Yangi tahlil
+          </button>
+        </a>
+      </div>
+
+      {% if user.is_doctor or user.is_university %}
+      <div class="balance-card anim d1">
+        <div class="balance-inner">
+          <div class="balance-info">
+            <div class="balance-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div>
+              <div class="balance-label">Hisobingizdagi balans</div>
+              <div class="balance-amount">{{ user.balance|floatformat:0 }}<span class="cur">so'm</span></div>
+            </div>
+          </div>
+          <div class="balance-actions">
+            <button class="btn-bal btn-topup" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              Balansni to'ldirish
+            </button>
+            <a href="{% url 'pricing' %}">
+              <button class="btn-bal btn-hist" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Tariflar
+              </button>
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="stats-grid">
+        <div class="stat-card anim d2"><div class="stat-val">{{ total_analyses }}</div><div class="stat-lbl">Jami tahlillar</div></div>
+        <div class="stat-card anim d2"><div class="stat-val">{% if avg_confidence %}{{ avg_confidence }}%{% else %}—{% endif %}</div><div class="stat-lbl">O'rtacha aniqlik</div></div>
+        <div class="stat-card anim d2"><div class="stat-val">{{ month_analyses }}</div><div class="stat-lbl">Bu oy</div></div>
+        <div class="stat-card anim d2"><div class="stat-val">3</div><div class="stat-lbl">AI model</div></div>
+      </div>
+
+      <div class="section-card anim d3">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Oxirgi tahlillar
+        </div>
+        <div class="table-wrap">
+          <table class="htable">
+            <thead>
+              <tr>
+                <th>Sana</th>
+                <th>Tahlil turi</th>
+                <th>Natija</th>
+                <th>Ishonch</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for analysis in analyses %}
+              <tr>
+                <td>{{ analysis.created_at|date:"d.m.Y" }}</td>
+                <td>{{ analysis.get_model_type_display }}</td>
+                <td>
+                  {% if analysis.status == 'completed' and analysis.result %}
+                    {% if analysis.result.diagnosis_type == 'normal' %}<span class="badge badge-ok">Normal</span>
+                    {% elif analysis.result.diagnosis_type == 'warning' %}<span class="badge badge-warn">E'tibor talab</span>
+                    {% else %}<span class="badge badge-danger">Patologiya</span>{% endif %}
+                  {% elif analysis.status == 'processing' %}<span class="badge badge-pending">Tahlil qilinmoqda</span>
+                  {% elif analysis.status == 'error' %}<span class="badge badge-danger">Xato</span>
+                  {% else %}<span class="badge badge-pending">Kutilmoqda</span>{% endif %}
+                </td>
+                <td>{% if analysis.result %}{{ analysis.result.confidence|floatformat:1 }}%{% else %}—{% endif %}</td>
+                <td><a href="{% url 'result_detail' analysis.pk %}" class="view-link">Batafsil</a></td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" style="text-align:center;color:var(--muted-fg);padding:2rem">Hali tahlillar mavjud emas. <a href="{% url 'upload_analyze' %}" style="color:var(--primary)">Yangi tahlil boshlash</a></td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {% if leaderboard %}
+      <div class="section-card anim d4">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+          Reyting jadvali
+        </div>
+        <div class="table-wrap">
+          <table class="htable">
+            <thead>
+              <tr><th>O'rin</th><th>Foydalanuvchi</th><th>Tahlillar</th><th>Rol</th></tr>
+            </thead>
+            <tbody>
+              {% for u in leaderboard %}
+              <tr {% if u == user %}style="background:var(--primary-light)"{% endif %}>
+                <td>
+                  {% if forloop.counter == 1 %}<span class="rank-badge rank-gold">1</span>
+                  {% elif forloop.counter == 2 %}<span class="rank-badge rank-silver">2</span>
+                  {% elif forloop.counter == 3 %}<span class="rank-badge rank-bronze">3</span>
+                  {% else %}<span class="rank-badge rank-default">{{ forloop.counter }}</span>{% endif %}
+                </td>
+                <td>
+                  <div class="user-cell">
+                    <div class="avatar">{{ u.first_name|first|upper|default:u.username|first|upper }}</div>
+                    <span>{% if u == user %}<strong>{{ u.get_full_name|default:u.username }}</strong>{% else %}{{ u.get_full_name|default:u.username }}{% endif %}</span>
+                  </div>
+                </td>
+                <td>{{ u.total }}</td>
+                <td><span style="font-size:.7rem;color:var(--muted-fg)">{{ u.get_role_display }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</main>
+{% endblock %}
