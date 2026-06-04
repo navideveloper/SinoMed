@@ -8,78 +8,271 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* Dark Medical Theme */
     :root {
-      --bg: hsl(210,20%,98%); --fg: hsl(215,35%,12%);
-      --card: hsl(0,0%,100%);
-      --primary: hsl(162,72%,36%); --primary-dark: hsl(162,84%,23%);
-      --primary-light: hsl(162,60%,92%); --primary-soft: hsla(162,72%,36%,.12);
-      --accent: hsl(200,90%,46%); --accent-light: hsl(200,80%,93%);
-      --warning: hsl(38,92%,50%); --danger: hsl(4,74%,55%);
-      --muted: hsl(215,20%,94%); --muted-fg: hsl(215,15%,48%);
-      --border: hsl(215,20%,88%); --radius: .875rem;
-      --font: 'DM Sans',sans-serif; --mono: 'JetBrains Mono',monospace;
-      --shadow-sm: 0 2px 8px -2px hsla(215,35%,12%,.08);
-      --shadow-md: 0 8px 28px -6px hsla(215,35%,12%,.12);
-      --shadow-glow: 0 0 40px hsla(162,72%,36%,.2);
-      --price-accent: hsl(40,90%,55%);
-      --success: hsl(145,63%,42%);
+      --bg-dark: #0a0f1f;
+      --bg-card: #121a2e;
+      --bg-hover: #1a2541;
+      --border-color: rgba(0, 183, 214, 0.15);
+      --fg-primary: #e3f2fd;
+      --fg-secondary: #90caf9;
+      --fg-muted: #5d7fa3;
+      --primary: #0077b6;
+      --primary-light: #00b4d8;
+      --accent: #00d4ff;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+      --radius: 0.75rem;
+      --font: 'Inter', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --shadow-sm: 0 4px 12px rgba(0, 119, 182, 0.1);
+      --shadow-md: 0 12px 32px rgba(0, 119, 182, 0.15);
+      --shadow-glow: 0 0 30px rgba(0, 180, 216, 0.25);
     }
-    body { font-family: var(--font); background: var(--bg); color: var(--fg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+    [data-theme="light"] {
+      --bg-dark: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-hover: #f0f4f8;
+      --border-color: rgba(0, 119, 182, 0.2);
+      --fg-primary: #0f1419;
+      --fg-secondary: #334155;
+      --fg-muted: #64748b;
+      --primary: #0077b6;
+      --primary-light: #00b4d8;
+      --accent: #0096c7;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-dark);
+      color: var(--fg-primary);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s ease;
+    }
+
     a { color: inherit; text-decoration: none; }
     button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
     img, svg { display: block; max-width: 100%; }
-    .container { width: 100%; max-width: 1160px; margin-inline: auto; padding-inline: 1.25rem; }
+
+    .container { width: 100%; max-width: 1280px; margin-inline: auto; padding-inline: 1.25rem; }
     @media (min-width: 640px) { .container { padding-inline: 2rem; } }
 
     /* Navbar */
-    .navbar { position: sticky; top: 0; z-index: 100; background: hsla(210,20%,98%,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
-    .navbar-inner { display: flex; align-items: center; justify-content: space-between; height: 4rem; gap: 1rem; }
-    .logo { display: flex; align-items: center; gap: .625rem; }
-    .logo-mark { width: 2.4rem; height: 2.4rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .navbar {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.875rem 0;
+      sticky: top;
+      z-index: 100;
+    }
+
+    .navbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      height: auto;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      margin-right: auto;
+    }
+
+    .logo-mark {
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    }
+
     .logo-mark img { width: 100%; }
-    .logo-name { font-size: 1.125rem; font-weight: 700; letter-spacing: -.02em; }
-    .logo-version { font-size: .65rem; font-family: var(--mono); background: var(--primary-light); color: var(--primary); padding: 2px 7px; border-radius: 20px; font-weight: 500; }
-    .nav-right { display: flex; align-items: center; gap: .5rem; }
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; font-size: .875rem; font-weight: 500; border-radius: calc(var(--radius) - 2px); transition: background .15s,color .15s,transform .1s; white-space: nowrap; cursor: pointer; }
-    .btn:active { transform: scale(.97); }
-    .btn-ghost { padding: .45rem .75rem; color: var(--muted-fg); }
-    .btn-ghost:hover { background: var(--muted); color: var(--fg); }
-    .btn-outline { padding: .45rem .9rem; border: 1px solid var(--border); background: var(--card); color: var(--fg); }
-    .btn-outline:hover { background: var(--muted); }
-    .btn-primary { background: var(--primary); color: #fff; padding: .45rem .9rem; }
-    .btn-primary:hover { background: var(--primary-dark); }
+
+    .logo-name {
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, var(--primary-light), var(--accent));
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-version {
+      font-size: 0.65rem;
+      font-family: var(--mono);
+      background: rgba(0, 180, 216, 0.15);
+      color: var(--primary-light);
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: calc(var(--radius) - 2px);
+      transition: all 0.2s;
+      white-space: nowrap;
+      cursor: pointer;
+      padding: 0.45rem 0.75rem;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-ghost {
+      color: var(--fg-muted);
+      padding: 0.45rem 0.6rem;
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg-hover);
+      color: var(--fg-secondary);
+    }
+
+    .btn-outline {
+      padding: 0.45rem 0.9rem;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--fg-secondary);
+    }
+
+    .btn-outline:hover {
+      background: var(--bg-hover);
+      border-color: var(--primary-light);
+      color: var(--primary-light);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff;
+      padding: 0.45rem 0.9rem;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      box-shadow: var(--shadow-glow);
+    }
+
     .nav-label { display: none; }
-    @media (min-width: 540px) { .nav-label { display: inline; } }
-    .price-link .btn-ghost { color: var(--price-accent); }
-    .price-link .btn-ghost:hover { background: rgba(255,185,55,.12); color: hsl(40,95%,48%); }
+    @media (min-width: 640px) { .nav-label { display: inline; } }
+
+    .theme-toggle {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--fg-secondary);
+      padding: 0.45rem 0.6rem;
+      border-radius: calc(var(--radius) - 2px);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-hover);
+      border-color: var(--primary-light);
+      color: var(--primary-light);
+    }
 
     /* Messages */
-    .messages-container { padding: .75rem 0 0; }
-    .alert { padding: .75rem 1rem; border-radius: var(--radius); font-size: .875rem; margin-bottom: .5rem; }
-    .alert-error { background: hsla(4,74%,55%,.1); color: hsl(4,74%,35%); border: 1px solid hsla(4,74%,55%,.3); }
-    .alert-success { background: var(--primary-light); color: var(--primary-dark); border: 1px solid hsl(162,70%,80%); }
-    .alert-info { background: var(--accent-light); color: hsl(200,90%,30%); border: 1px solid hsl(200,80%,75%); }
+    .messages-container { padding: 0.75rem 0 0; }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+      border-left: 3px solid;
+    }
+
+    .alert-error {
+      background: rgba(244, 67, 54, 0.1);
+      color: #ff6b6b;
+      border-left-color: var(--danger);
+    }
+
+    .alert-success {
+      background: rgba(76, 175, 80, 0.1);
+      color: #81c784;
+      border-left-color: var(--success);
+    }
+
+    .alert-info {
+      background: rgba(0, 180, 216, 0.1);
+      color: var(--accent);
+      border-left-color: var(--primary-light);
+    }
 
     /* Footer */
-    footer { border-top: 1px solid var(--border); background: var(--card); padding-block: 1.75rem; margin-top: auto; }
-    .footer-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; }
-    .footer-brand { display: flex; align-items: center; gap: .5rem; }
-    .footer-brand span { font-size: .875rem; color: var(--muted-fg); }
+    footer {
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-card);
+      padding-block: 1.75rem;
+      margin-top: auto;
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-brand span {
+      font-size: 0.875rem;
+      color: var(--fg-muted);
+    }
+
+    .footer-brand svg {
+      color: var(--primary-light);
+    }
 
     {% block extra_style %}{% endblock %}
   </style>
 </head>
-<body>
+<body data-theme="dark">
 
 <nav class="navbar" aria-label="Asosiy navigatsiya">
   <div class="container navbar-inner">
     <a class="logo" href="{% url 'index' %}">
       <div class="logo-mark">
-        <img src="{% static 'img/logo.svg' %}" alt="SinoMed logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M7 7h10M7 12h10M7 17h10"/><circle cx="12" cy="12" r="10"/></svg>
       </div>
       <span class="logo-name">SinoMed</span>
       <span class="logo-version">v1.0</span>
@@ -88,15 +281,18 @@
       <a href="{% url 'index' %}#scan">
         <button class="btn btn-ghost" type="button">
           <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-          <span class="nav-label">Tahlil turlari</span>
+          <span class="nav-label">Tahlillar</span>
         </button>
       </a>
-      <a href="{% url 'pricing' %}" class="price-link">
+      <a href="{% url 'pricing' %}">
         <button class="btn btn-ghost" type="button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17.5 5H9.5a4 4 0 0 0 0 8h8a4 4 0 0 1 0 8H6.5"/></svg>
           <span class="nav-label">Narxlar</span>
         </button>
       </a>
+      <button class="theme-toggle" id="themeToggle" title="Rangi o'zgartirish" onclick="toggleTheme()">
+        <i class="fas fa-sun" id="themeIcon"></i>
+      </button>
       {% if user.is_authenticated %}
         <a href="{% url 'dashboard' %}">
           <button class="btn btn-ghost" type="button">
@@ -104,6 +300,14 @@
             <span class="nav-label">Kabinet</span>
           </button>
         </a>
+        {% if user.is_superuser or user.is_university %}
+        <a href="{% url 'analysis_log' %}">
+          <button class="btn btn-ghost" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <span class="nav-label">Audit</span>
+          </button>
+        </a>
+        {% endif %}
         <a href="{% url 'logout' %}">
           <button class="btn btn-outline" type="button">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -135,11 +339,39 @@
 <footer aria-label="Sayt haqida">
   <div class="container footer-inner">
     <div class="footer-brand">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0 1 12 2.944a11.955 11.955 0 0 1-8.618 3.04A12.02 12.02 0 0 0 3 9c0 5.591 3.824 10.29 9 11.622C17.176 19.29 21 14.591 21 9c0-1.042-.133-2.052-.382-3.016z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
       <span>© SinoMed 2026 · Fedora jamoasi · Andijon viloyati AI Hackathon</span>
     </div>
   </div>
 </footer>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const icon = document.getElementById('themeIcon');
+  const currentTheme = html.getAttribute('data-theme') || 'dark';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+  html.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+
+  if (newTheme === 'dark') {
+    icon.className = 'fas fa-sun';
+  } else {
+    icon.className = 'fas fa-moon';
+  }
+}
+
+// Initialize theme on page load
+document.addEventListener('DOMContentLoaded', function() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  const icon = document.getElementById('themeIcon');
+  if (icon) {
+    icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  }
+});
+</script>
 
 {% block extra_js %}{% endblock %}
 </body>
