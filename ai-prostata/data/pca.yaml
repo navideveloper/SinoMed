@@ -1,0 +1,11 @@
+path: /home/dibir/Research/procan_nizomiddin/yolov5/dataset
+
+train: autosplit_train.txt
+val: autosplit_val.txt
+
+nc: 4
+names:
+  0: benign
+  1: grade3
+  2: grade4
+  3: grade5
