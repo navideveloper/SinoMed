@@ -66,6 +66,10 @@ def api_analyze(request):
     analysis.status = Analysis.Status.PROCESSING
     analysis.save(update_fields=['status'])
 
+    from audit.models import AuditLog, AnalysisLog
+    error_type = None
+    error_detail = ''
+
     try:
         ai_url = f"{settings.AI_SERVICE_URL}/predict"
         image_path = analysis.image.path
@@ -98,23 +102,63 @@ def api_analyze(request):
         analysis.status = Analysis.Status.COMPLETED
         analysis.save(update_fields=['status'])
 
-    except (urllib.error.URLError, TimeoutError, Exception) as e:
+        AnalysisLog.objects.create(
+            analysis=analysis,
+            ai_diagnosis=result.diagnosis,
+            ai_confidence=result.confidence,
+            ai_raw_output=ai_response,
+            institution=request.user.institution,
+        )
+
+    except TimeoutError as e:
+        error_type = AnalysisLog.ErrorType.TIMEOUT
+        error_detail = str(e)
         analysis.status = Analysis.Status.ERROR
         analysis.save(update_fields=['status'])
-
         result = AnalysisResult.objects.create(
             analysis=analysis,
-            diagnosis='Tahlil qilib bo\'lmadi',
+            diagnosis="Tahlil qilib bo'lmadi",
             diagnosis_type=AnalysisResult.DiagnosisType.WARNING,
             confidence=0.0,
             note=str(e),
             raw_output={'error': str(e)},
         )
+        AnalysisLog.objects.create(
+            analysis=analysis,
+            ai_diagnosis='',
+            ai_confidence=0.0,
+            ai_raw_output={'error': str(e)},
+            error_type=error_type,
+            error_detail=error_detail,
+            institution=request.user.institution,
+        )
 
-    from audit.models import AuditLog
+    except Exception as e:
+        error_type = AnalysisLog.ErrorType.SERVICE_ERROR
+        error_detail = str(e)
+        analysis.status = Analysis.Status.ERROR
+        analysis.save(update_fields=['status'])
+        result = AnalysisResult.objects.create(
+            analysis=analysis,
+            diagnosis="Tahlil qilib bo'lmadi",
+            diagnosis_type=AnalysisResult.DiagnosisType.WARNING,
+            confidence=0.0,
+            note=str(e),
+            raw_output={'error': str(e)},
+        )
+        AnalysisLog.objects.create(
+            analysis=analysis,
+            ai_diagnosis='',
+            ai_confidence=0.0,
+            ai_raw_output={'error': str(e)},
+            error_type=error_type,
+            error_detail=error_detail,
+            institution=request.user.institution,
+        )
+
     AuditLog.objects.create(
         user=request.user,
-        action=AuditLog.Action.ANALYZE,
+        action=AuditLog.Action.UPLOAD,
         analysis=analysis,
         ip_address=request.META.get('REMOTE_ADDR'),
         data={'model_type': analysis.model_type},
@@ -131,7 +175,7 @@ def result_detail(request, pk):
         action = request.POST.get('action')
         result = analysis.result
         from django.utils import timezone
-        from audit.models import AuditLog
+        from audit.models import AuditLog, AnalysisLog
 
         if action == 'confirm':
             result.doctor_confirmed = True
@@ -142,6 +186,10 @@ def result_detail(request, pk):
             AuditLog.objects.create(
                 user=request.user, action=AuditLog.Action.DOCTOR_CONFIRM,
                 analysis=analysis, ip_address=request.META.get('REMOTE_ADDR'),
+            )
+            AnalysisLog.objects.filter(analysis=analysis).update(
+                doctor_verdict=True,
+                doctor_note=result.doctor_note,
             )
 
         elif action == 'report':
@@ -154,6 +202,11 @@ def result_detail(request, pk):
                 user=request.user, action=AuditLog.Action.DOCTOR_REPORT,
                 analysis=analysis, ip_address=request.META.get('REMOTE_ADDR'),
                 data={'report': result.doctor_report},
+            )
+            AnalysisLog.objects.filter(analysis=analysis).update(
+                doctor_verdict=False,
+                doctor_note=result.doctor_report,
+                flagged_for_training=True,
             )
 
         return redirect('result_detail', pk=pk)
