@@ -62,7 +62,7 @@
       <div class="stat-pill"><div class="val">{{ stats.total }}</div><div class="lbl">Jami</div></div>
       <div class="stat-pill"><div class="val">{{ stats.doctors }}</div><div class="lbl">Shifokorlar</div></div>
       <div class="stat-pill"><div class="val">{{ stats.students }}</div><div class="lbl">Talabalar</div></div>
-      <div class="stat-pill"><div class="val">{{ stats.universities }}</div><div class="lbl">Oliygohlar</div></div>
+      <div class="stat-pill" style="background:rgba(255,152,0,.06);border-color:rgba(255,152,0,.2)"><div class="val" style="color:#ffb74d">{{ stats.pending }}</div><div class="lbl">Kutilmoqda</div></div>
       <div class="stat-pill danger"><div class="val">{{ stats.inactive }}</div><div class="lbl">Nofaol</div></div>
     </div>
 
@@ -88,8 +88,17 @@
           <option value="inactive" {% if filters.status == 'inactive' %}selected{% endif %}>Nofaol</option>
         </select>
       </div>
+      <div class="filter-group">
+        <label>Tasdiqlash</label>
+        <select name="approval" class="filter-select">
+          <option value="">Hammasi</option>
+          {% for val, label in approval_choices %}
+            <option value="{{ val }}" {% if filters.approval == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
       <button type="submit" class="btn-filter">Qidirish</button>
-      {% if filters.search or filters.role or filters.status %}
+      {% if filters.search or filters.role or filters.status or filters.approval %}
         <a href="{% url 'user_list' %}" style="font-size:.82rem;color:var(--fg-muted);align-self:center">✕ Tozalash</a>
       {% endif %}
     </form>
@@ -124,15 +133,27 @@
               <td>
                 <span class="badge badge-{{ u.role }}">{{ u.get_role_display }}</span>
               </td>
-              <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis">{{ u.institution|default:"—" }}</td>
+              <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                {% if u.organization %}
+                  <span title="{{ u.organization.name }}">{{ u.organization.name|truncatechars:28 }}</span>
+                {% else %}
+                  <span style="color:var(--fg-muted)">—</span>
+                {% endif %}
+              </td>
               <td style="font-family:var(--mono);font-weight:600;color:var(--primary-light)">{{ u.total_analyses }}</td>
               {% if user.is_superuser %}
               <td style="font-family:var(--mono);font-size:.8rem">{{ u.balance|floatformat:0 }} so'm</td>
               {% endif %}
               <td>
-                <span class="badge {% if u.is_active %}badge-active{% else %}badge-inactive{% endif %}" id="status-badge-{{ u.pk }}">
-                  {% if u.is_active %}Faol{% else %}Nofaol{% endif %}
-                </span>
+                {% if u.approval_status == 'pending' %}
+                  <span class="badge" style="background:rgba(255,152,0,.15);color:#ffb74d;border-color:rgba(255,152,0,.3)">⏳ Kutilmoqda</span>
+                {% elif u.approval_status == 'rejected' %}
+                  <span class="badge badge-inactive">✗ Rad etildi</span>
+                {% else %}
+                  <span class="badge {% if u.is_active %}badge-active{% else %}badge-inactive{% endif %}" id="status-badge-{{ u.pk }}">
+                    {% if u.is_active %}Faol{% else %}Nofaol{% endif %}
+                  </span>
+                {% endif %}
               </td>
               <td style="font-size:.75rem;color:var(--fg-muted)">{{ u.date_joined|date:"d.m.Y" }}</td>
               <td>

@@ -1,0 +1,92 @@
+[
+  {
+    "model": "organizations.organization",
+    "pk": 1,
+    "fields": {
+      "name": "Andijon davlat tibbiyot instituti",
+      "org_type": "university",
+      "code": "ADTI",
+      "address": "Andijon shahar, Yo'ldoshev ko'chasi 1",
+      "phone": "+998742230050",
+      "email": "info@adti.uz",
+      "website": "https://adti.uz",
+      "is_active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "organizations.organization",
+    "pk": 2,
+    "fields": {
+      "name": "Toshkent tibbiyot akademiyasi",
+      "org_type": "university",
+      "code": "TTA",
+      "address": "Toshkent shahar, Farobiy ko'chasi 2",
+      "phone": "+998712735700",
+      "email": "info@tma.uz",
+      "website": "https://tma.uz",
+      "is_active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "organizations.organization",
+    "pk": 3,
+    "fields": {
+      "name": "Samarqand davlat tibbiyot universiteti",
+      "org_type": "university",
+      "code": "SamDTU",
+      "address": "Samarqand shahar, Amir Temur ko'chasi 18",
+      "phone": "+998662333036",
+      "email": "info@samdtu.uz",
+      "website": "https://samdtu.uz",
+      "is_active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "organizations.organization",
+    "pk": 4,
+    "fields": {
+      "name": "Andijon viloyat ko'p tarmoqli tibbiyot markazi",
+      "org_type": "hospital",
+      "code": "AVKTM",
+      "address": "Andijon shahar, Bobur ko'chasi 35",
+      "phone": "+998742230090",
+      "email": "info@avktm.uz",
+      "website": "",
+      "is_active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "organizations.organization",
+    "pk": 5,
+    "fields": {
+      "name": "Respublika ixtisoslashtirilgan jarrohlik markazi",
+      "org_type": "hospital",
+      "code": "RIJM",
+      "address": "Toshkent shahar, Chimkentskaya ko'chasi 103",
+      "phone": "+998712455000",
+      "email": "info@rijm.uz",
+      "website": "",
+      "is_active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "organizations.organization",
+    "pk": 6,
+    "fields": {
+      "name": "Toshkent shahar 1-son shifoxonasi",
+      "org_type": "hospital",
+      "code": "TOSH-1",
+      "address": "Toshkent shahar, Mirzo Ulug'bek tumani",
+      "phone": "+998712455100",
+      "email": "",
+      "website": "",
+      "is_active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  }
+]

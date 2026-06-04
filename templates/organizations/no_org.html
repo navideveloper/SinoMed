@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Muassasa topilmadi{% endblock %}
+{% block content %}
+<main style="display:flex;align-items:center;justify-content:center;min-height:60vh">
+  <div style="text-align:center;color:var(--fg-muted);max-width:400px">
+    <div style="font-size:3rem;margin-bottom:1rem">🏛</div>
+    <h2 style="color:var(--fg-primary);margin-bottom:.5rem">Muassasa biriktirilmagan</h2>
+    <p style="margin-bottom:1.5rem">Hisobingizga hali muassasa biriktirilmagan. Admin bilan bog'laning.</p>
+    <a href="{% url 'dashboard' %}" class="btn btn-primary">Dashboardga qaytish</a>
+  </div>
+</main>
+{% endblock %}

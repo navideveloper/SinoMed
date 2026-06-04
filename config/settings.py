@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'analysis',
     'audit',
     'billing',
+    'organizations',
 ]
 
 MIDDLEWARE = [

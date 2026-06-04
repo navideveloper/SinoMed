@@ -7,27 +7,52 @@ from django.http import JsonResponse
 from django.db.models import Count, Q
 from django.core.paginator import Paginator
 import json as _json
-from .models import User
 
+from .models import User
+from organizations.models import Organization
+
+
+# ── Auth ────────────────────────────────────────────────────────────────────
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return _redirect_by_role(request.user)
 
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
 
-        user = authenticate(request, username=username, password=password)
-        if user:
-            login(request, user)
+        # Try to authenticate (works even for inactive users)
+        try:
+            raw_user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raw_user = None
+
+        if raw_user is not None and raw_user.check_password(password):
+            if raw_user.is_pending:
+                return render(request, 'accounts/auth.html', {
+                    'tab': 'login',
+                    'status_message': 'pending',
+                    'org_name': raw_user.org_name,
+                })
+            if raw_user.is_rejected:
+                return render(request, 'accounts/auth.html', {
+                    'tab': 'login',
+                    'status_message': 'rejected',
+                    'rejection_reason': raw_user.rejection_reason,
+                })
+            if not raw_user.is_active:
+                messages.error(request, 'Hisobingiz o\'chirilgan. Admin bilan bog\'laning.')
+                return render(request, 'accounts/auth.html', {'tab': 'login'})
+
+            login(request, raw_user)
             from audit.models import AuditLog
             AuditLog.objects.create(
-                user=user,
+                user=raw_user,
                 action=AuditLog.Action.LOGIN,
                 ip_address=request.META.get('REMOTE_ADDR'),
             )
-            return redirect('dashboard')
+            return _redirect_by_role(raw_user)
         else:
             messages.error(request, 'Username yoki parol noto\'g\'ri')
 
@@ -36,15 +61,35 @@ def login_view(request):
 
 def register_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return _redirect_by_role(request.user)
 
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         full_name = request.POST.get('full_name', '').strip()
         phone = request.POST.get('phone', '').strip()
         password = request.POST.get('password', '')
-        role = request.POST.get('role', User.Role.STUDENT)
-        institution = request.POST.get('institution', '').strip()
+        role = request.POST.get('role', '')
+        org_id = request.POST.get('organization_id', '').strip()
+
+        # Validate role
+        if role not in (User.Role.STUDENT, User.Role.DOCTOR):
+            messages.error(request, 'Noto\'g\'ri rol tanlandi')
+            return render(request, 'accounts/auth.html', {'tab': 'register'})
+
+        # Validate organization
+        try:
+            organization = Organization.objects.get(pk=org_id, is_active=True)
+        except (Organization.DoesNotExist, ValueError):
+            messages.error(request, 'Muassasani to\'g\'ri tanlang')
+            return render(request, 'accounts/auth.html', {'tab': 'register'})
+
+        # Check role ↔ org type match
+        if role == User.Role.STUDENT and organization.org_type != Organization.OrgType.UNIVERSITY:
+            messages.error(request, 'Talabalar faqat universitetni tanlashi mumkin')
+            return render(request, 'accounts/auth.html', {'tab': 'register'})
+        if role == User.Role.DOCTOR and organization.org_type != Organization.OrgType.HOSPITAL:
+            messages.error(request, 'Shifokorlar faqat kasalxonani tanlashi mumkin')
+            return render(request, 'accounts/auth.html', {'tab': 'register'})
 
         if User.objects.filter(username=username).exists():
             messages.error(request, 'Bu username allaqachon band')
@@ -62,7 +107,11 @@ def register_view(request):
             last_name=names[1] if len(names) > 1 else '',
             phone=phone or None,
             role=role,
-            institution=institution,
+            organization=organization,
+            institution=organization.name,  # sync legacy field
+            # New users start as inactive/pending — admin must approve
+            is_active=False,
+            approval_status=User.ApprovalStatus.PENDING,
         )
 
         from audit.models import AuditLog
@@ -70,12 +119,15 @@ def register_view(request):
             user=user,
             action=AuditLog.Action.REGISTER,
             ip_address=request.META.get('REMOTE_ADDR'),
-            data={'role': role},
+            data={'role': role, 'organization': organization.name},
         )
 
-        login(request, user)
-        messages.success(request, 'Muvaffaqiyatli ro\'yxatdan o\'tdingiz!')
-        return redirect('dashboard')
+        # Show "waiting for approval" page
+        return render(request, 'accounts/auth.html', {
+            'tab': 'login',
+            'status_message': 'registered',
+            'org_name': organization.name,
+        })
 
     return render(request, 'accounts/auth.html', {'tab': 'register'})
 
@@ -92,22 +144,50 @@ def logout_view(request):
     return redirect('index')
 
 
+def api_organizations(request):
+    """Return organizations list filtered by role (for registration form AJAX)."""
+    role = request.GET.get('role', '')
+    if role == User.Role.STUDENT:
+        org_type = Organization.OrgType.UNIVERSITY
+    elif role == User.Role.DOCTOR:
+        org_type = Organization.OrgType.HOSPITAL
+    else:
+        return JsonResponse({'organizations': []})
+
+    orgs = Organization.objects.filter(org_type=org_type, is_active=True).values(
+        'id', 'name', 'code', 'address'
+    )
+    return JsonResponse({'organizations': list(orgs)})
+
+
+def _redirect_by_role(user):
+    """Redirect user to appropriate dashboard based on role."""
+    if user.is_superuser:
+        return redirect('dashboard')  # superuser sees full dashboard
+    if user.is_org_admin:
+        return redirect('org_dashboard')
+    return redirect('dashboard')
+
+
+# ── User Management (org_admin / superuser) ─────────────────────────────────
+
 @login_required
 def user_list_view(request):
-    if not (request.user.is_superuser or request.user.is_university):
+    if not (request.user.is_superuser or request.user.is_org_admin):
         return redirect('dashboard')
 
     qs = User.objects.all().annotate(
         total_analyses=Count('analyses')
     ).order_by('-date_joined')
 
-    if request.user.is_university and not request.user.is_superuser:
-        qs = qs.filter(institution=request.user.institution)
+    if request.user.is_org_admin and not request.user.is_superuser:
+        qs = qs.filter(organization=request.user.organization)
 
     # Filters
     role_filter = request.GET.get('role', '')
     search = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
+    approval_filter = request.GET.get('approval', '')
 
     if role_filter:
         qs = qs.filter(role=role_filter)
@@ -122,17 +202,19 @@ def user_list_view(request):
         qs = qs.filter(is_active=True)
     elif status_filter == 'inactive':
         qs = qs.filter(is_active=False)
+    if approval_filter:
+        qs = qs.filter(approval_status=approval_filter)
 
     # Stats
     base_qs = User.objects.all()
-    if request.user.is_university and not request.user.is_superuser:
-        base_qs = base_qs.filter(institution=request.user.institution)
+    if request.user.is_org_admin and not request.user.is_superuser:
+        base_qs = base_qs.filter(organization=request.user.organization)
 
     stats = {
         'total': base_qs.count(),
         'doctors': base_qs.filter(role='doctor').count(),
         'students': base_qs.filter(role='student').count(),
-        'universities': base_qs.filter(role='university').count(),
+        'pending': base_qs.filter(approval_status='pending').count(),
         'inactive': base_qs.filter(is_active=False).count(),
     }
 
@@ -142,25 +224,27 @@ def user_list_view(request):
     return render(request, 'accounts/users.html', {
         'users': page,
         'stats': stats,
-        'roles': User.Role.choices,
+        'roles': [(r.value, r.label) for r in User.Role if r != User.Role.ORG_ADMIN],
+        'approval_choices': User.ApprovalStatus.choices,
         'filters': {
             'role': role_filter,
             'search': search,
             'status': status_filter,
+            'approval': approval_filter,
         },
     })
 
 
 @login_required
 def user_detail_view(request, pk):
-    if not (request.user.is_superuser or request.user.is_university):
+    if not (request.user.is_superuser or request.user.is_org_admin):
         return redirect('dashboard')
 
     target_user = get_object_or_404(User, pk=pk)
 
-    # University can only see own institution users
-    if request.user.is_university and not request.user.is_superuser:
-        if target_user.institution != request.user.institution:
+    # Org admin can only see own institution users
+    if request.user.is_org_admin and not request.user.is_superuser:
+        if target_user.organization != request.user.organization:
             return redirect('user_list')
 
     from analysis.models import Analysis
@@ -182,16 +266,15 @@ def user_detail_view(request, pk):
 @login_required
 @require_POST
 def user_toggle_active(request, pk):
-    if not (request.user.is_superuser or request.user.is_university):
+    if not (request.user.is_superuser or request.user.is_org_admin):
         return JsonResponse({'error': 'Ruxsat yo\'q'}, status=403)
 
     target_user = get_object_or_404(User, pk=pk)
 
-    if request.user.is_university and not request.user.is_superuser:
-        if target_user.institution != request.user.institution:
+    if request.user.is_org_admin and not request.user.is_superuser:
+        if target_user.organization != request.user.organization:
             return JsonResponse({'error': 'Ruxsat yo\'q'}, status=403)
 
-    # Cannot deactivate superusers
     if target_user.is_superuser:
         return JsonResponse({'error': 'Superuserni o\'chirib bo\'lmaydi'}, status=400)
 
@@ -207,7 +290,6 @@ def user_toggle_active(request, pk):
 @login_required
 @require_POST
 def user_update_balance(request, pk):
-    """Superuser only — add/subtract balance"""
     if not request.user.is_superuser:
         return JsonResponse({'error': 'Faqat superuser'}, status=403)
 

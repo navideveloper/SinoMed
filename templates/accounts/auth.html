@@ -1,164 +1,586 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kirish — SinoMed</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    :root{--bg:hsl(210,20%,98%);--fg:hsl(215,35%,12%);--card:hsl(0,0%,100%);--primary:hsl(162,72%,36%);--primary-dark:hsl(162,84%,23%);--primary-light:hsl(162,60%,92%);--primary-soft:hsla(162,72%,36%,.12);--accent:hsl(200,90%,46%);--warning:hsl(38,92%,50%);--danger:hsl(4,74%,55%);--muted:hsl(215,20%,94%);--muted-fg:hsl(215,15%,48%);--border:hsl(215,20%,88%);--radius:.875rem;--font:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;--shadow-sm:0 2px 8px -2px hsla(215,35%,12%,.08);--shadow-md:0 8px 28px -6px hsla(215,35%,12%,.12);--shadow-glow:0 0 40px hsla(162,72%,36%,.2)}
-    body{font-family:var(--font);background:radial-gradient(ellipse 80% 50% at 50% -10%,hsla(162,72%,36%,.08) 0%,transparent 70%),var(--bg);color:var(--fg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
-    a{color:inherit;text-decoration:none}
-    button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-    .back-home{position:fixed;top:1.5rem;left:1.5rem;z-index:100;display:flex;align-items:center;gap:.5rem;background:hsla(0,0%,100%,.9);padding:.6rem 1.2rem;border-radius:40px;border:1px solid var(--border);font-weight:500;font-size:.875rem;backdrop-filter:blur(8px);transition:all .2s}
-    .back-home:hover{border-color:var(--primary);transform:translateX(-2px);box-shadow:var(--shadow-sm)}
-    .back-home i{color:var(--primary)}
-    .auth-card{width:100%;max-width:500px;background:var(--card);border-radius:calc(var(--radius)+12px);box-shadow:var(--shadow-md);overflow:hidden;border:1px solid var(--border)}
-    .tabs{display:flex;background:var(--card);border-bottom:2px solid var(--border)}
-    .tab{flex:1;text-align:center;padding:1.2rem .5rem;font-weight:700;font-size:1rem;color:var(--muted-fg);cursor:pointer;transition:all .2s;background:transparent;border-bottom:3px solid transparent}
-    .tab.active{color:var(--primary);border-bottom-color:var(--primary)}
-    .tab:hover:not(.active){color:var(--fg);background:var(--muted)}
-    .tab-content{display:none;padding:2rem 1.8rem}
-    .tab-content.active{display:block;animation:fadeSlideUp .35s ease}
-    .form-header{text-align:center;margin-bottom:1.8rem}
-    .form-header h2{font-size:1.8rem;font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,var(--fg),var(--primary));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.4rem}
-    .form-header p{color:var(--muted-fg);font-size:.9rem}
-    .form-group{margin-bottom:1.25rem}
-    label{display:block;font-size:.85rem;font-weight:600;margin-bottom:.4rem;color:var(--fg)}
-    .input-wrapper{position:relative;display:flex;align-items:center}
-    .form-control,.role-select{width:100%;padding:.9rem 1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:16px;font-size:1rem;color:var(--fg);transition:all .2s;outline:none;font-family:var(--font)}
-    .form-control:focus,.role-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
-    .form-control.error{border-color:var(--danger);background:hsla(4,74%,55%,.05)}
-    .phone-prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--primary);font-weight:600;font-size:.95rem;pointer-events:none}
-    .phone-input{padding-left:3.8rem}
-    .pw-toggle{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--muted-fg);cursor:pointer;transition:color .2s}
-    .pw-toggle:hover{color:var(--primary)}
-    .error-msg{font-size:.75rem;color:var(--danger);margin-top:6px;display:none;padding-left:6px}
-    .submit-btn{width:100%;background:linear-gradient(105deg,var(--primary) 0%,var(--primary-dark) 100%);border:none;padding:.9rem;border-radius:40px;font-weight:700;font-size:1rem;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:transform .15s,box-shadow .2s;margin-top:.5rem;box-shadow:0 6px 14px hsla(162,72%,36%,.2)}
-    .submit-btn:hover{transform:translateY(-2px);box-shadow:0 12px 22px hsla(162,72%,36%,.25)}
-    .submit-btn:active{transform:translateY(1px)}
-    .django-errors{background:hsla(4,74%,55%,.1);border-left:4px solid var(--danger);padding:.8rem 1rem;border-radius:16px;margin-bottom:1rem;font-size:.85rem;color:hsl(4,74%,35%)}
-    @keyframes fadeSlideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-    @media (max-width:540px){.tab-content{padding:1.5rem}.back-home{top:1rem;left:1rem;padding:.5rem 1rem;font-size:.75rem}body{padding:5rem 1rem 1.5rem}}
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0f1f;
+      --card: #121a2e;
+      --hover: #1a2541;
+      --border: rgba(0, 183, 214, 0.15);
+      --fg: #e3f2fd;
+      --fg-sec: #90caf9;
+      --fg-muted: #5d7fa3;
+      --primary: #0077b6;
+      --primary-l: #00b4d8;
+      --accent: #00d4ff;
+      --danger: #f44336;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --radius: 0.875rem;
+      --font: 'Inter', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --shadow: 0 12px 40px rgba(0, 119, 182, 0.2);
+      --glow: 0 0 40px rgba(0, 180, 216, 0.2);
+    }
+
+    [data-theme="light"] {
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --hover: #e8f0f8;
+      --border: rgba(0, 119, 182, 0.2);
+      --fg: #0d1b2a;
+      --fg-sec: #334155;
+      --fg-muted: #64748b;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      transition: background 0.3s;
+      background-image: radial-gradient(ellipse 60% 40% at 20% 50%, rgba(0,119,182,0.1) 0%, transparent 60%),
+                        radial-gradient(ellipse 40% 30% at 80% 20%, rgba(0,180,216,0.08) 0%, transparent 50%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+    .top-bar {
+      position: fixed;
+      top: 1.25rem; left: 1.25rem; right: 1.25rem;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 100;
+    }
+
+    .back-home {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: var(--card); border: 1px solid var(--border);
+      padding: 0.5rem 1rem; border-radius: 40px;
+      font-weight: 500; font-size: 0.85rem; color: var(--fg-sec);
+      backdrop-filter: blur(8px); transition: all 0.2s;
+    }
+    .back-home:hover { border-color: var(--primary-l); color: var(--primary-l); transform: translateX(-2px); }
+
+    .theme-toggle {
+      background: var(--card); border: 1px solid var(--border); color: var(--fg-sec);
+      padding: 0.5rem 0.75rem; border-radius: 40px; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;
+    }
+    .theme-toggle:hover { border-color: var(--primary-l); color: var(--primary-l); }
+
+    .auth-wrap { width: 100%; max-width: 500px; }
+
+    .logo-row {
+      display: flex; align-items: center; justify-content: center; gap: 0.625rem; margin-bottom: 2rem;
+    }
+    .logo-mark {
+      width: 2.4rem; height: 2.4rem; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-l));
+      display: flex; align-items: center; justify-content: center; box-shadow: var(--glow);
+    }
+    .logo-mark svg { width: 1.3rem; height: 1.3rem; color: #fff; }
+    .logo-name {
+      font-size: 1.3rem; font-weight: 700;
+      background: linear-gradient(90deg, var(--primary-l), var(--accent));
+      background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+    }
+
+    .auth-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 8px); box-shadow: var(--shadow); overflow: hidden;
+    }
+
+    .tabs { display: flex; border-bottom: 1px solid var(--border); }
+    .tab {
+      flex: 1; text-align: center; padding: 1.1rem 0.5rem;
+      font-weight: 600; font-size: 0.95rem; color: var(--fg-muted);
+      cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; background: transparent;
+    }
+    .tab.active { color: var(--primary-l); border-bottom-color: var(--primary-l); background: rgba(0,180,216,0.05); }
+    .tab:hover:not(.active) { color: var(--fg-sec); background: rgba(255,255,255,0.03); }
+
+    .tab-content { display: none; padding: 2rem; }
+    .tab-content.active { display: block; animation: fadeUp 0.3s ease; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .form-header { text-align: center; margin-bottom: 1.75rem; }
+    .form-header h2 {
+      font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--fg), var(--primary-l));
+      background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.35rem;
+    }
+    .form-header p { color: var(--fg-muted); font-size: 0.875rem; }
+
+    .form-group { margin-bottom: 1.1rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--fg-sec); }
+
+    .input-wrapper { position: relative; display: flex; align-items: center; }
+
+    .form-control, .role-select {
+      width: 100%; padding: 0.8rem 1rem;
+      background: rgba(255,255,255,0.04); border: 1.5px solid var(--border);
+      border-radius: var(--radius); font-size: 0.9rem; color: var(--fg);
+      font-family: var(--font); outline: none; transition: all 0.2s;
+    }
+    [data-theme="light"] .form-control, [data-theme="light"] .role-select { background: #f8fafc; }
+    .form-control:focus, .role-select:focus {
+      border-color: var(--primary-l); box-shadow: 0 0 0 3px rgba(0,180,216,0.15);
+      background: rgba(0,180,216,0.04);
+    }
+    .form-control::placeholder { color: var(--fg-muted); }
+    .role-select option { background: var(--card); color: var(--fg); }
+
+    .phone-prefix {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--primary-l); font-weight: 600; font-size: 0.9rem; pointer-events: none; font-family: var(--mono);
+    }
+    .phone-input { padding-left: 3.8rem; }
+
+    .pw-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--fg-muted); cursor: pointer; transition: color 0.2s;
+    }
+    .pw-toggle:hover { color: var(--primary-l); }
+
+    .alert {
+      padding: 0.85rem 1rem; border-radius: var(--radius); margin-bottom: 1.25rem;
+      font-size: 0.875rem; display: flex; align-items: flex-start; gap: 0.625rem;
+      border-left: 3px solid;
+    }
+    .alert i { margin-top: 1px; flex-shrink: 0; }
+    .alert-danger { background: rgba(244,67,54,0.1); border-color: var(--danger); color: #ff6b6b; }
+    .alert-warning { background: rgba(255,152,0,0.1); border-color: var(--warning); color: #ffb74d; }
+    .alert-success { background: rgba(76,175,80,0.1); border-color: var(--success); color: #81c784; }
+    .alert-info { background: rgba(0,180,216,0.1); border-color: var(--primary-l); color: var(--primary-l); }
+
+    .submit-btn {
+      width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-l));
+      padding: 0.875rem; border-radius: var(--radius); font-weight: 700; font-size: 0.95rem;
+      color: #fff; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      cursor: pointer; transition: all 0.2s; margin-top: 0.5rem;
+      box-shadow: 0 4px 16px rgba(0,119,182,0.3); border: none;
+    }
+    .submit-btn:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,119,182,0.4); }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── Multi-step registration ─────────── */
+    .step { display: none; animation: fadeUp 0.3s ease; }
+    .step.active { display: block; }
+
+    .step-indicator {
+      display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 1.75rem;
+    }
+    .step-dot {
+      width: 2rem; height: 2rem; border-radius: 50%; border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; color: var(--fg-muted); transition: all 0.3s;
+      background: var(--card);
+    }
+    .step-dot.active { border-color: var(--primary-l); color: var(--primary-l); background: rgba(0,180,216,0.1); }
+    .step-dot.done { border-color: var(--success); background: rgba(76,175,80,0.15); color: #81c784; }
+    .step-line { width: 3rem; height: 2px; background: var(--border); transition: all 0.3s; }
+    .step-line.done { background: rgba(76,175,80,0.4); }
+
+    .step-label {
+      text-align: center; font-size: 0.75rem; color: var(--fg-muted);
+      margin-bottom: 1.25rem; text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .step-label strong { color: var(--primary-l); }
+
+    .role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem; }
+    .role-card {
+      border: 2px solid var(--border); border-radius: var(--radius); padding: 1.1rem 0.75rem;
+      text-align: center; cursor: pointer; transition: all 0.2s; background: transparent;
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    }
+    .role-card:hover { border-color: var(--primary-l); background: rgba(0,180,216,0.05); }
+    .role-card.selected { border-color: var(--primary-l); background: rgba(0,180,216,0.1); }
+    .role-card .role-icon { font-size: 1.75rem; }
+    .role-card .role-name { font-size: 0.85rem; font-weight: 700; color: var(--fg-sec); }
+    .role-card .role-desc { font-size: 0.72rem; color: var(--fg-muted); line-height: 1.3; }
+
+    .org-list { max-height: 240px; overflow-y: auto; border: 1.5px solid var(--border); border-radius: var(--radius); }
+    .org-item {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem;
+      cursor: pointer; transition: background 0.15s; border-bottom: 1px solid var(--border);
+    }
+    .org-item:last-child { border-bottom: none; }
+    .org-item:hover { background: var(--hover); }
+    .org-item.selected { background: rgba(0,180,216,0.1); }
+    .org-item .org-icon {
+      width: 2rem; height: 2rem; border-radius: 8px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--primary), var(--primary-l));
+      display: flex; align-items: center; justify-content: center; font-size: 0.85rem; color: #fff;
+    }
+    .org-item .org-name { font-weight: 600; font-size: 0.875rem; color: var(--fg); }
+    .org-item .org-addr { font-size: 0.72rem; color: var(--fg-muted); margin-top: 1px; }
+    .org-item .org-code {
+      margin-left: auto; font-family: var(--mono); font-size: 0.7rem;
+      background: rgba(0,180,216,0.1); color: var(--primary-l); padding: 2px 6px; border-radius: 4px;
+    }
+    .org-empty { padding: 2rem; text-align: center; color: var(--fg-muted); font-size: 0.875rem; }
+    .org-loading { padding: 2rem; text-align: center; color: var(--fg-muted); font-size: 0.875rem; }
+
+    .nav-btns { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    .btn-back {
+      flex: 0 0 auto; padding: 0.875rem 1.25rem; border-radius: var(--radius);
+      border: 1.5px solid var(--border); background: transparent; color: var(--fg-sec);
+      font-weight: 600; font-size: 0.875rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-back:hover { border-color: var(--primary-l); color: var(--primary-l); }
+
+    .org-search { width: 100%; padding: 0.65rem 1rem; background: rgba(255,255,255,0.04);
+      border: 1.5px solid var(--border); border-radius: var(--radius);
+      font-size: 0.875rem; color: var(--fg); font-family: var(--font); outline: none;
+      margin-bottom: 0.5rem; transition: all 0.2s;
+    }
+    .org-search:focus { border-color: var(--primary-l); }
+    .org-search::placeholder { color: var(--fg-muted); }
+
+    @media (max-width: 540px) {
+      .tab-content { padding: 1.5rem; }
+      body { padding: 5rem 1rem 1.5rem; align-items: flex-start; }
+    }
   </style>
 </head>
 <body>
 
-<a href="{% url 'index' %}" class="back-home">
-  <i class="fas fa-arrow-left"></i>
-  <span>Bosh sahifa</span>
-</a>
+<div class="top-bar">
+  <a href="{% url 'index' %}" class="back-home">
+    <i class="fas fa-arrow-left"></i>
+    <span>Bosh sahifa</span>
+  </a>
+  <button class="theme-toggle" onclick="toggleTheme()">
+    <i id="themeIcon" class="fas fa-sun"></i>
+  </button>
+</div>
 
-<div class="auth-card">
-  <div class="tabs">
-    <div class="tab {% if tab == 'login' %}active{% endif %}" data-tab="login">Kirish</div>
-    <div class="tab {% if tab == 'register' %}active{% endif %}" data-tab="register">Ro'yxatdan o'tish</div>
+<div class="auth-wrap">
+  <div class="logo-row">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 14v8M6 8h12M8 12h8"/><circle cx="12" cy="12" r="10"/></svg>
+    </div>
+    <span class="logo-name">SinoMed</span>
   </div>
 
-  <!-- Login -->
-  <div class="tab-content {% if tab == 'login' %}active{% endif %}" id="loginPanel">
-    <div class="form-header">
-      <h2>Xush kelibsiz</h2>
-      <p>SinoMed tizimiga kiring</p>
+  <div class="auth-card">
+    <div class="tabs">
+      <div class="tab {% if tab == 'login' %}active{% endif %}" data-tab="login">Kirish</div>
+      <div class="tab {% if tab == 'register' %}active{% endif %}" data-tab="register">Ro'yxatdan o'tish</div>
     </div>
-    {% if messages and tab == 'login' %}
-      <div class="django-errors">{% for m in messages %}{{ m }}{% endfor %}</div>
-    {% endif %}
-    <form method="post" action="{% url 'login' %}">
-      {% csrf_token %}
-      <div class="form-group">
-        <label>Username</label>
-        <input type="text" name="username" class="form-control" placeholder="username" required autocomplete="username">
-      </div>
-      <div class="form-group">
-        <label>Parol</label>
-        <div class="input-wrapper">
-          <input type="password" id="loginPw" name="password" class="form-control" placeholder="Parolingiz" required autocomplete="current-password">
-          <i class="fas fa-eye-slash pw-toggle" id="toggleLoginPw"></i>
-        </div>
-      </div>
-      <button type="submit" class="submit-btn"><i class="fas fa-arrow-right-to-bracket"></i> Kirish</button>
-    </form>
-  </div>
 
-  <!-- Register -->
-  <div class="tab-content {% if tab == 'register' %}active{% endif %}" id="registerPanel">
-    <div class="form-header">
-      <h2>Hisob yaratish</h2>
-      <p>AI tahlil imkoniyatlaridan foydalaning</p>
+    <!-- ── LOGIN ──────────────────────────────── -->
+    <div class="tab-content {% if tab == 'login' %}active{% endif %}" id="loginPanel">
+      <div class="form-header">
+        <h2>Xush kelibsiz</h2>
+        <p>SinoMed tizimiga kiring</p>
+      </div>
+
+      {% if status_message == 'registered' %}
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <div>
+          <strong>Ro'yxatdan o'tdingiz!</strong><br>
+          <span>Sizning arizangiz <em>{{ org_name }}</em> muassasasiga yuborildi. Admin tasdiqlashini kuting.</span>
+        </div>
+      </div>
+      {% elif status_message == 'pending' %}
+      <div class="alert alert-warning">
+        <i class="fas fa-clock"></i>
+        <div>
+          <strong>Tasdiqlash kutilmoqda</strong><br>
+          <span><em>{{ org_name }}</em> muassasasi admini hisobingizni hali tasdiqlamagan.</span>
+        </div>
+      </div>
+      {% elif status_message == 'rejected' %}
+      <div class="alert alert-danger">
+        <i class="fas fa-times-circle"></i>
+        <div>
+          <strong>Arizangiz rad etildi</strong><br>
+          {% if rejection_reason %}<span>Sabab: {{ rejection_reason }}</span>{% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if messages %}
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-circle"></i>
+          <div>{% for m in messages %}{{ m }}{% endfor %}</div>
+        </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" name="username" class="form-control" placeholder="Foydalanuvchi nomi" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Parol</label>
+          <div class="input-wrapper">
+            <input type="password" id="loginPw" name="password" class="form-control" placeholder="Parolingiz" required autocomplete="current-password">
+            <i class="fas fa-eye-slash pw-toggle" id="toggleLoginPw"></i>
+          </div>
+        </div>
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-arrow-right-to-bracket"></i> Kirish
+        </button>
+      </form>
     </div>
-    {% if messages and tab == 'register' %}
-      <div class="django-errors">{% for m in messages %}{{ m }}{% endfor %}</div>
-    {% endif %}
-    <form method="post" action="{% url 'register' %}">
-      {% csrf_token %}
-      <div class="form-group">
-        <label>Rol</label>
-        <select name="role" class="role-select" required>
-          <option value="student">Talaba</option>
-          <option value="doctor">Shifokor</option>
-          <option value="university">Oliygoh / Muassasa</option>
-        </select>
+
+    <!-- ── REGISTER (multi-step) ──────────────── -->
+    <div class="tab-content {% if tab == 'register' %}active{% endif %}" id="registerPanel">
+
+      <!-- Step indicator -->
+      <div class="step-indicator">
+        <div class="step-dot active" id="dot1">1</div>
+        <div class="step-line" id="line12"></div>
+        <div class="step-dot" id="dot2">2</div>
+        <div class="step-line" id="line23"></div>
+        <div class="step-dot" id="dot3">3</div>
       </div>
-      <div class="form-group">
-        <label>To'liq ism</label>
-        <input type="text" name="full_name" class="form-control" placeholder="Ism Familiya" required>
-      </div>
-      <div class="form-group">
-        <label>Username</label>
-        <input type="text" name="username" class="form-control" placeholder="username" required autocomplete="username">
-      </div>
-      <div class="form-group">
-        <label>Muassasa / Oliygoh</label>
-        <input type="text" name="institution" class="form-control" placeholder="Andijon davlat tibbiyot instituti">
-      </div>
-      <div class="form-group">
-        <label>Telefon (ixtiyoriy)</label>
-        <div class="input-wrapper">
-          <span class="phone-prefix">+998</span>
-          <input type="tel" name="phone" class="form-control phone-input" placeholder="90 123 45 67">
+
+      {% if messages %}
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-circle"></i>
+          <div>{% for m in messages %}{{ m }}{% endfor %}</div>
         </div>
-      </div>
-      <div class="form-group">
-        <label>Parol</label>
-        <div class="input-wrapper">
-          <input type="password" id="regPw" name="password" class="form-control" placeholder="Kamida 8 belgi" required autocomplete="new-password">
-          <i class="fas fa-eye-slash pw-toggle" id="toggleRegPw"></i>
+      {% endif %}
+
+      <form method="post" action="{% url 'register' %}" id="regForm">
+        {% csrf_token %}
+
+        <!-- Hidden fields filled by JS -->
+        <input type="hidden" name="role" id="hiddenRole">
+        <input type="hidden" name="organization_id" id="hiddenOrgId">
+
+        <!-- STEP 1: Role -->
+        <div class="step active" id="step1">
+          <div class="step-label">Qadam <strong>1/3</strong> — Rol tanlang</div>
+          <div class="role-cards">
+            <div class="role-card" data-role="student">
+              <span class="role-icon">🎓</span>
+              <span class="role-name">Talaba</span>
+              <span class="role-desc">Universitetda o'qiyotgan talaba</span>
+            </div>
+            <div class="role-card" data-role="doctor">
+              <span class="role-icon">🩺</span>
+              <span class="role-name">Shifokor</span>
+              <span class="role-desc">Tibbiyot mutaxassisi</span>
+            </div>
+          </div>
+          <button type="button" class="submit-btn" id="btnStep1Next" disabled onclick="goStep(2)">
+            Keyingisi <i class="fas fa-arrow-right"></i>
+          </button>
         </div>
-      </div>
-      <button type="submit" class="submit-btn"><i class="fas fa-user-plus"></i> Ro'yxatdan o'tish</button>
-    </form>
+
+        <!-- STEP 2: Organization -->
+        <div class="step" id="step2">
+          <div class="step-label">Qadam <strong>2/3</strong> — <span id="orgStepLabel">Muassasa</span> tanlang</div>
+          <input type="text" class="org-search" id="orgSearch" placeholder="Qidirish...">
+          <div class="org-list" id="orgList">
+            <div class="org-loading"><i class="fas fa-spinner fa-spin"></i> Yuklanmoqda...</div>
+          </div>
+          <div class="nav-btns">
+            <button type="button" class="btn-back" onclick="goStep(1)"><i class="fas fa-arrow-left"></i> Orqaga</button>
+            <button type="button" class="submit-btn" id="btnStep2Next" disabled onclick="goStep(3)" style="flex:1">
+              Keyingisi <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: Personal info -->
+        <div class="step" id="step3">
+          <div class="step-label">Qadam <strong>3/3</strong> — Shaxsiy ma'lumotlar</div>
+          <div class="org-info-badge" id="selectedOrgBadge" style="background:rgba(0,180,216,0.08);border:1px solid rgba(0,180,216,0.2);border-radius:var(--radius);padding:.6rem 1rem;margin-bottom:1.1rem;font-size:.82rem;color:var(--primary-l);display:none">
+            <i class="fas fa-building"></i> <span id="selectedOrgName"></span>
+          </div>
+          <div class="form-group">
+            <label>To'liq ism</label>
+            <input type="text" name="full_name" class="form-control" placeholder="Ism Familiya" required>
+          </div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" name="username" class="form-control" placeholder="username" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label>Telefon (ixtiyoriy)</label>
+            <div class="input-wrapper">
+              <span class="phone-prefix">+998</span>
+              <input type="tel" name="phone" class="form-control phone-input" placeholder="90 123 45 67">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Parol</label>
+            <div class="input-wrapper">
+              <input type="password" id="regPw" name="password" class="form-control" placeholder="Kamida 8 belgi" required autocomplete="new-password">
+              <i class="fas fa-eye-slash pw-toggle" id="toggleRegPw"></i>
+            </div>
+          </div>
+          <div class="nav-btns">
+            <button type="button" class="btn-back" onclick="goStep(2)"><i class="fas fa-arrow-left"></i> Orqaga</button>
+            <button type="submit" class="submit-btn" style="flex:1">
+              <i class="fas fa-user-plus"></i> Ro'yxatdan o'tish
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div><!-- /registerPanel -->
   </div>
 </div>
 
 <script>
-(function(){
-  const tabs = document.querySelectorAll('.tab');
-  tabs.forEach(tab => tab.addEventListener('click', () => {
-    tabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
-    document.getElementById(tab.dataset.tab + 'Panel').classList.add('active');
-  }));
-
-  function togglePw(inputId, iconId) {
-    const inp = document.getElementById(inputId);
-    const ico = document.getElementById(iconId);
-    if (!inp || !ico) return;
-    ico.addEventListener('click', () => {
-      inp.type = inp.type === 'password' ? 'text' : 'password';
-      ico.classList.toggle('fa-eye');
-      ico.classList.toggle('fa-eye-slash');
-    });
-  }
-  togglePw('loginPw', 'toggleLoginPw');
-  togglePw('regPw', 'toggleRegPw');
+// ── Theme ───────────────────────────────────────────────
+(function() {
+  const t = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeIcon').className = t === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 })();
+function toggleTheme() {
+  const h = document.documentElement;
+  const nt = h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  h.setAttribute('data-theme', nt);
+  localStorage.setItem('theme', nt);
+  document.getElementById('themeIcon').className = nt === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+
+// ── Tab switch ───────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab + 'Panel').classList.add('active');
+  });
+});
+
+// ── Password toggle ─────────────────────────────────────
+function togglePw(inputId, iconId) {
+  const inp = document.getElementById(inputId);
+  const ico = document.getElementById(iconId);
+  if (!inp || !ico) return;
+  ico.addEventListener('click', () => {
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    ico.classList.toggle('fa-eye'); ico.classList.toggle('fa-eye-slash');
+  });
+}
+togglePw('loginPw', 'toggleLoginPw');
+togglePw('regPw', 'toggleRegPw');
+
+// ── Multi-step registration ─────────────────────────────
+let selectedRole = '';
+let selectedOrgId = '';
+let selectedOrgName = '';
+
+function updateStepDots(currentStep) {
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById('dot' + i);
+    dot.classList.remove('active', 'done');
+    if (i < currentStep) dot.classList.add('done');
+    else if (i === currentStep) dot.classList.add('active');
+  }
+  ['12','23'].forEach((pair, idx) => {
+    const line = document.getElementById('line' + pair);
+    line.classList.toggle('done', currentStep > idx + 1);
+  });
+}
+
+function goStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  updateStepDots(n);
+  if (n === 2 && selectedRole) loadOrgs(selectedRole);
+}
+
+// Role card selection
+document.querySelectorAll('.role-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedRole = card.dataset.role;
+    document.getElementById('hiddenRole').value = selectedRole;
+    document.getElementById('btnStep1Next').disabled = false;
+    document.getElementById('orgStepLabel').textContent =
+      selectedRole === 'student' ? "Universitet" : "Kasalxona";
+  });
+});
+
+// Load orgs from API
+let orgsCache = {};
+function loadOrgs(role) {
+  if (orgsCache[role]) { renderOrgs(orgsCache[role]); return; }
+  document.getElementById('orgList').innerHTML = '<div class="org-loading"><i class="fas fa-spinner fa-spin"></i> Yuklanmoqda...</div>';
+  fetch(`{% url 'api_organizations' %}?role=${role}`)
+    .then(r => r.json())
+    .then(data => {
+      orgsCache[role] = data.organizations;
+      renderOrgs(data.organizations);
+    })
+    .catch(() => {
+      document.getElementById('orgList').innerHTML = '<div class="org-empty"><i class="fas fa-exclamation-triangle"></i> Yuklashda xato</div>';
+    });
+}
+
+function renderOrgs(orgs, filter = '') {
+  const list = document.getElementById('orgList');
+  const filtered = filter
+    ? orgs.filter(o => o.name.toLowerCase().includes(filter.toLowerCase()) || o.code.toLowerCase().includes(filter.toLowerCase()))
+    : orgs;
+  if (!filtered.length) {
+    list.innerHTML = '<div class="org-empty">Muassasa topilmadi</div>';
+    return;
+  }
+  const icon = selectedRole === 'student' ? '🏛' : '🏥';
+  list.innerHTML = filtered.map(o => `
+    <div class="org-item ${o.id == selectedOrgId ? 'selected' : ''}" data-id="${o.id}" data-name="${o.name}" onclick="selectOrg(${o.id}, '${o.name.replace(/'/g,"\\'")}')">
+      <div class="org-icon">${icon}</div>
+      <div>
+        <div class="org-name">${o.name}</div>
+        ${o.address ? `<div class="org-addr">${o.address}</div>` : ''}
+      </div>
+      <span class="org-code">${o.code}</span>
+    </div>
+  `).join('');
+}
+
+function selectOrg(id, name) {
+  selectedOrgId = id;
+  selectedOrgName = name;
+  document.getElementById('hiddenOrgId').value = id;
+  document.getElementById('btnStep2Next').disabled = false;
+  document.querySelectorAll('.org-item').forEach(i => i.classList.toggle('selected', i.dataset.id == id));
+  // Show badge in step 3
+  document.getElementById('selectedOrgName').textContent = name;
+  document.getElementById('selectedOrgBadge').style.display = 'block';
+}
+
+document.getElementById('orgSearch').addEventListener('input', function() {
+  const role = selectedRole;
+  if (orgsCache[role]) renderOrgs(orgsCache[role], this.value);
+});
+
+// If server returned with register tab active (validation error), restore step 3
+{% if tab == 'register' and messages %}
+  goStep(3);
+{% endif %}
 </script>
 </body>
 </html>
