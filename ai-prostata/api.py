@@ -6,6 +6,7 @@ from io import BytesIO
 from typing import List
 
 import torch
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, HTTPException, Security, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -20,6 +21,8 @@ if os.name == "nt":
 warnings.filterwarnings("ignore", category=FutureWarning, message=".*torch.cuda.amp.autocast.*")
 
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(REPO_DIR, ".env"))
+
 MODEL_PATH = os.environ.get("PROSTATE_MODEL_PATH", "runs/train/exp6/weights/best.pt")
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 BENIGN_LABELS = ("benign", "sog", "healthy", "normal")

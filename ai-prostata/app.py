@@ -5,6 +5,8 @@ import os
 import pathlib
 import warnings
 
+from dotenv import load_dotenv
+
 if os.name == "nt":
     pathlib.PosixPath = pathlib.WindowsPath
 
@@ -12,7 +14,9 @@ warnings.filterwarnings("ignore", category=FutureWarning, message=".*torch.cuda.
 
 # 1. Modelni yuklash
 repo_dir = os.path.dirname(os.path.abspath(__file__))
-model_path = 'runs/train/exp3/weights/best.pt'
+load_dotenv(os.path.join(repo_dir, ".env"))
+
+model_path = os.environ.get("GRADIO_MODEL_PATH", os.environ.get("PROSTATE_MODEL_PATH", "runs/train/exp3/weights/best.pt"))
 model = torch.hub.load(repo_dir, 'custom', path=model_path, source='local')
 print("Model yuklandi. Gradio ishga tushmoqda...")
 

@@ -43,6 +43,7 @@ fastapi
 uvicorn
 python-multipart
 gradio
+python-dotenv
 packaging  # Migration of deprecated pkg_resources packages
 setuptools>=70.0.0 # Snyk vulnerability fix
 # tritonclient[all]~=2.24.0

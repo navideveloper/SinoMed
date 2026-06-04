@@ -4,6 +4,9 @@ venv/
 env/
 __pycache__/
 *.py[cod]
+.env
+.env.*
+!.env.example
 
 # Local Gradio/runtime files
 .gradio/

@@ -46,7 +46,33 @@ API default holatda quyidagi modelni qidiradi:
 runs/train/exp6/weights/best.pt
 ```
 
-Boshqa model ishlatish uchun `PROSTATE_MODEL_PATH` environment variable orqali yo'l bering:
+Boshqa model ishlatish uchun `.env` fayl yarating yoki `PROSTATE_MODEL_PATH` environment variable orqali yo'l bering:
+
+```bash
+copy .env.example .env
+```
+
+PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+`.env` namunasi:
+
+```env
+PROSTATE_MODEL_PATH=runs/train/exp6/weights/best.pt
+GRADIO_MODEL_PATH=runs/train/exp3/weights/best.pt
+SINOMED_API_KEY=
+SINOMED_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+SINOMED_MAX_UPLOAD_MB=10
+SINOMED_MAX_IMAGE_PIXELS=25000000
+SINOMED_ENABLE_DOCS=true
+```
+
+`.env` lokal fayl hisoblanadi va gitga kiritilmaydi. Repo ichida faqat `.env.example` saqlanadi.
+
+Environment variable orqali berish:
 
 ```bash
 set PROSTATE_MODEL_PATH=D:\models\sinomed-prostata-best.pt
