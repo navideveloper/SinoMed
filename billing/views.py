@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.db.models import Avg, Count, Q
 from analysis.models import Analysis
 
 
@@ -25,14 +26,11 @@ def dashboard(request):
     leaderboard = []
     if user.is_doctor or user.is_student:
         from django.contrib.auth import get_user_model
-        from django.db.models import Count
         User = get_user_model()
         leaderboard = User.objects.filter(
             role__in=[User.Role.DOCTOR, User.Role.STUDENT]
         ).annotate(
-            total=Count('analyses', filter=__import__('django.db.models', fromlist=['Q']).Q(
-                analyses__status=Analysis.Status.COMPLETED
-            ))
+            total=Count('analyses', filter=Q(analyses__status=Analysis.Status.COMPLETED))
         ).order_by('-total')[:10]
 
     context = {
