@@ -1,0 +1,16 @@
+# Dataset joylashgan papka manzili
+path: datasetPCs 
+
+# Rasmlar yo'li (path'dan keyingi davomi)
+train: images/train
+val: images/val
+
+# Klasslar soni (sizda 4 ta edi)
+nc: 4
+
+# Klass nomlari (Tartibi siz aytgandek: 0, 1, 2, 3)
+names:
+  0: benign
+  1: grade3
+  2: grade4
+  3: grade5
