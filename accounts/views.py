@@ -310,3 +310,181 @@ def user_update_balance(request, pk):
         'balance': float(target_user.balance),
         'message': f'Balans yangilandi: {target_user.balance:,.0f} so\'m'
     })
+
+
+# ── SuperAdmin full CRUD ─────────────────────────────────────────────────────
+
+@login_required
+def user_create_view(request):
+    """SuperAdmin only: create any user (doctor/student/org_admin)."""
+    if not request.user.is_superuser:
+        return redirect('dashboard')
+
+    from organizations.models import Organization
+    organizations = Organization.objects.filter(is_active=True).order_by('name')
+
+    error = None
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        full_name = request.POST.get('full_name', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        password = request.POST.get('password', '').strip()
+        role = request.POST.get('role', '')
+        org_id = request.POST.get('organization_id', '').strip()
+        balance = request.POST.get('balance', '0').strip()
+        is_superuser_flag = request.POST.get('is_superuser') == 'on'
+        approval_status = request.POST.get('approval_status', User.ApprovalStatus.APPROVED)
+
+        if User.objects.filter(username=username).exists():
+            error = 'Bu username allaqachon band'
+        elif phone and User.objects.filter(phone=phone).exists():
+            error = 'Bu telefon raqam allaqachon ro\'yxatdan o\'tgan'
+        else:
+            organization = None
+            if org_id:
+                try:
+                    organization = Organization.objects.get(pk=org_id)
+                except Organization.DoesNotExist:
+                    pass
+
+            names = full_name.split(' ', 1) if full_name else ['', '']
+            try:
+                bal = float(balance or 0)
+            except ValueError:
+                bal = 0.0
+
+            user_obj = User.objects.create_user(
+                username=username,
+                password=password or User.objects.make_random_password(16),
+                first_name=names[0],
+                last_name=names[1] if len(names) > 1 else '',
+                phone=phone or None,
+                role=role,
+                organization=organization,
+                institution=organization.name if organization else '',
+                balance=bal,
+                is_active=True,
+                approval_status=approval_status,
+                is_superuser=is_superuser_flag,
+                is_staff=is_superuser_flag,
+            )
+
+            from audit.models import AuditLog
+            AuditLog.objects.create(
+                user=request.user,
+                action=AuditLog.Action.REGISTER,
+                ip_address=request.META.get('REMOTE_ADDR'),
+                data={'created_user': user_obj.username, 'role': role, 'by': 'superadmin'},
+            )
+            messages.success(request, f'Foydalanuvchi "{user_obj.username}" yaratildi')
+            return redirect('user_detail', pk=user_obj.pk)
+
+    return render(request, 'accounts/user_form.html', {
+        'mode': 'create',
+        'organizations': organizations,
+        'roles': User.Role.choices,
+        'approval_choices': User.ApprovalStatus.choices,
+        'error': error,
+    })
+
+
+@login_required
+def user_edit_view(request, pk):
+    """SuperAdmin: edit any user. Org admin: edit own-org members."""
+    if not (request.user.is_superuser or request.user.is_org_admin):
+        return redirect('dashboard')
+
+    target_user = get_object_or_404(User, pk=pk)
+
+    if request.user.is_org_admin and not request.user.is_superuser:
+        if target_user.organization != request.user.organization:
+            return redirect('user_list')
+
+    from organizations.models import Organization
+    organizations = Organization.objects.filter(is_active=True).order_by('name')
+
+    error = None
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        role = request.POST.get('role', target_user.role)
+        org_id = request.POST.get('organization_id', '').strip()
+        approval_status = request.POST.get('approval_status', target_user.approval_status)
+        rejection_reason = request.POST.get('rejection_reason', '').strip()
+        new_password = request.POST.get('new_password', '').strip()
+
+        # Superuser-only fields
+        if request.user.is_superuser:
+            balance = request.POST.get('balance', str(target_user.balance)).strip()
+            is_superuser_flag = request.POST.get('is_superuser') == 'on'
+        else:
+            balance = str(target_user.balance)
+            is_superuser_flag = target_user.is_superuser
+
+        # Check phone uniqueness
+        if phone and User.objects.filter(phone=phone).exclude(pk=pk).exists():
+            error = 'Bu telefon raqam boshqa foydalanuvchida bor'
+        else:
+            names = full_name.split(' ', 1) if full_name else [target_user.first_name, target_user.last_name]
+            target_user.first_name = names[0]
+            target_user.last_name = names[1] if len(names) > 1 else ''
+            target_user.phone = phone or None
+            target_user.approval_status = approval_status
+            target_user.rejection_reason = rejection_reason
+
+            if request.user.is_superuser:
+                target_user.role = role
+                target_user.is_superuser = is_superuser_flag
+                target_user.is_staff = is_superuser_flag
+                try:
+                    target_user.balance = float(balance or 0)
+                except ValueError:
+                    pass
+
+            if org_id:
+                try:
+                    org = Organization.objects.get(pk=org_id)
+                    target_user.organization = org
+                    target_user.institution = org.name
+                except Organization.DoesNotExist:
+                    pass
+
+            # Update is_active based on approval_status
+            if approval_status == User.ApprovalStatus.APPROVED:
+                target_user.is_active = True
+            elif approval_status == User.ApprovalStatus.REJECTED:
+                target_user.is_active = False
+
+            if new_password:
+                target_user.set_password(new_password)
+
+            target_user.save()
+            messages.success(request, f'"{target_user.username}" ma\'lumotlari yangilandi')
+            return redirect('user_detail', pk=pk)
+
+    return render(request, 'accounts/user_form.html', {
+        'mode': 'edit',
+        'target_user': target_user,
+        'organizations': organizations,
+        'roles': User.Role.choices,
+        'approval_choices': User.ApprovalStatus.choices,
+        'error': error,
+    })
+
+
+@login_required
+@require_POST
+def user_delete_view(request, pk):
+    """SuperAdmin only: hard-delete a user."""
+    if not request.user.is_superuser:
+        return JsonResponse({'error': 'Faqat superuser'}, status=403)
+
+    target_user = get_object_or_404(User, pk=pk)
+    if target_user.is_superuser:
+        return JsonResponse({'error': 'Superuserni o\'chirib bo\'lmaydi'}, status=400)
+
+    username = target_user.username
+    target_user.delete()
+
+    messages.success(request, f'"{username}" o\'chirildi')
+    return JsonResponse({'deleted': True, 'message': f'"{username}" o\'chirildi'})

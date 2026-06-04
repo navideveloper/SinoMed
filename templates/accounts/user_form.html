@@ -1,0 +1,420 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if mode == 'create' %}Yangi foydalanuvchi{% else %}Tahrirlash — {{ target_user.username }}{% endif %}{% endblock %}
+
+{% block extra_style %}
+body { background: linear-gradient(135deg, rgba(0,119,182,.08) 0%, rgba(0,180,216,.04) 100%), var(--bg-dark); }
+main { flex: 1; padding-block: 2rem 3rem; }
+
+.page-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.page-header h1 {
+  font-size: 1.6rem; font-weight: 800; letter-spacing: -.03em;
+  background: linear-gradient(90deg, var(--fg-primary), var(--primary-light));
+  background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.back-btn {
+  display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .9rem;
+  border: 1px solid var(--border-color); border-radius: calc(var(--radius) - 2px);
+  background: transparent; color: var(--fg-muted); font-size: .82rem; font-weight: 500;
+  cursor: pointer; transition: all .2s;
+}
+.back-btn:hover { border-color: var(--primary-light); color: var(--primary-light); }
+
+.form-grid { display: grid; gap: 1.5rem; }
+@media (min-width: 960px) { .form-grid { grid-template-columns: 1fr 360px; } }
+
+.form-card {
+  background: var(--bg-card); border: 1px solid var(--border-color);
+  border-radius: var(--radius); padding: 1.75rem; box-shadow: var(--shadow-sm);
+}
+.card-title {
+  font-size: .875rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--primary-light); margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem;
+}
+
+.form-group { margin-bottom: 1.1rem; }
+.form-label { display: block; font-size: .8rem; font-weight: 600; color: var(--fg-muted); margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .04em; }
+.form-hint { font-size: .72rem; color: var(--fg-muted); margin-top: .25rem; }
+
+.form-control, .form-select {
+  width: 100%; padding: .75rem 1rem;
+  background: rgba(255,255,255,.04); border: 1.5px solid var(--border-color);
+  border-radius: var(--radius); font-size: .875rem; color: var(--fg-primary);
+  font-family: var(--font); outline: none; transition: all .2s;
+}
+[data-theme="light"] .form-control, [data-theme="light"] .form-select { background: #f8fafc; }
+.form-control:focus, .form-select:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(0,180,216,.12); }
+.form-control::placeholder { color: var(--fg-muted); }
+.form-select option { background: var(--bg-card); color: var(--fg-primary); }
+
+.input-group { position: relative; }
+.input-prefix {
+  position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+  color: var(--primary-light); font-weight: 600; font-size: .875rem; pointer-events: none; font-family: var(--mono);
+}
+.input-prefix ~ .form-control { padding-left: 3.75rem; }
+.pw-eye {
+  position: absolute; right: .875rem; top: 50%; transform: translateY(-50%);
+  color: var(--fg-muted); cursor: pointer; transition: color .2s; font-size: .9rem;
+}
+.pw-eye:hover { color: var(--primary-light); }
+
+.checkbox-row { display: flex; align-items: center; gap: .625rem; cursor: pointer; }
+.checkbox-row input[type="checkbox"] { width: 1rem; height: 1rem; accent-color: var(--primary-light); cursor: pointer; }
+.checkbox-row span { font-size: .875rem; color: var(--fg-secondary); }
+
+.alert-box {
+  padding: .75rem 1rem; border-radius: var(--radius); margin-bottom: 1.25rem;
+  font-size: .875rem; display: flex; gap: .625rem; align-items: flex-start;
+  background: rgba(244,67,54,.08); border-left: 3px solid var(--danger); color: #ef5350;
+}
+
+.btn-submit {
+  width: 100%; padding: .875rem; background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border: none; border-radius: var(--radius); color: #fff; font-weight: 700; font-size: .95rem;
+  cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: .5rem;
+}
+.btn-submit:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: var(--shadow-glow); }
+
+.btn-danger {
+  width: 100%; padding: .75rem; background: rgba(244,67,54,.1); color: #ef5350;
+  border: 1px solid rgba(244,67,54,.25); border-radius: var(--radius); font-weight: 700;
+  font-size: .875rem; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: .5rem;
+  margin-top: .75rem;
+}
+.btn-danger:hover { background: rgba(244,67,54,.2); }
+
+.user-meta-card {
+  background: linear-gradient(135deg, rgba(0,119,182,.15), rgba(0,180,216,.08));
+  border: 1px solid rgba(0,180,216,.2); border-radius: var(--radius);
+  padding: 1.25rem; margin-bottom: 1.25rem; text-align: center;
+}
+.user-meta-avatar {
+  width: 3.5rem; height: 3.5rem; border-radius: 14px; margin: 0 auto .75rem;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; color: #fff; font-size: 1.25rem;
+}
+.user-meta-name { font-weight: 700; font-size: 1rem; color: var(--fg-primary); }
+.user-meta-sub { font-size: .78rem; color: var(--fg-muted); margin-top: .2rem; }
+.user-meta-badge {
+  display: inline-block; font-size: .68rem; padding: 2px 8px; border-radius: 20px; font-weight: 600;
+  margin-top: .5rem;
+}
+.badge-superuser { background: rgba(255,152,0,.15); color: #ffb74d; border: 1px solid rgba(255,152,0,.3); }
+.badge-org-admin { background: rgba(0,119,182,.15); color: var(--primary-light); border: 1px solid rgba(0,119,182,.3); }
+.badge-doctor    { background: rgba(76,175,80,.12); color: #81c784; border: 1px solid rgba(76,175,80,.3); }
+.badge-student   { background: rgba(0,212,255,.1); color: var(--accent); border: 1px solid rgba(0,212,255,.2); }
+
+.divider { height: 1px; background: var(--border-color); margin: 1rem 0; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 500;
+  display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-box {
+  background: var(--bg-card); border: 1px solid var(--border-color);
+  border-radius: var(--radius); padding: 1.75rem; max-width: 380px; width: 100%;
+  transform: translateY(20px); transition: transform .2s;
+}
+.modal-overlay.open .modal-box { transform: translateY(0); }
+.modal-title { font-weight: 800; font-size: 1.1rem; color: #ef5350; margin-bottom: .5rem; }
+.modal-sub { font-size: .875rem; color: var(--fg-muted); margin-bottom: 1.25rem; }
+.modal-btns { display: flex; gap: .5rem; }
+.modal-cancel {
+  flex: 1; padding: .75rem; border: 1px solid var(--border-color); border-radius: var(--radius);
+  background: transparent; color: var(--fg-muted); font-family: var(--font); font-weight: 600; cursor: pointer;
+}
+.modal-confirm-del {
+  flex: 1; padding: .75rem; border: none; border-radius: var(--radius);
+  background: rgba(244,67,54,.15); color: #ef5350; font-family: var(--font); font-weight: 700; cursor: pointer;
+  transition: background .2s;
+}
+.modal-confirm-del:hover { background: rgba(244,67,54,.3); }
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="container">
+
+    <div class="page-header">
+      <a href="{% url 'user_list' %}" class="back-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Foydalanuvchilar
+      </a>
+      <h1>
+        {% if mode == 'create' %}Yangi foydalanuvchi yaratish
+        {% else %}Tahrirlash: {{ target_user.username }}{% endif %}
+      </h1>
+    </div>
+
+    {% if error %}
+    <div class="alert-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-grid">
+
+        <!-- Left: main fields -->
+        <div>
+
+          <!-- Basic info -->
+          <div class="form-card" style="margin-bottom:1.25rem">
+            <div class="card-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Asosiy ma'lumotlar
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              {% if mode == 'create' %}
+              <div class="form-group">
+                <label class="form-label">Username *</label>
+                <input type="text" name="username" class="form-control" placeholder="username" required autocomplete="off">
+              </div>
+              {% endif %}
+              <div class="form-group" {% if mode == 'create' %}style="grid-column:2"{% endif %}>
+                <label class="form-label">To'liq ism</label>
+                <input type="text" name="full_name" class="form-control"
+                  placeholder="Ism Familiya"
+                  value="{% if mode == 'edit' %}{{ target_user.get_full_name }}{% endif %}">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Telefon</label>
+              <div class="input-group">
+                <span class="input-prefix">+998</span>
+                <input type="tel" name="phone" class="form-control"
+                  placeholder="90 123 45 67"
+                  value="{% if mode == 'edit' and target_user.phone %}{{ target_user.phone|slice:'4:' }}{% endif %}">
+              </div>
+            </div>
+
+            {% if mode == 'create' %}
+            <div class="form-group">
+              <label class="form-label">Parol *</label>
+              <div class="input-group">
+                <input type="password" id="pwField" name="password" class="form-control" placeholder="Kamida 8 belgi" required autocomplete="new-password">
+                <i class="fas fa-eye-slash pw-eye" id="pwEye"></i>
+              </div>
+              <div class="form-hint">Bo'sh qoldirsangiz avtomatik yaratiladi</div>
+            </div>
+            {% else %}
+            <div class="form-group">
+              <label class="form-label">Yangi parol <span style="color:var(--fg-muted);font-weight:400">(ixtiyoriy)</span></label>
+              <div class="input-group">
+                <input type="password" id="pwField" name="new_password" class="form-control" placeholder="O'zgartirish uchun kiriting" autocomplete="new-password">
+                <i class="fas fa-eye-slash pw-eye" id="pwEye"></i>
+              </div>
+              <div class="form-hint">Bo'sh qoldirsangiz parol o'zgarmaydi</div>
+            </div>
+            {% endif %}
+
+          </div>
+
+          <!-- Role & Organization -->
+          <div class="form-card" style="margin-bottom:1.25rem">
+            <div class="card-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Rol va muassasa
+            </div>
+
+            {% if user.is_superuser %}
+            <div class="form-group">
+              <label class="form-label">Rol *</label>
+              <select name="role" class="form-select" required id="roleSelect">
+                <option value="">— Tanlang —</option>
+                {% for val, label in roles %}
+                <option value="{{ val }}"
+                  {% if mode == 'edit' and target_user.role == val %}selected
+                  {% elif mode == 'create' %}{% endif %}>{{ label }}</option>
+                {% endfor %}
+                <option value="org_admin"
+                  {% if mode == 'edit' and target_user.role == 'org_admin' %}selected{% endif %}>
+                  🏛 Muassasa admini
+                </option>
+              </select>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+              <label class="form-label">Muassasa</label>
+              <select name="organization_id" class="form-select">
+                <option value="">— Muassasasiz —</option>
+                {% for org in organizations %}
+                <option value="{{ org.pk }}"
+                  {% if mode == 'edit' and target_user.organization_id == org.pk %}selected{% endif %}>
+                  {{ org.get_org_type_display }}: {{ org.name }} ({{ org.code }})
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Approval status -->
+          <div class="form-card">
+            <div class="card-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Tasdiqlash holati
+            </div>
+            <div class="form-group">
+              <label class="form-label">Holat *</label>
+              <select name="approval_status" class="form-select" id="approvalSelect" onchange="toggleRejReason()">
+                {% for val, label in approval_choices %}
+                <option value="{{ val }}"
+                  {% if mode == 'edit' and target_user.approval_status == val %}selected
+                  {% elif mode == 'create' and val == 'approved' %}selected
+                  {% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group" id="rejReasonGroup" style="display:none">
+              <label class="form-label">Rad etish sababi</label>
+              <textarea name="rejection_reason" class="form-control" rows="2"
+                placeholder="Foydalanuvchiga ko'rsatiladigan sabab...">{% if mode == 'edit' %}{{ target_user.rejection_reason }}{% endif %}</textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: sidebar -->
+        <div>
+          {% if mode == 'edit' %}
+          <div class="form-card" style="margin-bottom:1.25rem">
+            <div class="user-meta-card">
+              <div class="user-meta-avatar">{{ target_user.first_name|first|upper|default:target_user.username|first|upper }}</div>
+              <div class="user-meta-name">{{ target_user.get_full_name|default:target_user.username }}</div>
+              <div class="user-meta-sub">@{{ target_user.username }}</div>
+              {% if target_user.is_superuser %}
+                <span class="user-meta-badge badge-superuser">⭐ SuperAdmin</span>
+              {% elif target_user.role == 'org_admin' %}
+                <span class="user-meta-badge badge-org-admin">🏛 Muassasa admin</span>
+              {% elif target_user.role == 'doctor' %}
+                <span class="user-meta-badge badge-doctor">🩺 Shifokor</span>
+              {% else %}
+                <span class="user-meta-badge badge-student">🎓 Talaba</span>
+              {% endif %}
+            </div>
+            <div style="font-size:.78rem;color:var(--fg-muted);text-align:center">
+              Ro'yxat: {{ target_user.date_joined|date:"d.m.Y H:i" }}<br>
+              {% if target_user.organization %}Muassasa: {{ target_user.organization.name }}{% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if user.is_superuser %}
+          <!-- SuperAdmin extras -->
+          <div class="form-card" style="margin-bottom:1.25rem">
+            <div class="card-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              SuperAdmin
+            </div>
+            <div class="form-group">
+              <label class="form-label">Balans (so'm)</label>
+              <input type="number" name="balance" class="form-control" min="0" step="1000"
+                value="{% if mode == 'edit' %}{{ target_user.balance|floatformat:0 }}{% else %}0{% endif %}"
+                placeholder="0">
+            </div>
+            <div class="divider"></div>
+            <label class="checkbox-row">
+              <input type="checkbox" name="is_superuser" {% if mode == 'edit' and target_user.is_superuser %}checked{% endif %}>
+              <span>Superuser huquqi berish</span>
+            </label>
+            <div class="form-hint" style="margin-top:.5rem">Barcha tizimga to'liq kirish</div>
+          </div>
+          {% endif %}
+
+          <!-- Submit button -->
+          <div class="form-card">
+            <button type="submit" class="btn-submit">
+              {% if mode == 'create' %}
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                Foydalanuvchi yaratish
+              {% else %}
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                O'zgarishlarni saqlash
+              {% endif %}
+            </button>
+
+            {% if mode == 'edit' and user.is_superuser and not target_user.is_superuser %}
+            <button type="button" class="btn-danger" onclick="openDeleteModal()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Foydalanuvchini o'chirish
+            </button>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+    </form>
+
+  </div>
+</main>
+
+{% if mode == 'edit' and user.is_superuser and not target_user.is_superuser %}
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-title">⚠️ O'chirishni tasdiqlang</div>
+    <div class="modal-sub">
+      <strong>{{ target_user.username }}</strong> foydalanuvchisi va unga bog'liq barcha ma'lumotlar o'chiriladi.
+      Bu amalni qaytarib bo'lmaydi.
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeDeleteModal()">Bekor qilish</button>
+      <button class="modal-confirm-del" id="deleteConfirmBtn">Ha, o'chirish</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openDeleteModal() { document.getElementById('deleteModal').classList.add('open'); }
+function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDeleteModal(); });
+
+document.getElementById('deleteConfirmBtn').addEventListener('click', () => {
+  fetch("{% url 'user_delete' target_user.pk %}", {
+    method: 'POST',
+    headers: { 'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.deleted) window.location = "{% url 'user_list' %}";
+  });
+});
+</script>
+{% endif %}
+
+<script>
+// Password toggle
+const pwField = document.getElementById('pwField');
+const pwEye = document.getElementById('pwEye');
+if (pwEye) {
+  pwEye.addEventListener('click', () => {
+    pwField.type = pwField.type === 'password' ? 'text' : 'password';
+    pwEye.classList.toggle('fa-eye');
+    pwEye.classList.toggle('fa-eye-slash');
+  });
+}
+
+// Show/hide rejection reason
+function toggleRejReason() {
+  const sel = document.getElementById('approvalSelect');
+  const grp = document.getElementById('rejReasonGroup');
+  if (grp) grp.style.display = sel && sel.value === 'rejected' ? 'block' : 'none';
+}
+toggleRejReason(); // run on load
+
+// Show rejection reason if currently rejected
+{% if mode == 'edit' and target_user.approval_status == 'rejected' %}
+document.getElementById('rejReasonGroup').style.display = 'block';
+{% endif %}
+</script>
+{% endblock %}
