@@ -4,48 +4,322 @@
 {% block title %}Tahlil natijasi{% endblock %}
 
 {% block extra_style %}
-  body{background:radial-gradient(ellipse 80% 50% at 50% -10%,hsla(162,72%,36%,.06) 0%,transparent 70%),var(--bg)}
-  main{padding-top:20px;padding-bottom:3rem}
-  .breadcrumb{display:flex;align-items:center;gap:.5rem;margin-bottom:1.5rem;font-size:.875rem;color:var(--muted-fg)}
-  .breadcrumb a{color:var(--primary)}.breadcrumb a:hover{text-decoration:underline}
-  .result-grid{display:grid;grid-template-columns:1fr;gap:1.5rem}
-  @media(min-width:900px){.result-grid{grid-template-columns:1fr 1fr}}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow-sm)}
-  .card-title{font-size:1.125rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}
-  .card-title svg{color:var(--primary);width:1.25rem;height:1.25rem;flex-shrink:0}
-  .img-wrap{border-radius:calc(var(--radius) - 4px);overflow:hidden;background:hsl(210,20%,94%);margin-bottom:1rem}
-  .img-wrap img{width:100%;max-height:360px;object-fit:contain;display:block}
-  .diagnosis-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.5rem 1rem;border-radius:12px;font-size:.95rem;font-weight:700;border:1px solid transparent;margin-bottom:1rem}
-  .diagnosis-normal{background:hsl(162,60%,96%);color:hsl(162,84%,23%);border-color:hsl(162,70%,80%)}
-  .diagnosis-warning{background:hsl(38,92%,96%);color:hsl(38,90%,30%);border-color:hsl(38,90%,80%)}
-  .diagnosis-danger{background:hsl(4,74%,96%);color:hsl(4,74%,35%);border-color:hsl(4,74%,85%)}
-  .confidence-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
-  .confidence-bar{flex:1;background:var(--muted);border-radius:10px;height:8px;overflow:hidden}
-  .confidence-fill{background:var(--primary);height:100%;border-radius:10px;transition:width .8s cubic-bezier(.4,0,.2,1)}
-  .confidence-label{font-size:.8rem;font-family:var(--mono);color:var(--muted-fg);white-space:nowrap;font-weight:600}
-  .info-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.875rem}
-  .info-row:last-child{border-bottom:none}
-  .info-label{color:var(--muted-fg);font-weight:500}
-  .info-val{font-weight:600}
-  .disclaimer{background:hsl(38,92%,96%);border:1px solid hsl(38,92%,80%);border-radius:var(--radius);padding:.875rem 1rem;font-size:.8rem;color:hsl(38,80%,30%);margin-top:1rem;line-height:1.5}
-  .gradcam-section{margin-top:1rem}
-  .gradcam-label{font-size:.75rem;font-family:var(--mono);color:var(--muted-fg);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+  body {
+    background: linear-gradient(135deg, rgba(0, 119, 182, 0.06) 0%, rgba(0, 180, 216, 0.03) 100%), var(--bg-dark);
+  }
+
+  main {
+    flex: 1;
+    padding-top: 1.5rem;
+    padding-bottom: 3rem;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    color: var(--fg-muted);
+  }
+
+  .breadcrumb a {
+    color: var(--primary-light);
+    transition: color 0.2s;
+  }
+
+  .breadcrumb a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 900px) {
+    .result-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--fg-primary);
+  }
+
+  .card-title svg {
+    color: var(--primary-light);
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .img-wrap {
+    border-radius: calc(var(--radius) - 4px);
+    overflow: hidden;
+    background: var(--bg-dark);
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+  }
+
+  .img-wrap img {
+    width: 100%;
+    max-height: 360px;
+    object-fit: contain;
+    display: block;
+    padding: 0.5rem;
+  }
+
+  .diagnosis-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border: 1px solid;
+    margin-bottom: 1rem;
+  }
+
+  .diagnosis-normal {
+    background: rgba(76, 175, 80, 0.15);
+    color: #81c784;
+    border-color: rgba(76, 175, 80, 0.3);
+  }
+
+  .diagnosis-warning {
+    background: rgba(255, 152, 0, 0.15);
+    color: #ffb74d;
+    border-color: rgba(255, 152, 0, 0.3);
+  }
+
+  .diagnosis-danger {
+    background: rgba(244, 67, 54, 0.15);
+    color: #ef5350;
+    border-color: rgba(244, 67, 54, 0.3);
+  }
+
+  .confidence-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .confidence-bar {
+    flex: 1;
+    background: var(--bg-dark);
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+  }
+
+  .confidence-fill {
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .confidence-label {
+    font-size: 0.8rem;
+    font-family: var(--mono);
+    color: var(--primary-light);
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.875rem;
+  }
+
+  .info-row:last-child {
+    border-bottom: none;
+  }
+
+  .info-label {
+    color: var(--fg-muted);
+    font-weight: 500;
+  }
+
+  .info-val {
+    font-weight: 600;
+    color: var(--fg-primary);
+  }
+
+  .disclaimer {
+    background: rgba(255, 152, 0, 0.1);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    border-radius: var(--radius);
+    padding: 0.875rem 1rem;
+    font-size: 0.8rem;
+    color: #ffb74d;
+    margin-top: 1rem;
+    line-height: 1.5;
+  }
+
+  .gradcam-section {
+    margin-top: 1rem;
+  }
+
+  .gradcam-label {
+    font-size: 0.75rem;
+    font-family: var(--mono);
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+  }
+
   /* Doctor actions */
-  .doctor-panel{margin-top:1.5rem}
-  .doctor-confirmed{background:var(--primary-light);border:1px solid hsl(162,70%,80%);border-radius:var(--radius);padding:1rem;font-size:.875rem;color:var(--primary-dark)}
-  .doctor-rejected{background:hsla(4,74%,55%,.08);border:1px solid hsla(4,74%,55%,.3);border-radius:var(--radius);padding:1rem;font-size:.875rem;color:hsl(4,74%,35%)}
-  .action-tabs{display:flex;gap:.5rem;margin-bottom:1rem}
-  .action-tab{flex:1;padding:.6rem;text-align:center;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:.875rem;font-weight:600;transition:all .15s;background:var(--card)}
-  .action-tab.active-confirm{background:var(--primary-light);border-color:var(--primary);color:var(--primary)}
-  .action-tab.active-report{background:hsla(4,74%,55%,.08);border-color:var(--danger);color:var(--danger)}
-  .action-tab:hover{background:var(--muted)}
-  .form-textarea{width:100%;padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:var(--radius);font-family:var(--font);font-size:.875rem;resize:vertical;min-height:100px;outline:none;transition:border-color .2s;background:var(--bg)}
-  .form-textarea:focus{border-color:var(--primary)}
-  .submit-action{padding:.65rem 1.25rem;border-radius:var(--radius);font-weight:600;font-size:.875rem;cursor:pointer;border:none;font-family:var(--font);transition:all .15s}
-  .submit-confirm{background:var(--primary);color:#fff}
-  .submit-confirm:hover{background:var(--primary-dark)}
-  .submit-report{background:var(--danger);color:#fff}
-  .submit-report:hover{background:hsl(4,74%,45%)}
+  .doctor-panel {
+    margin-top: 1.5rem;
+  }
+
+  .doctor-confirmed {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: var(--radius);
+    padding: 1rem;
+    font-size: 0.875rem;
+    color: #81c784;
+  }
+
+  .doctor-rejected {
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    border-radius: var(--radius);
+    padding: 1rem;
+    font-size: 0.875rem;
+    color: #ef5350;
+  }
+
+  .action-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .action-tab {
+    flex: 1;
+    padding: 0.6rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.15s;
+    background: transparent;
+    color: var(--fg-secondary);
+  }
+
+  .action-tab.active-confirm {
+    background: rgba(76, 175, 80, 0.15);
+    border-color: #81c784;
+    color: #81c784;
+  }
+
+  .action-tab.active-report {
+    background: rgba(244, 67, 54, 0.15);
+    border-color: #ef5350;
+    color: #ef5350;
+  }
+
+  .action-tab:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-light);
+  }
+
+  .form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius);
+    font-family: var(--font);
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    transition: all 0.2s;
+    background: var(--bg-dark);
+    color: var(--fg-primary);
+  }
+
+  .form-textarea:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.15);
+  }
+
+  .form-textarea::placeholder {
+    color: var(--fg-muted);
+  }
+
+  .submit-action {
+    padding: 0.65rem 1.25rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font);
+    transition: all 0.15s;
+  }
+
+  .submit-confirm {
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+    color: #fff;
+  }
+
+  .submit-confirm:hover {
+    filter: brightness(1.1);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
+
+  .submit-report {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+    color: #fff;
+  }
+
+  .submit-report:hover {
+    filter: brightness(1.1);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--fg-muted);
+  }
+
+  .empty-state p {
+    margin-bottom: 0.5rem;
+  }
 {% endblock %}
 
 {% block content %}
@@ -86,7 +360,7 @@
         </div>
 
         {% if result and result.gradcam_image %}
-        <div class="card" style="margin-top:1.5rem">
+        <div class="card" style="margin-top: 1.5rem;">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             Grad-CAM vizualizatsiya
@@ -121,20 +395,20 @@
 
           <div class="confidence-row">
             <div class="confidence-bar">
-              <div class="confidence-fill" style="width:{{ result.confidence }}%"></div>
+              <div class="confidence-fill" style="width: {{ result.confidence }}%"></div>
             </div>
             <span class="confidence-label">{{ result.confidence|floatformat:1 }}%</span>
           </div>
 
           {% if result.note %}
-          <p style="font-size:.875rem;line-height:1.6;margin-bottom:1rem;color:var(--fg)">{{ result.note }}</p>
+          <p style="font-size: 0.875rem; line-height: 1.6; margin-bottom: 1rem; color: var(--fg-secondary);">{{ result.note }}</p>
           {% endif %}
 
-          <div class="info-row"><span class="info-label">Ishonch darajasi</span><span class="info-val" style="color:var(--primary)">{{ result.confidence|floatformat:1 }}%</span></div>
+          <div class="info-row"><span class="info-label">Ishonch darajasi</span><span class="info-val" style="color: var(--primary-light);">{{ result.confidence|floatformat:1 }}%</span></div>
           {% if result.doctor_confirmed is not None %}
           <div class="info-row">
             <span class="info-label">Shifokor xulosasi</span>
-            <span class="info-val" style="color:{% if result.doctor_confirmed %}var(--primary){% else %}var(--danger){% endif %}">
+            <span class="info-val" style="color: {% if result.doctor_confirmed %}#81c784{% else %}#ef5350{% endif %};">
               {% if result.doctor_confirmed %}✓ Tasdiqlangan{% else %}✗ Xato topildi{% endif %}
             </span>
           </div>
@@ -144,7 +418,7 @@
           {% endif %}
 
           <div class="disclaimer">
-            ⚠️ <strong>Diqqat:</strong> Bu natija AI tahlili asosida berilgan. Yakuniy tibbiy xulosa faqat malakali shifokor tomonidan berilishi kerak.
+            <strong>Diqqat:</strong> Bu natija AI tahlili asosida berilgan. Yakuniy tibbiy xulosa faqat malakali shifokor tomonidan berilishi kerak.
           </div>
         </div>
 
@@ -166,22 +440,22 @@
               <div class="action-tab" id="tabReport" onclick="showTab('report')">⚠ Xato bildirish</div>
             </div>
 
-            <div id="panelConfirm" style="display:none">
+            <div id="panelConfirm" style="display: none;">
               <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="confirm">
                 <textarea name="note" class="form-textarea" placeholder="Ixtiyoriy izoh (masalan: klinik ko'rish bilan mos keladi)"></textarea>
-                <button type="submit" class="submit-action submit-confirm" style="margin-top:.75rem">✓ Natijani tasdiqlash</button>
+                <button type="submit" class="submit-action submit-confirm" style="margin-top: 0.75rem; width: 100%;">✓ Natijani tasdiqlash</button>
               </form>
             </div>
 
-            <div id="panelReport" style="display:none">
-              <p style="font-size:.8rem;color:var(--muted-fg);margin-bottom:.75rem">AI xatosi haqida batafsil yozing — bu model yaxshilanishiga yordam beradi.</p>
+            <div id="panelReport" style="display: none;">
+              <p style="font-size: 0.8rem; color: var(--fg-muted); margin-bottom: 0.75rem;">AI xatosi haqida batafsil yozing — bu model yaxshilanishiga yordam beradi.</p>
               <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="report">
                 <textarea name="report" class="form-textarea" placeholder="AI qanday xato qildi? Haqiqiy tashxis qanday?" required></textarea>
-                <button type="submit" class="submit-action submit-report" style="margin-top:.75rem">⚠ Xato hisobot yuborish</button>
+                <button type="submit" class="submit-action submit-report" style="margin-top: 0.75rem; width: 100%;">⚠ Xato hisobot yuborish</button>
               </form>
             </div>
           {% endif %}
@@ -190,11 +464,11 @@
 
         {% else %}
         <div class="card">
-          <div style="text-align:center;padding:3rem 1rem;color:var(--muted-fg)">
+          <div class="empty-state">
             {% if analysis.status == 'processing' %}
               <p>Tahlil qilinmoqda... sahifani yangilang</p>
             {% elif analysis.status == 'error' %}
-              <p style="color:var(--danger)">Tahlil qilib bo'lmadi. Qayta urinib ko'ring.</p>
+              <p style="color: var(--danger);">Tahlil qilib bo'lmadi. Qayta urinib ko'ring.</p>
             {% else %}
               <p>Natija hali tayyor emas</p>
             {% endif %}
