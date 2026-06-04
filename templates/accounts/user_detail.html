@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ target_user.get_full_name|default:target_user.username }}{% endblock %}
+
+{% block extra_style %}
+  main { flex: 1; padding-block: 1.5rem 3rem; }
+  .breadcrumb { display: flex; align-items: center; gap: .5rem; font-size: .85rem; color: var(--fg-muted); margin-bottom: 1.5rem; }
+  .breadcrumb a { color: var(--primary-light); }
+  .profile-grid { display: grid; gap: 1.5rem; margin-bottom: 1.5rem; }
+  @media(min-width:900px){ .profile-grid { grid-template-columns: 280px 1fr; } }
+  .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1.5rem; }
+  .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem; color: var(--fg-primary); }
+  .card-title svg { color: var(--primary-light); width: 1.1rem; height: 1.1rem; }
+  .avatar-lg { width: 4rem; height: 4rem; border-radius: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; color: #fff; margin: 0 auto 1rem; }
+  .user-name { font-size: 1.1rem; font-weight: 700; text-align: center; color: var(--fg-primary); margin-bottom: .25rem; }
+  .user-username { font-size: .8rem; color: var(--fg-muted); text-align: center; margin-bottom: 1rem; font-family: var(--mono); }
+  .info-row { display: flex; justify-content: space-between; padding: .5rem 0; border-bottom: 1px solid var(--border-color); font-size: .82rem; }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { color: var(--fg-muted); }
+  .info-val { font-weight: 600; color: var(--fg-primary); text-align: right; max-width: 60%; word-break: break-word; }
+  .badge { display: inline-block; padding: .2rem .55rem; border-radius: 20px; font-size: .68rem; font-weight: 600; border: 1px solid; }
+  .badge-doctor { background: rgba(0,119,182,.15); color: var(--primary-light); border-color: rgba(0,119,182,.3); }
+  .badge-student { background: rgba(0,212,255,.1); color: var(--accent); border-color: rgba(0,212,255,.2); }
+  .badge-university { background: rgba(255,152,0,.15); color: #ffb74d; border-color: rgba(255,152,0,.3); }
+  .badge-active { background: rgba(76,175,80,.15); color: #81c784; border-color: rgba(76,175,80,.3); }
+  .badge-inactive { background: rgba(244,67,54,.1); color: #ef5350; border-color: rgba(244,67,54,.2); }
+  .htable { width: 100%; border-collapse: collapse; }
+  .htable th { padding: .6rem .75rem; font-size: .68rem; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border-color); text-align: left; }
+  .htable td { padding: .6rem .75rem; font-size: .8rem; border-bottom: 1px solid var(--border-color); color: var(--fg-secondary); }
+  .htable tr:last-child td { border-bottom: none; }
+  .action-row { margin-top: 1rem; display: flex; flex-direction: column; gap: .5rem; }
+  .btn-danger { padding: .6rem 1rem; background: rgba(244,67,54,.1); color: #ef5350; border: 1px solid rgba(244,67,54,.3); border-radius: var(--radius); font-weight: 600; font-size: .85rem; cursor: pointer; transition: all .2s; width: 100%; }
+  .btn-danger:hover { background: rgba(244,67,54,.25); }
+  .btn-success { padding: .6rem 1rem; background: rgba(76,175,80,.1); color: #81c784; border: 1px solid rgba(76,175,80,.3); border-radius: var(--radius); font-weight: 600; font-size: .85rem; cursor: pointer; transition: all .2s; width: 100%; }
+  .btn-success:hover { background: rgba(76,175,80,.25); }
+  .balance-form { display: flex; gap: .5rem; margin-top: .75rem; }
+  .balance-input { flex: 1; padding: .55rem .75rem; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: calc(var(--radius) - 4px); color: var(--fg-primary); font-size: .85rem; font-family: var(--mono); outline: none; }
+  .balance-input:focus { border-color: var(--primary-light); }
+  .btn-primary { padding: .55rem 1rem; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; border: none; border-radius: calc(var(--radius) - 4px); font-weight: 600; font-size: .85rem; cursor: pointer; white-space: nowrap; }
+  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: .75rem 1.25rem; font-size: .85rem; color: var(--fg-primary); box-shadow: var(--shadow-md); z-index: 9999; display: none; }
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="{% url 'user_list' %}">Foydalanuvchilar</a>
+      <span>/</span>
+      <span>{{ target_user.get_full_name|default:target_user.username }}</span>
+    </div>
+
+    <div class="profile-grid">
+
+      <!-- Left: profile card -->
+      <div>
+        <div class="card">
+          <div class="avatar-lg">{{ target_user.first_name|first|upper|default:target_user.username|first|upper }}</div>
+          <div class="user-name">{{ target_user.get_full_name|default:target_user.username }}</div>
+          <div class="user-username">@{{ target_user.username }}</div>
+
+          <div class="info-row"><span class="info-label">Rol</span><span class="info-val"><span class="badge badge-{{ target_user.role }}">{{ target_user.get_role_display }}</span></span></div>
+          <div class="info-row"><span class="info-label">Holat</span><span class="info-val"><span class="badge {% if target_user.is_active %}badge-active{% else %}badge-inactive{% endif %}" id="status-badge">{% if target_user.is_active %}Faol{% else %}Nofaol{% endif %}</span></span></div>
+          <div class="info-row"><span class="info-label">Muassasa</span><span class="info-val">{{ target_user.institution|default:"—" }}</span></div>
+          <div class="info-row"><span class="info-label">Telefon</span><span class="info-val">{% if target_user.phone %}+998{{ target_user.phone }}{% else %}—{% endif %}</span></div>
+          <div class="info-row"><span class="info-label">Tahlillar</span><span class="info-val" style="color:var(--primary-light)">{{ total_analyses }}</span></div>
+          <div class="info-row"><span class="info-label">Ro'yxat</span><span class="info-val">{{ target_user.date_joined|date:"d.m.Y" }}</span></div>
+          {% if user.is_superuser or user.is_university %}
+          <div class="info-row"><span class="info-label">Balans</span><span class="info-val" id="balance-display">{{ target_user.balance|floatformat:0 }} so'm</span></div>
+          {% endif %}
+
+          {% if not target_user.is_superuser %}
+          <div class="action-row">
+            {% if target_user.is_active %}
+              <button class="btn-danger" id="toggle-btn" onclick="toggleUser()">Foydalanuvchini o'chirish</button>
+            {% else %}
+              <button class="btn-success" id="toggle-btn" onclick="toggleUser()">Foydalanuvchini faollashtirish</button>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          {% if user.is_superuser %}
+          <div style="margin-top:1rem">
+            <div style="font-size:.78rem;color:var(--fg-muted);margin-bottom:.4rem;font-weight:600">BALANS O'ZGARTIRISH</div>
+            <div class="balance-form">
+              <input type="number" id="balance-amount" class="balance-input" placeholder="+/- so'm" step="1000">
+              <button class="btn-primary" onclick="updateBalance()">Saqlash</button>
+            </div>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+      <!-- Right: analyses + audit -->
+      <div>
+        <div class="card" style="margin-bottom:1.25rem">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Oxirgi tahlillar
+          </div>
+          {% if recent_analyses %}
+          <div style="overflow-x:auto">
+            <table class="htable">
+              <thead><tr><th>Sana</th><th>Model</th><th>Natija</th><th>Ishonch</th><th></th></tr></thead>
+              <tbody>
+                {% for a in recent_analyses %}
+                <tr>
+                  <td style="font-size:.75rem;font-family:var(--mono)">{{ a.created_at|date:"d.m.Y" }}</td>
+                  <td>{{ a.get_model_type_display }}</td>
+                  <td>
+                    {% if a.result %}
+                      {% if a.result.diagnosis_type == 'normal' %}<span class="badge badge-active">Normal</span>
+                      {% elif a.result.diagnosis_type == 'warning' %}<span class="badge" style="background:rgba(255,152,0,.15);color:#ffb74d;border-color:rgba(255,152,0,.3)">E'tibor</span>
+                      {% else %}<span class="badge badge-inactive">Patologiya</span>{% endif %}
+                    {% else %}—{% endif %}
+                  </td>
+                  <td style="font-family:var(--mono)">{% if a.result %}{{ a.result.confidence|floatformat:1 }}%{% else %}—{% endif %}</td>
+                  <td><a href="{% url 'result_detail' a.pk %}" style="color:var(--primary-light);font-size:.78rem">Ko'rish</a></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p style="color:var(--fg-muted);font-size:.85rem">Hali tahlil yo'q</p>
+          {% endif %}
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Audit hodisalari
+          </div>
+          {% if recent_audit %}
+          <table class="htable">
+            <thead><tr><th>Vaqt</th><th>Harakat</th><th>IP</th></tr></thead>
+            <tbody>
+              {% for log in recent_audit %}
+              <tr>
+                <td style="font-size:.72rem;font-family:var(--mono)">{{ log.timestamp|date:"d.m.Y H:i" }}</td>
+                <td>{{ log.get_action_display }}</td>
+                <td style="font-size:.72rem;font-family:var(--mono);color:var(--fg-muted)">{{ log.ip_address|default:"—" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p style="color:var(--fg-muted);font-size:.85rem">Audit yozuvlari yo'q</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const USER_PK = {{ target_user.pk }};
+function getCookie(n) { const v = document.cookie.match('(^|;) ?' + n + '=([^;]*)(;|$)'); return v ? v[2] : null; }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+
+async function toggleUser() {
+  const btn = document.getElementById('toggle-btn');
+  btn.disabled = true;
+  const res = await fetch(`/auth/users/${USER_PK}/toggle-active/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+  });
+  const data = await res.json();
+  if (res.ok) {
+    const badge = document.getElementById('status-badge');
+    if (data.is_active) {
+      badge.className = 'badge badge-active'; badge.textContent = 'Faol';
+      btn.className = 'btn-danger'; btn.textContent = "Foydalanuvchini o'chirish";
+    } else {
+      badge.className = 'badge badge-inactive'; badge.textContent = 'Nofaol';
+      btn.className = 'btn-success'; btn.textContent = 'Foydalanuvchini faollashtirish';
+    }
+    showToast(data.message);
+  }
+  btn.disabled = false;
+}
+
+async function updateBalance() {
+  const amount = parseFloat(document.getElementById('balance-amount').value);
+  if (isNaN(amount)) { showToast('Summani kiriting'); return; }
+  const res = await fetch(`/auth/users/${USER_PK}/update-balance/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    document.getElementById('balance-display').textContent = data.balance.toLocaleString() + " so'm";
+    document.getElementById('balance-amount').value = '';
+    showToast(data.message);
+  }
+}
+</script>
+{% endblock %}
