@@ -1,0 +1,146 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}SinoMed{% endblock %} — AI tibbiy tahlil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: hsl(210,20%,98%); --fg: hsl(215,35%,12%);
+      --card: hsl(0,0%,100%);
+      --primary: hsl(162,72%,36%); --primary-dark: hsl(162,84%,23%);
+      --primary-light: hsl(162,60%,92%); --primary-soft: hsla(162,72%,36%,.12);
+      --accent: hsl(200,90%,46%); --accent-light: hsl(200,80%,93%);
+      --warning: hsl(38,92%,50%); --danger: hsl(4,74%,55%);
+      --muted: hsl(215,20%,94%); --muted-fg: hsl(215,15%,48%);
+      --border: hsl(215,20%,88%); --radius: .875rem;
+      --font: 'DM Sans',sans-serif; --mono: 'JetBrains Mono',monospace;
+      --shadow-sm: 0 2px 8px -2px hsla(215,35%,12%,.08);
+      --shadow-md: 0 8px 28px -6px hsla(215,35%,12%,.12);
+      --shadow-glow: 0 0 40px hsla(162,72%,36%,.2);
+      --price-accent: hsl(40,90%,55%);
+      --success: hsl(145,63%,42%);
+    }
+    body { font-family: var(--font); background: var(--bg); color: var(--fg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+    img, svg { display: block; max-width: 100%; }
+    .container { width: 100%; max-width: 1160px; margin-inline: auto; padding-inline: 1.25rem; }
+    @media (min-width: 640px) { .container { padding-inline: 2rem; } }
+
+    /* Navbar */
+    .navbar { position: sticky; top: 0; z-index: 100; background: hsla(210,20%,98%,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+    .navbar-inner { display: flex; align-items: center; justify-content: space-between; height: 4rem; gap: 1rem; }
+    .logo { display: flex; align-items: center; gap: .625rem; }
+    .logo-mark { width: 2.4rem; height: 2.4rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .logo-mark img { width: 100%; }
+    .logo-name { font-size: 1.125rem; font-weight: 700; letter-spacing: -.02em; }
+    .logo-version { font-size: .65rem; font-family: var(--mono); background: var(--primary-light); color: var(--primary); padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+    .nav-right { display: flex; align-items: center; gap: .5rem; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; font-size: .875rem; font-weight: 500; border-radius: calc(var(--radius) - 2px); transition: background .15s,color .15s,transform .1s; white-space: nowrap; cursor: pointer; }
+    .btn:active { transform: scale(.97); }
+    .btn-ghost { padding: .45rem .75rem; color: var(--muted-fg); }
+    .btn-ghost:hover { background: var(--muted); color: var(--fg); }
+    .btn-outline { padding: .45rem .9rem; border: 1px solid var(--border); background: var(--card); color: var(--fg); }
+    .btn-outline:hover { background: var(--muted); }
+    .btn-primary { background: var(--primary); color: #fff; padding: .45rem .9rem; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .nav-label { display: none; }
+    @media (min-width: 540px) { .nav-label { display: inline; } }
+    .price-link .btn-ghost { color: var(--price-accent); }
+    .price-link .btn-ghost:hover { background: rgba(255,185,55,.12); color: hsl(40,95%,48%); }
+
+    /* Messages */
+    .messages-container { padding: .75rem 0 0; }
+    .alert { padding: .75rem 1rem; border-radius: var(--radius); font-size: .875rem; margin-bottom: .5rem; }
+    .alert-error { background: hsla(4,74%,55%,.1); color: hsl(4,74%,35%); border: 1px solid hsla(4,74%,55%,.3); }
+    .alert-success { background: var(--primary-light); color: var(--primary-dark); border: 1px solid hsl(162,70%,80%); }
+    .alert-info { background: var(--accent-light); color: hsl(200,90%,30%); border: 1px solid hsl(200,80%,75%); }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); background: var(--card); padding-block: 1.75rem; margin-top: auto; }
+    .footer-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; }
+    .footer-brand { display: flex; align-items: center; gap: .5rem; }
+    .footer-brand span { font-size: .875rem; color: var(--muted-fg); }
+
+    {% block extra_style %}{% endblock %}
+  </style>
+</head>
+<body>
+
+<nav class="navbar" aria-label="Asosiy navigatsiya">
+  <div class="container navbar-inner">
+    <a class="logo" href="{% url 'index' %}">
+      <div class="logo-mark">
+        <img src="{% static 'img/logo.svg' %}" alt="SinoMed logo">
+      </div>
+      <span class="logo-name">SinoMed</span>
+      <span class="logo-version">v1.0</span>
+    </a>
+    <div class="nav-right">
+      <a href="{% url 'index' %}#scan">
+        <button class="btn btn-ghost" type="button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span class="nav-label">Tahlil turlari</span>
+        </button>
+      </a>
+      <a href="{% url 'pricing' %}" class="price-link">
+        <button class="btn btn-ghost" type="button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>
+          <span class="nav-label">Narxlar</span>
+        </button>
+      </a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}">
+          <button class="btn btn-ghost" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+            <span class="nav-label">Kabinet</span>
+          </button>
+        </a>
+        <a href="{% url 'logout' %}">
+          <button class="btn btn-outline" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Chiqish
+          </button>
+        </a>
+      {% else %}
+        <a href="{% url 'login' %}">
+          <button class="btn btn-outline" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Kirish
+          </button>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="container messages-container">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+{% block content %}{% endblock %}
+
+<footer aria-label="Sayt haqida">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0 1 12 2.944a11.955 11.955 0 0 1-8.618 3.04A12.02 12.02 0 0 0 3 9c0 5.591 3.824 10.29 9 11.622C17.176 19.29 21 14.591 21 9c0-1.042-.133-2.052-.382-3.016z"/></svg>
+      <span>© SinoMed 2026 · Fedora jamoasi · Andijon viloyati AI Hackathon</span>
+    </div>
+  </div>
+</footer>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>
