@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tahlil natijasi{% endblock %}
+
+{% block extra_style %}
+  body{background:radial-gradient(ellipse 80% 50% at 50% -10%,hsla(162,72%,36%,.06) 0%,transparent 70%),var(--bg)}
+  main{padding-top:20px;padding-bottom:3rem}
+  .breadcrumb{display:flex;align-items:center;gap:.5rem;margin-bottom:1.5rem;font-size:.875rem;color:var(--muted-fg)}
+  .breadcrumb a{color:var(--primary)}.breadcrumb a:hover{text-decoration:underline}
+  .result-grid{display:grid;grid-template-columns:1fr;gap:1.5rem}
+  @media(min-width:900px){.result-grid{grid-template-columns:1fr 1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow-sm)}
+  .card-title{font-size:1.125rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}
+  .card-title svg{color:var(--primary);width:1.25rem;height:1.25rem;flex-shrink:0}
+  .img-wrap{border-radius:calc(var(--radius) - 4px);overflow:hidden;background:hsl(210,20%,94%);margin-bottom:1rem}
+  .img-wrap img{width:100%;max-height:360px;object-fit:contain;display:block}
+  .diagnosis-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.5rem 1rem;border-radius:12px;font-size:.95rem;font-weight:700;border:1px solid transparent;margin-bottom:1rem}
+  .diagnosis-normal{background:hsl(162,60%,96%);color:hsl(162,84%,23%);border-color:hsl(162,70%,80%)}
+  .diagnosis-warning{background:hsl(38,92%,96%);color:hsl(38,90%,30%);border-color:hsl(38,90%,80%)}
+  .diagnosis-danger{background:hsl(4,74%,96%);color:hsl(4,74%,35%);border-color:hsl(4,74%,85%)}
+  .confidence-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+  .confidence-bar{flex:1;background:var(--muted);border-radius:10px;height:8px;overflow:hidden}
+  .confidence-fill{background:var(--primary);height:100%;border-radius:10px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+  .confidence-label{font-size:.8rem;font-family:var(--mono);color:var(--muted-fg);white-space:nowrap;font-weight:600}
+  .info-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.875rem}
+  .info-row:last-child{border-bottom:none}
+  .info-label{color:var(--muted-fg);font-weight:500}
+  .info-val{font-weight:600}
+  .disclaimer{background:hsl(38,92%,96%);border:1px solid hsl(38,92%,80%);border-radius:var(--radius);padding:.875rem 1rem;font-size:.8rem;color:hsl(38,80%,30%);margin-top:1rem;line-height:1.5}
+  .gradcam-section{margin-top:1rem}
+  .gradcam-label{font-size:.75rem;font-family:var(--mono);color:var(--muted-fg);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+  /* Doctor actions */
+  .doctor-panel{margin-top:1.5rem}
+  .doctor-confirmed{background:var(--primary-light);border:1px solid hsl(162,70%,80%);border-radius:var(--radius);padding:1rem;font-size:.875rem;color:var(--primary-dark)}
+  .doctor-rejected{background:hsla(4,74%,55%,.08);border:1px solid hsla(4,74%,55%,.3);border-radius:var(--radius);padding:1rem;font-size:.875rem;color:hsl(4,74%,35%)}
+  .action-tabs{display:flex;gap:.5rem;margin-bottom:1rem}
+  .action-tab{flex:1;padding:.6rem;text-align:center;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:.875rem;font-weight:600;transition:all .15s;background:var(--card)}
+  .action-tab.active-confirm{background:var(--primary-light);border-color:var(--primary);color:var(--primary)}
+  .action-tab.active-report{background:hsla(4,74%,55%,.08);border-color:var(--danger);color:var(--danger)}
+  .action-tab:hover{background:var(--muted)}
+  .form-textarea{width:100%;padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:var(--radius);font-family:var(--font);font-size:.875rem;resize:vertical;min-height:100px;outline:none;transition:border-color .2s;background:var(--bg)}
+  .form-textarea:focus{border-color:var(--primary)}
+  .submit-action{padding:.65rem 1.25rem;border-radius:var(--radius);font-weight:600;font-size:.875rem;cursor:pointer;border:none;font-family:var(--font);transition:all .15s}
+  .submit-confirm{background:var(--primary);color:#fff}
+  .submit-confirm:hover{background:var(--primary-dark)}
+  .submit-report{background:var(--danger);color:#fff}
+  .submit-report:hover{background:hsl(4,74%,45%)}
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="{% url 'index' %}">Bosh sahifa</a>
+      <span>/</span>
+      <a href="{% url 'dashboard' %}">Kabinet</a>
+      <span>/</span>
+      <span>Tahlil #{{ analysis.pk }}</span>
+    </div>
+
+    <div class="result-grid">
+
+      <!-- Left: images -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><polyline points="21 15 16 10 5 21"/></svg>
+            Asl rentgen tasviri
+          </div>
+          <div class="img-wrap">
+            <img src="{{ analysis.image.url }}" alt="Rentgen tasviri">
+          </div>
+          <div class="info-row">
+            <span class="info-label">Tahlil turi</span>
+            <span class="info-val">{{ analysis.get_model_type_display }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Sana</span>
+            <span class="info-val">{{ analysis.created_at|date:"d.m.Y H:i" }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Holat</span>
+            <span class="info-val">{{ analysis.get_status_display }}</span>
+          </div>
+        </div>
+
+        {% if result and result.gradcam_image %}
+        <div class="card" style="margin-top:1.5rem">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Grad-CAM vizualizatsiya
+          </div>
+          <div class="gradcam-label">AI qayerga e'tibor qaratdi</div>
+          <div class="img-wrap">
+            <img src="{{ result.gradcam_image.url }}" alt="Grad-CAM">
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Right: result + doctor actions -->
+      <div>
+        {% if result %}
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            AI tahlil natijasi
+          </div>
+
+          <div class="diagnosis-badge diagnosis-{{ result.diagnosis_type }}">
+            {% if result.diagnosis_type == 'normal' %}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            {% elif result.diagnosis_type == 'warning' %}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            {% else %}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            {% endif %}
+            {{ result.diagnosis }}
+          </div>
+
+          <div class="confidence-row">
+            <div class="confidence-bar">
+              <div class="confidence-fill" style="width:{{ result.confidence }}%"></div>
+            </div>
+            <span class="confidence-label">{{ result.confidence|floatformat:1 }}%</span>
+          </div>
+
+          {% if result.note %}
+          <p style="font-size:.875rem;line-height:1.6;margin-bottom:1rem;color:var(--fg)">{{ result.note }}</p>
+          {% endif %}
+
+          <div class="info-row"><span class="info-label">Ishonch darajasi</span><span class="info-val" style="color:var(--primary)">{{ result.confidence|floatformat:1 }}%</span></div>
+          {% if result.doctor_confirmed is not None %}
+          <div class="info-row">
+            <span class="info-label">Shifokor xulosasi</span>
+            <span class="info-val" style="color:{% if result.doctor_confirmed %}var(--primary){% else %}var(--danger){% endif %}">
+              {% if result.doctor_confirmed %}✓ Tasdiqlangan{% else %}✗ Xato topildi{% endif %}
+            </span>
+          </div>
+          {% if result.reviewed_by %}
+          <div class="info-row"><span class="info-label">Tekshiruvchi</span><span class="info-val">{{ result.reviewed_by.get_full_name|default:result.reviewed_by.username }}</span></div>
+          {% endif %}
+          {% endif %}
+
+          <div class="disclaimer">
+            ⚠️ <strong>Diqqat:</strong> Bu natija AI tahlili asosida berilgan. Yakuniy tibbiy xulosa faqat malakali shifokor tomonidan berilishi kerak.
+          </div>
+        </div>
+
+        <!-- Doctor review panel -->
+        {% if user.is_doctor %}
+        <div class="card doctor-panel">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+            Shifokor xulosasi
+          </div>
+
+          {% if result.doctor_confirmed is True %}
+            <div class="doctor-confirmed">✓ Siz bu natijani <strong>tasdiqladingiz</strong>{% if result.doctor_note %} — "{{ result.doctor_note }}"{% endif %}</div>
+          {% elif result.doctor_confirmed is False %}
+            <div class="doctor-rejected">✗ Siz AI xatosi haqida <strong>hisobot yubordingiz</strong>{% if result.doctor_report %}: "{{ result.doctor_report }}"{% endif %}</div>
+          {% else %}
+            <div class="action-tabs">
+              <div class="action-tab" id="tabConfirm" onclick="showTab('confirm')">✓ Tasdiqlash</div>
+              <div class="action-tab" id="tabReport" onclick="showTab('report')">⚠ Xato bildirish</div>
+            </div>
+
+            <div id="panelConfirm" style="display:none">
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="confirm">
+                <textarea name="note" class="form-textarea" placeholder="Ixtiyoriy izoh (masalan: klinik ko'rish bilan mos keladi)"></textarea>
+                <button type="submit" class="submit-action submit-confirm" style="margin-top:.75rem">✓ Natijani tasdiqlash</button>
+              </form>
+            </div>
+
+            <div id="panelReport" style="display:none">
+              <p style="font-size:.8rem;color:var(--muted-fg);margin-bottom:.75rem">AI xatosi haqida batafsil yozing — bu model yaxshilanishiga yordam beradi.</p>
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="report">
+                <textarea name="report" class="form-textarea" placeholder="AI qanday xato qildi? Haqiqiy tashxis qanday?" required></textarea>
+                <button type="submit" class="submit-action submit-report" style="margin-top:.75rem">⚠ Xato hisobot yuborish</button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="card">
+          <div style="text-align:center;padding:3rem 1rem;color:var(--muted-fg)">
+            {% if analysis.status == 'processing' %}
+              <p>Tahlil qilinmoqda... sahifani yangilang</p>
+            {% elif analysis.status == 'error' %}
+              <p style="color:var(--danger)">Tahlil qilib bo'lmadi. Qayta urinib ko'ring.</p>
+            {% else %}
+              <p>Natija hali tayyor emas</p>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showTab(tab) {
+  document.getElementById('panelConfirm').style.display = tab === 'confirm' ? 'block' : 'none';
+  document.getElementById('panelReport').style.display = tab === 'report' ? 'block' : 'none';
+  document.getElementById('tabConfirm').className = 'action-tab' + (tab === 'confirm' ? ' active-confirm' : '');
+  document.getElementById('tabReport').className = 'action-tab' + (tab === 'report' ? ' active-report' : '');
+}
+</script>
+{% endblock %}
