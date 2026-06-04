@@ -1,0 +1,164 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kirish — SinoMed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:hsl(210,20%,98%);--fg:hsl(215,35%,12%);--card:hsl(0,0%,100%);--primary:hsl(162,72%,36%);--primary-dark:hsl(162,84%,23%);--primary-light:hsl(162,60%,92%);--primary-soft:hsla(162,72%,36%,.12);--accent:hsl(200,90%,46%);--warning:hsl(38,92%,50%);--danger:hsl(4,74%,55%);--muted:hsl(215,20%,94%);--muted-fg:hsl(215,15%,48%);--border:hsl(215,20%,88%);--radius:.875rem;--font:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;--shadow-sm:0 2px 8px -2px hsla(215,35%,12%,.08);--shadow-md:0 8px 28px -6px hsla(215,35%,12%,.12);--shadow-glow:0 0 40px hsla(162,72%,36%,.2)}
+    body{font-family:var(--font);background:radial-gradient(ellipse 80% 50% at 50% -10%,hsla(162,72%,36%,.08) 0%,transparent 70%),var(--bg);color:var(--fg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+    a{color:inherit;text-decoration:none}
+    button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+    .back-home{position:fixed;top:1.5rem;left:1.5rem;z-index:100;display:flex;align-items:center;gap:.5rem;background:hsla(0,0%,100%,.9);padding:.6rem 1.2rem;border-radius:40px;border:1px solid var(--border);font-weight:500;font-size:.875rem;backdrop-filter:blur(8px);transition:all .2s}
+    .back-home:hover{border-color:var(--primary);transform:translateX(-2px);box-shadow:var(--shadow-sm)}
+    .back-home i{color:var(--primary)}
+    .auth-card{width:100%;max-width:500px;background:var(--card);border-radius:calc(var(--radius)+12px);box-shadow:var(--shadow-md);overflow:hidden;border:1px solid var(--border)}
+    .tabs{display:flex;background:var(--card);border-bottom:2px solid var(--border)}
+    .tab{flex:1;text-align:center;padding:1.2rem .5rem;font-weight:700;font-size:1rem;color:var(--muted-fg);cursor:pointer;transition:all .2s;background:transparent;border-bottom:3px solid transparent}
+    .tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+    .tab:hover:not(.active){color:var(--fg);background:var(--muted)}
+    .tab-content{display:none;padding:2rem 1.8rem}
+    .tab-content.active{display:block;animation:fadeSlideUp .35s ease}
+    .form-header{text-align:center;margin-bottom:1.8rem}
+    .form-header h2{font-size:1.8rem;font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,var(--fg),var(--primary));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.4rem}
+    .form-header p{color:var(--muted-fg);font-size:.9rem}
+    .form-group{margin-bottom:1.25rem}
+    label{display:block;font-size:.85rem;font-weight:600;margin-bottom:.4rem;color:var(--fg)}
+    .input-wrapper{position:relative;display:flex;align-items:center}
+    .form-control,.role-select{width:100%;padding:.9rem 1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:16px;font-size:1rem;color:var(--fg);transition:all .2s;outline:none;font-family:var(--font)}
+    .form-control:focus,.role-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+    .form-control.error{border-color:var(--danger);background:hsla(4,74%,55%,.05)}
+    .phone-prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--primary);font-weight:600;font-size:.95rem;pointer-events:none}
+    .phone-input{padding-left:3.8rem}
+    .pw-toggle{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--muted-fg);cursor:pointer;transition:color .2s}
+    .pw-toggle:hover{color:var(--primary)}
+    .error-msg{font-size:.75rem;color:var(--danger);margin-top:6px;display:none;padding-left:6px}
+    .submit-btn{width:100%;background:linear-gradient(105deg,var(--primary) 0%,var(--primary-dark) 100%);border:none;padding:.9rem;border-radius:40px;font-weight:700;font-size:1rem;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:transform .15s,box-shadow .2s;margin-top:.5rem;box-shadow:0 6px 14px hsla(162,72%,36%,.2)}
+    .submit-btn:hover{transform:translateY(-2px);box-shadow:0 12px 22px hsla(162,72%,36%,.25)}
+    .submit-btn:active{transform:translateY(1px)}
+    .django-errors{background:hsla(4,74%,55%,.1);border-left:4px solid var(--danger);padding:.8rem 1rem;border-radius:16px;margin-bottom:1rem;font-size:.85rem;color:hsl(4,74%,35%)}
+    @keyframes fadeSlideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @media (max-width:540px){.tab-content{padding:1.5rem}.back-home{top:1rem;left:1rem;padding:.5rem 1rem;font-size:.75rem}body{padding:5rem 1rem 1.5rem}}
+  </style>
+</head>
+<body>
+
+<a href="{% url 'index' %}" class="back-home">
+  <i class="fas fa-arrow-left"></i>
+  <span>Bosh sahifa</span>
+</a>
+
+<div class="auth-card">
+  <div class="tabs">
+    <div class="tab {% if tab == 'login' %}active{% endif %}" data-tab="login">Kirish</div>
+    <div class="tab {% if tab == 'register' %}active{% endif %}" data-tab="register">Ro'yxatdan o'tish</div>
+  </div>
+
+  <!-- Login -->
+  <div class="tab-content {% if tab == 'login' %}active{% endif %}" id="loginPanel">
+    <div class="form-header">
+      <h2>Xush kelibsiz</h2>
+      <p>SinoMed tizimiga kiring</p>
+    </div>
+    {% if messages and tab == 'login' %}
+      <div class="django-errors">{% for m in messages %}{{ m }}{% endfor %}</div>
+    {% endif %}
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" class="form-control" placeholder="username" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>Parol</label>
+        <div class="input-wrapper">
+          <input type="password" id="loginPw" name="password" class="form-control" placeholder="Parolingiz" required autocomplete="current-password">
+          <i class="fas fa-eye-slash pw-toggle" id="toggleLoginPw"></i>
+        </div>
+      </div>
+      <button type="submit" class="submit-btn"><i class="fas fa-arrow-right-to-bracket"></i> Kirish</button>
+    </form>
+  </div>
+
+  <!-- Register -->
+  <div class="tab-content {% if tab == 'register' %}active{% endif %}" id="registerPanel">
+    <div class="form-header">
+      <h2>Hisob yaratish</h2>
+      <p>AI tahlil imkoniyatlaridan foydalaning</p>
+    </div>
+    {% if messages and tab == 'register' %}
+      <div class="django-errors">{% for m in messages %}{{ m }}{% endfor %}</div>
+    {% endif %}
+    <form method="post" action="{% url 'register' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Rol</label>
+        <select name="role" class="role-select" required>
+          <option value="student">Talaba</option>
+          <option value="doctor">Shifokor</option>
+          <option value="university">Oliygoh / Muassasa</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>To'liq ism</label>
+        <input type="text" name="full_name" class="form-control" placeholder="Ism Familiya" required>
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" class="form-control" placeholder="username" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>Muassasa / Oliygoh</label>
+        <input type="text" name="institution" class="form-control" placeholder="Andijon davlat tibbiyot instituti">
+      </div>
+      <div class="form-group">
+        <label>Telefon (ixtiyoriy)</label>
+        <div class="input-wrapper">
+          <span class="phone-prefix">+998</span>
+          <input type="tel" name="phone" class="form-control phone-input" placeholder="90 123 45 67">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Parol</label>
+        <div class="input-wrapper">
+          <input type="password" id="regPw" name="password" class="form-control" placeholder="Kamida 8 belgi" required autocomplete="new-password">
+          <i class="fas fa-eye-slash pw-toggle" id="toggleRegPw"></i>
+        </div>
+      </div>
+      <button type="submit" class="submit-btn"><i class="fas fa-user-plus"></i> Ro'yxatdan o'tish</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(tab => tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
+    document.getElementById(tab.dataset.tab + 'Panel').classList.add('active');
+  }));
+
+  function togglePw(inputId, iconId) {
+    const inp = document.getElementById(inputId);
+    const ico = document.getElementById(iconId);
+    if (!inp || !ico) return;
+    ico.addEventListener('click', () => {
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      ico.classList.toggle('fa-eye');
+      ico.classList.toggle('fa-eye-slash');
+    });
+  }
+  togglePw('loginPw', 'toggleLoginPw');
+  togglePw('regPw', 'toggleRegPw');
+})();
+</script>
+</body>
+</html>
