@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Narxlar{% endblock %}
+
+{% block extra_style %}
+  body{background:radial-gradient(ellipse 80% 50% at 50% -10%,hsla(162,72%,36%,.08) 0%,transparent 70%),var(--bg)}
+  .pricing-section{padding-block:4rem 5rem}
+  .pricing-header{text-align:center;margin-bottom:3rem}
+  .pricing-header h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;letter-spacing:-.035em;margin-bottom:.75rem}
+  .pricing-header p{font-size:1rem;color:var(--muted-fg);max-width:32rem;margin-inline:auto;line-height:1.7}
+  .plans-grid{display:grid;gap:1.5rem;max-width:900px;margin-inline:auto}
+  @media(min-width:640px){.plans-grid{grid-template-columns:1fr 1fr}}
+  @media(min-width:900px){.plans-grid{grid-template-columns:repeat(3,1fr)}}
+  .plan-card{background:var(--card);border:1.5px solid var(--border);border-radius:calc(var(--radius)+4px);padding:1.75rem 1.5rem;position:relative;transition:border-color .2s,box-shadow .2s,transform .2s;display:flex;flex-direction:column}
+  .plan-card:hover{border-color:var(--primary);box-shadow:var(--shadow-glow),var(--shadow-md);transform:translateY(-3px)}
+  .plan-card.featured{border-color:var(--primary);box-shadow:var(--shadow-glow)}
+  .featured-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:.7rem;font-family:var(--mono);font-weight:600;padding:3px 14px;border-radius:20px;white-space:nowrap}
+  .plan-icon{width:3rem;height:3rem;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
+  .plan-icon svg{width:1.5rem;height:1.5rem}
+  .pi-student{background:var(--accent-light);color:var(--accent)}
+  .pi-doctor{background:var(--primary-light);color:var(--primary)}
+  .pi-uni{background:hsl(38,92%,90%);color:hsl(38,80%,38%)}
+  .plan-name{font-size:1.1rem;font-weight:700;margin-bottom:.25rem}
+  .plan-desc{font-size:.8rem;color:var(--muted-fg);margin-bottom:1.25rem;line-height:1.5}
+  .plan-price{margin-bottom:1.5rem}
+  .plan-price .amount{font-size:2.25rem;font-weight:800;letter-spacing:-.04em;color:var(--fg)}
+  .plan-price .period{font-size:.85rem;color:var(--muted-fg);margin-left:.25rem}
+  .plan-price .free{font-size:2rem;font-weight:800;color:var(--primary)}
+  .plan-features{list-style:none;display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.75rem;flex:1}
+  .plan-features li{display:flex;align-items:flex-start;gap:.5rem;font-size:.875rem}
+  .plan-features li svg{width:16px;height:16px;flex-shrink:0;margin-top:2px;color:var(--primary)}
+  .plan-features li.no svg{color:var(--muted-fg)}
+  .plan-features li.no{color:var(--muted-fg)}
+  .plan-btn{width:100%;padding:.75rem;border-radius:var(--radius);font-weight:600;font-size:.9rem;cursor:pointer;border:none;font-family:var(--font);transition:all .2s;text-align:center;display:block}
+  .plan-btn-primary{background:var(--primary);color:#fff}
+  .plan-btn-primary:hover{background:var(--primary-dark)}
+  .plan-btn-outline{background:transparent;color:var(--fg);border:1.5px solid var(--border)}
+  .plan-btn-outline:hover{background:var(--muted);border-color:var(--primary)}
+  .note-section{max-width:600px;margin:3rem auto 0;text-align:center;font-size:.875rem;color:var(--muted-fg);line-height:1.7}
+{% endblock %}
+
+{% block content %}
+<main>
+  <section class="pricing-section">
+    <div class="container">
+      <div class="pricing-header">
+        <h1>Oddiy va shaffof <span style="color:var(--primary)">narxlar</span></h1>
+        <p>Talabalarga bepul. Shifokorlar va oliygohlar uchun moslashuvchan obuna — faqat kerakli narsa, ortiqcha yo'q.</p>
+      </div>
+
+      <div class="plans-grid">
+
+        <!-- Student — free -->
+        <div class="plan-card">
+          <div class="plan-icon pi-student">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <div class="plan-name">Talaba</div>
+          <div class="plan-desc">Tibbiyot talabalari uchun to'liq bepul</div>
+          <div class="plan-price"><span class="free">Bepul</span></div>
+          <ul class="plan-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Cheklanmagan tahlil</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Grad-CAM vizualizatsiya</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>AI bilan solishtirish</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Reyting jadvali</li>
+            <li class="no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Shifokor tasdiqlovi</li>
+          </ul>
+          <a href="{% url 'register' %}" class="plan-btn plan-btn-outline">Bepul boshlash</a>
+        </div>
+
+        <!-- Doctor -->
+        <div class="plan-card featured">
+          <div class="featured-badge">⭐ Mashhur</div>
+          <div class="plan-icon pi-doctor">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+          </div>
+          <div class="plan-name">Shifokor</div>
+          <div class="plan-desc">Klinik foydalanish uchun professional tarif</div>
+          <div class="plan-price">
+            <span class="amount">99 000</span><span class="period">so'm/oy</span>
+            <div style="font-size:.75rem;color:var(--primary);margin-top:.25rem">yoki 890 000 so'm/yil (25% chegirma)</div>
+          </div>
+          <ul class="plan-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Cheklanmagan tahlil</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Grad-CAM + batafsil natija</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Natijani tasdiqlash / xato bildirish</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>To'liq audit log</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Bemor tarixi</li>
+          </ul>
+          <a href="{% url 'register' %}" class="plan-btn plan-btn-primary">Hozir boshlash</a>
+        </div>
+
+        <!-- University -->
+        <div class="plan-card">
+          <div class="plan-icon pi-uni">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="plan-name">Oliygoh</div>
+          <div class="plan-desc">Tibbiyot oliygohlar va klinikalar uchun yillik litsenziya</div>
+          <div class="plan-price">
+            <span class="amount">4 900 000</span><span class="period">so'm/yil</span>
+            <div style="font-size:.75rem;color:var(--muted-fg);margin-top:.25rem">Cheksiz talaba, 10 ta shifokor hisobi</div>
+          </div>
+          <ul class="plan-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Cheksiz talaba hisoblari</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>10 ta shifokor hisobi</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Korporativ dashboard</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Talabalar statistikasi</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Model card va xavfsizlik hisoboti</li>
+          </ul>
+          <a href="{% url 'register' %}" class="plan-btn plan-btn-outline">Bog'lanish</a>
+        </div>
+
+      </div>
+
+      <div class="note-section">
+        <p>Barcha tariflar <strong>14 kunlik bepul sinov</strong> bilan keladi. Kredit karta talab qilinmaydi.</p>
+        <p style="margin-top:.5rem">Savol bormi? <a href="mailto:sinomed@fedora.uz" style="color:var(--primary)">sinomed@fedora.uz</a> ga yozing</p>
+      </div>
+
+    </div>
+  </section>
+</main>
+{% endblock %}
