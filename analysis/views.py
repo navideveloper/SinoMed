@@ -32,6 +32,72 @@ def _save_heatmap(result: AnalysisResult, b64_data: str) -> None:
         pass  # heatmap optional
 
 
+def _draw_prostate_detections(result: AnalysisResult, detections: list) -> None:
+    """
+    Prostate detections uchun bounding box larni original rasm ustiga chizib
+    gradcam_image ga saqlaydi.
+    box format: [x1, y1, x2, y2]
+    """
+    if not detections:
+        return
+    try:
+        import io
+        from PIL import Image, ImageDraw
+
+        img = Image.open(result.analysis.image.path).convert('RGB')
+        draw = ImageDraw.Draw(img)
+
+        # Grade bo'yicha rang
+        grade_colors = {
+            'grade3': (0, 180, 216),    # ko'k
+            'grade4': (255, 152,   0),  # sariq
+            'grade5': (244,  67,  54),  # qizil
+        }
+        default_color = (0, 212, 255)
+
+        for det in detections:
+            box = det.get('box', [])
+            if len(box) != 4:
+                continue
+            x1, y1, x2, y2 = [float(v) for v in box]
+            label       = det.get('label', '')
+            conf_pct    = det.get('confidence_percent', 0)
+
+            # Rangni label dan aniqlash
+            color = default_color
+            for grade_key, grade_color in grade_colors.items():
+                if grade_key in label.lower():
+                    color = grade_color
+                    break
+
+            line_width = max(2, int(min(img.width, img.height) * 0.004))
+
+            # Bounding box
+            draw.rectangle([x1, y1, x2, y2], outline=color, width=line_width)
+
+            # Label background
+            text        = f"{label} {conf_pct}%"
+            font_size   = max(12, int(min(img.width, img.height) * 0.025))
+            label_h     = font_size + 6
+            label_y0    = max(0, y1 - label_h)
+            draw.rectangle(
+                [x1, label_y0, x1 + len(text) * font_size * 0.6 + 8, y1],
+                fill=color,
+            )
+            draw.text((x1 + 4, label_y0 + 2), text, fill=(255, 255, 255))
+
+        buf = io.BytesIO()
+        img.save(buf, format='PNG', quality=92)
+        buf.seek(0)
+        result.gradcam_image.save(
+            f'prostate_{result.analysis_id}.png',
+            ContentFile(buf.read()),
+            save=True,
+        )
+    except Exception:
+        pass  # drawing optional — asosiy natijaga ta'sir qilmaydi
+
+
 def _call_ai(model_type: str, image_path: str, extra_data: dict = None) -> dict:
     """
     AI servisiga multipart/form-data POST jo'natadi.
@@ -259,8 +325,11 @@ def api_analyze(request):
             raw_output=ai_resp,
         )
 
-        # Heatmap ni saqlash (bone_age da yo'q)
-        _save_heatmap(result, parsed['heatmap_b64'])
+        # Vizualizatsiya: pnevmoniya → heatmap (base64), prostate → box drawing
+        if analysis.model_type == 'prostate':
+            _draw_prostate_detections(result, ai_resp.get('detections', []))
+        else:
+            _save_heatmap(result, parsed['heatmap_b64'])
 
         analysis.status = Analysis.Status.COMPLETED
         analysis.save(update_fields=['status'])
@@ -368,8 +437,14 @@ def result_detail(request, pk):
 
         return redirect('result_detail', pk=pk)
 
+    result = getattr(analysis, 'result', None)
+    detections = []
+    if result and analysis.model_type == 'prostate' and result.raw_output:
+        detections = result.raw_output.get('detections', [])
+
     context = {
-        'analysis': analysis,
-        'result': getattr(analysis, 'result', None),
+        'analysis':   analysis,
+        'result':     result,
+        'detections': detections,
     }
     return render(request, 'analysis/result.html', context)

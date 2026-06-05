@@ -363,12 +363,31 @@
         <div class="card" style="margin-top: 1.5rem;">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            Grad-CAM vizualizatsiya
+            {% if analysis.model_type == 'prostate' %}Aniqlangan sohalar{% else %}Grad-CAM vizualizatsiya{% endif %}
           </div>
-          <div class="gradcam-label">AI qayerga e'tibor qaratdi</div>
+          <div class="gradcam-label">
+            {% if analysis.model_type == 'prostate' %}YOLOv5 — kasallik belgilangan hududlar{% else %}AI qayerga e'tibor qaratdi{% endif %}
+          </div>
           <div class="img-wrap">
-            <img src="{{ result.gradcam_image.url }}" alt="Grad-CAM">
+            <img src="{{ result.gradcam_image.url }}" alt="{% if analysis.model_type == 'prostate' %}Detection{% else %}Grad-CAM{% endif %}">
           </div>
+
+          {% if analysis.model_type == 'prostate' and detections %}
+          <div style="margin-top:1rem">
+            <div style="font-size:.72rem;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem">
+              Aniqlangan sohalar ({{ detections|length }} ta)
+            </div>
+            {% for det in detections %}
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem .6rem;background:var(--bg-dark);border-radius:8px;margin-bottom:.35rem;font-size:.8rem">
+              <span style="color:var(--fg-secondary);font-weight:600">{{ det.label }}</span>
+              <span style="font-family:var(--mono);font-weight:700;
+                color:{% if det.confidence_percent >= 80 %}#ef5350{% elif det.confidence_percent >= 60 %}#ffb74d{% else %}#90caf9{% endif %}">
+                {{ det.confidence_percent }}%
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
         </div>
         {% endif %}
       </div>
