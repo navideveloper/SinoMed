@@ -227,7 +227,7 @@ main { flex: 1; padding-block: 2rem 3rem; }
               Rol va muassasa
             </div>
 
-            {% if user.is_superuser %}
+            {% if user.is_superuser or user.is_org_admin %}
             <div class="form-group">
               <label class="form-label">Rol *</label>
               <select name="role" class="form-select" required id="roleSelect">
@@ -237,29 +237,35 @@ main { flex: 1; padding-block: 2rem 3rem; }
                   {% if mode == 'edit' and target_user.role == val %}selected
                   {% elif mode == 'create' %}{% endif %}>{{ label }}</option>
                 {% endfor %}
-                <option value="org_admin"
-                  {% if mode == 'edit' and target_user.role == 'org_admin' %}selected{% endif %}>
-                  🏛 Muassasa admini
-                </option>
               </select>
             </div>
             {% endif %}
 
             <div class="form-group">
-              <label class="form-label">Muassasa</label>
-              <select name="organization_id" class="form-select">
-                <option value="">— Muassasasiz —</option>
+              <label class="form-label">Muassasa{% if is_org_admin_creating %} <span style="color:var(--primary-light);font-size:.7rem">(o'zingizning)</span>{% endif %}</label>
+              {% if is_org_admin_creating %}
                 {% for org in organizations %}
-                <option value="{{ org.pk }}"
-                  {% if mode == 'edit' and target_user.organization_id == org.pk %}selected{% endif %}>
+                <input type="hidden" name="organization_id" value="{{ org.pk }}">
+                <div class="form-control" style="opacity:.7;cursor:default;background:var(--bg-hover)">
                   {{ org.get_org_type_display }}: {{ org.name }} ({{ org.code }})
-                </option>
+                </div>
                 {% endfor %}
-              </select>
+              {% else %}
+                <select name="organization_id" class="form-select">
+                  <option value="">— Muassasasiz —</option>
+                  {% for org in organizations %}
+                  <option value="{{ org.pk }}"
+                    {% if mode == 'edit' and target_user.organization_id == org.pk %}selected{% endif %}>
+                    {{ org.get_org_type_display }}: {{ org.name }} ({{ org.code }})
+                  </option>
+                  {% endfor %}
+                </select>
+              {% endif %}
             </div>
           </div>
 
-          <!-- Approval status -->
+          <!-- Approval status — superadmin only -->
+          {% if not is_org_admin_creating %}
           <div class="form-card">
             <div class="card-title">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -282,6 +288,7 @@ main { flex: 1; padding-block: 2rem 3rem; }
                 placeholder="Foydalanuvchiga ko'rsatiladigan sabab...">{% if mode == 'edit' %}{{ target_user.rejection_reason }}{% endif %}</textarea>
             </div>
           </div>
+          {% endif %}
 
         </div>
 
@@ -294,13 +301,13 @@ main { flex: 1; padding-block: 2rem 3rem; }
               <div class="user-meta-name">{{ target_user.get_full_name|default:target_user.username }}</div>
               <div class="user-meta-sub">@{{ target_user.username }}</div>
               {% if target_user.is_superuser %}
-                <span class="user-meta-badge badge-superuser">⭐ SuperAdmin</span>
+                <span class="user-meta-badge badge-superuser"><i class="fas fa-star"></i> SuperAdmin</span>
               {% elif target_user.role == 'org_admin' %}
-                <span class="user-meta-badge badge-org-admin">🏛 Muassasa admin</span>
+                <span class="user-meta-badge badge-org-admin"><i class="fas fa-university"></i> Muassasa admin</span>
               {% elif target_user.role == 'doctor' %}
-                <span class="user-meta-badge badge-doctor">🩺 Shifokor</span>
+                <span class="user-meta-badge badge-doctor"><i class="fas fa-stethoscope"></i> Shifokor</span>
               {% else %}
-                <span class="user-meta-badge badge-student">🎓 Talaba</span>
+                <span class="user-meta-badge badge-student"><i class="fas fa-graduation-cap"></i> Talaba</span>
               {% endif %}
             </div>
             <div style="font-size:.78rem;color:var(--fg-muted);text-align:center">
@@ -362,7 +369,7 @@ main { flex: 1; padding-block: 2rem 3rem; }
 {% if mode == 'edit' and user.is_superuser and not target_user.is_superuser %}
 <div class="modal-overlay" id="deleteModal">
   <div class="modal-box">
-    <div class="modal-title">⚠️ O'chirishni tasdiqlang</div>
+    <div class="modal-title"><i class="fas fa-triangle-exclamation"></i> O'chirishni tasdiqlang</div>
     <div class="modal-sub">
       <strong>{{ target_user.username }}</strong> foydalanuvchisi va unga bog'liq barcha ma'lumotlar o'chiriladi.
       Bu amalni qaytarib bo'lmaydi.

@@ -498,10 +498,10 @@
           <label style="font-size:.78rem;font-weight:600;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem">Bemor jinsi</label>
           <div style="display:flex;gap:.75rem">
             <label style="flex:1;display:flex;align-items:center;gap:.5rem;padding:.55rem .9rem;background:var(--bg-dark);border:1.5px solid var(--border-color);border-radius:calc(var(--radius)-4px);cursor:pointer;font-size:.85rem;color:var(--fg-secondary)">
-              <input type="radio" name="gender" value="erkak" id="genderErkak" checked style="accent-color:var(--primary-light)"> 👨 Erkak
+              <input type="radio" name="gender" value="erkak" id="genderErkak" checked style="accent-color:var(--primary-light)"> <i class="fas fa-mars"></i> Erkak
             </label>
             <label style="flex:1;display:flex;align-items:center;gap:.5rem;padding:.55rem .9rem;background:var(--bg-dark);border:1.5px solid var(--border-color);border-radius:calc(var(--radius)-4px);cursor:pointer;font-size:.85rem;color:var(--fg-secondary)">
-              <input type="radio" name="gender" value="ayol" id="genderAyol" style="accent-color:var(--primary-light)"> 👩 Ayol
+              <input type="radio" name="gender" value="ayol" id="genderAyol" style="accent-color:var(--primary-light)"> <i class="fas fa-venus"></i> Ayol
             </label>
           </div>
         </div>
@@ -558,7 +558,7 @@
     <button class="lb-btn" onclick="lbZoom(0.25)">+</button>
     <button class="lb-btn" onclick="lbZoom(-0.25)">−</button>
     <button class="lb-btn" onclick="lbReset()" style="font-size:.75rem">1:1</button>
-    <button class="lb-btn" onclick="lbClose()">✕</button>
+    <button class="lb-btn" onclick="lbClose()"><i class="fas fa-xmark"></i></button>
   </div>
   <div id="lb-img-wrap"><img id="lb-img" src="" alt=""></div>
   <div id="lb-zoom-label">100%</div>
@@ -601,10 +601,10 @@ function boneAgeAccuracy(aiMonths, actualMonths) {
   const aiYears    = (aiMonths    / 12).toFixed(1);
   const realYears  = (actualMonths / 12).toFixed(1);
   let icon, color, text;
-  if (diff <= 3)       { icon = '🎯'; color = '#81c784'; text = 'Juda aniq'; }
-  else if (diff <= 6)  { icon = '✅'; color = '#81c784'; text = 'Yaxshi'; }
-  else if (diff <= 12) { icon = '⚠️'; color = '#ffb74d'; text = "O'rtacha"; }
-  else                  { icon = '❌'; color = '#ef5350'; text = 'Katta farq'; }
+  if (diff <= 3)       { icon = '<i class="fas fa-bullseye"></i>'; color = '#81c784'; text = 'Juda aniq'; }
+  else if (diff <= 6)  { icon = '<i class="fas fa-circle-check"></i>'; color = '#81c784'; text = 'Yaxshi'; }
+  else if (diff <= 12) { icon = '<i class="fas fa-triangle-exclamation"></i>'; color = '#ffb74d'; text = "O'rtacha"; }
+  else                  { icon = '<i class="fas fa-circle-xmark"></i>'; color = '#ef5350'; text = 'Katta farq'; }
   return { diff, aiYears, realYears, icon, color, text };
 }
 
@@ -738,7 +738,7 @@ function displayResult(r, imgSrc) {
         </div>`;
     } else {
       boneCompareHtml = `<p style="font-size:.78rem;color:var(--fg-muted);margin-top:.25rem">
-        💡 Tug'ilgan sanani kiriting — AI aniqligini ko'rish mumkin</p>`;
+        <i class="fas fa-lightbulb"></i> Tug'ilgan sanani kiriting — AI aniqligini ko'rish mumkin</p>`;
     }
   }
 
@@ -758,7 +758,7 @@ function displayResult(r, imgSrc) {
         ${confHtml}
         ${boneCompareHtml}
         <p class="result-note" style="white-space:pre-line">${r.note || ''}</p>
-        <p class="result-disclaimer">⚠️ Bu natija AI tahlili. Yakuniy qaror shifokorga tegishli.</p>
+        <p class="result-disclaimer"><i class="fas fa-triangle-exclamation"></i> Bu natija AI tahlili. Yakuniy qaror shifokorga tegishli.</p>
         ${currentAnalysisId ? `<a href="/analyze/${currentAnalysisId}/result/" style="color:var(--primary-light);font-size:.875rem;font-weight:600">→ Batafsil natijani ko'rish</a>` : ''}
       </div>
     </div>`;

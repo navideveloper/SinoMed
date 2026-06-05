@@ -7,4 +7,5 @@ urlpatterns = [
     path('analyses/<int:pk>/', views.analysis_log_detail_view, name='analysis_log_detail'),
     path('export/json/', views.export_json_view, name='export_json'),
     path('export/zip/', views.export_zip_view, name='export_zip'),
+    path('export/my/', views.personal_export_view, name='personal_export'),
 ]

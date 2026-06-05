@@ -34,6 +34,7 @@
   .badge-student { background: rgba(0,212,255,.1); color: var(--accent); border-color: rgba(0,212,255,.2); }
   .badge-university { background: rgba(255,152,0,.15); color: #ffb74d; border-color: rgba(255,152,0,.3); }
   .badge-org_admin { background: rgba(139,92,246,.15); color: #c4b5fd; border-color: rgba(139,92,246,.3); }
+  .badge-superuser { background: rgba(255,193,7,.15); color: #ffd54f; border-color: rgba(255,193,7,.3); }
   .badge-active { background: rgba(76,175,80,.15); color: #81c784; border-color: rgba(76,175,80,.3); }
   .badge-inactive { background: rgba(244,67,54,.1); color: #ef5350; border-color: rgba(244,67,54,.2); }
   .view-link { color: var(--primary-light); font-weight: 500; font-size: .8rem; }
@@ -106,7 +107,7 @@
       </div>
       <button type="submit" class="btn-filter">Qidirish</button>
       {% if filters.search or filters.role or filters.status or filters.approval %}
-        <a href="{% url 'user_list' %}" style="font-size:.82rem;color:var(--fg-muted);align-self:center">✕ Tozalash</a>
+        <a href="{% url 'user_list' %}" style="font-size:.82rem;color:var(--fg-muted);align-self:center"><i class="fas fa-times"></i> Tozalash</a>
       {% endif %}
     </form>
 
@@ -138,7 +139,11 @@
                 </div>
               </td>
               <td>
-                <span class="badge badge-{{ u.role }}">{{ u.get_role_display }}</span>
+                {% if u.is_superuser %}
+                  <span class="badge badge-superuser"><i class="fas fa-star"></i> SuperAdmin</span>
+                {% else %}
+                  <span class="badge badge-{{ u.role }}">{{ u.get_role_display }}</span>
+                {% endif %}
               </td>
               <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
                 {% if u.organization %}
@@ -153,9 +158,9 @@
               {% endif %}
               <td>
                 {% if u.approval_status == 'pending' %}
-                  <span class="badge" style="background:rgba(255,152,0,.15);color:#ffb74d;border-color:rgba(255,152,0,.3)">⏳ Kutilmoqda</span>
+                  <span class="badge" style="background:rgba(255,152,0,.15);color:#ffb74d;border-color:rgba(255,152,0,.3)"><i class="fas fa-clock"></i> Kutilmoqda</span>
                 {% elif u.approval_status == 'rejected' %}
-                  <span class="badge badge-inactive">✗ Rad etildi</span>
+                  <span class="badge badge-inactive"><i class="fas fa-times"></i> Rad etildi</span>
                 {% else %}
                   <span class="badge {% if u.is_active %}badge-active{% else %}badge-inactive{% endif %}" id="status-badge-{{ u.pk }}">
                     {% if u.is_active %}Faol{% else %}Nofaol{% endif %}

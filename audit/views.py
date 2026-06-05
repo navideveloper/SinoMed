@@ -225,3 +225,38 @@ def export_zip_view(request):
     response = HttpResponse(buf.read(), content_type='application/zip')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
+
+
+@login_required
+def personal_export_view(request):
+    """Any authenticated user: export their own analysis results as CSV."""
+    qs = AnalysisLog.objects.filter(
+        analysis__user=request.user
+    ).select_related('analysis', 'analysis__result').order_by('-created_at')
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    filename = f'sinomed-mening-tahlillarim-{date.today()}.csv'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+    writer.writerow(['#', 'Sana', 'Model', 'Tashxis', 'Ishonch (%)', 'Shifokor xulosasi', 'Izoh'])
+
+    model_display = {
+        'bone_age': 'Suyak yoshi',
+        'prostate': 'Prostata saraton',
+        'pneumonia': "O'pka yallig'lanishi",
+    }
+    verdict_display = {True: 'Tasdiqladi', False: 'Xato dedi', None: "Ko'rilmagan"}
+
+    for i, log in enumerate(qs, 1):
+        writer.writerow([
+            i,
+            log.created_at.strftime('%d.%m.%Y %H:%M') if log.created_at else '—',
+            model_display.get(log.analysis.model_type, log.analysis.model_type),
+            log.ai_diagnosis or '—',
+            f'{log.ai_confidence:.1f}' if log.ai_confidence is not None else '—',
+            verdict_display.get(log.doctor_verdict, "Ko'rilmagan"),
+            log.doctor_note or '—',
+        ])
+
+    return response

@@ -176,23 +176,23 @@ main { flex: 1; padding-top: 1.5rem; padding-bottom: 3rem; }
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-val warn">{{ stats.pending }}</div>
-        <div class="stat-lbl">⏳ Kutilmoqda</div>
+        <div class="stat-lbl"><i class="fas fa-clock"></i> Kutilmoqda</div>
       </div>
       <div class="stat-card">
         <div class="stat-val success">{{ stats.approved }}</div>
-        <div class="stat-lbl">✅ Tasdiqlangan</div>
+        <div class="stat-lbl"><i class="fas fa-circle-check"></i> Tasdiqlangan</div>
       </div>
       <div class="stat-card">
         <div class="stat-val danger">{{ stats.rejected }}</div>
-        <div class="stat-lbl">❌ Rad etilgan</div>
+        <div class="stat-lbl"><i class="fas fa-circle-xmark"></i> Rad etilgan</div>
       </div>
       <div class="stat-card">
         <div class="stat-val">{{ stats.doctors }}</div>
-        <div class="stat-lbl">🩺 Shifokorlar</div>
+        <div class="stat-lbl"><i class="fas fa-stethoscope"></i> Shifokorlar</div>
       </div>
       <div class="stat-card">
         <div class="stat-val">{{ stats.students }}</div>
-        <div class="stat-lbl">🎓 Talabalar</div>
+        <div class="stat-lbl"><i class="fas fa-graduation-cap"></i> Talabalar</div>
       </div>
     </div>
 
@@ -225,10 +225,10 @@ main { flex: 1; padding-top: 1.5rem; padding-bottom: 3rem; }
           <div class="pending-date">{{ u.date_joined|date:"d.m.Y H:i" }}</div>
           <div class="action-btns">
             <button class="btn-approve" onclick="approveUser({{ u.pk }}, '{{ u.get_full_name|default:u.username }}')">
-              ✓ Tasdiqlash
+              <i class="fas fa-check"></i> Tasdiqlash
             </button>
             <button class="btn-reject" onclick="openRejectModal({{ u.pk }}, '{{ u.get_full_name|default:u.username }}')">
-              ✗ Rad etish
+              <i class="fas fa-times"></i> Rad etish
             </button>
           </div>
         </div>

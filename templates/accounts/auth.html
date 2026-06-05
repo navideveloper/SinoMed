@@ -89,8 +89,6 @@
     }
     .logo-mark {
       width: 3rem; height: 3rem; border-radius: 12px;
-      background: #ffffff;
-      padding: 3px;
       display: flex; align-items: center; justify-content: center;
     }
     .logo-mark img { width: 100%; height: 100%; object-fit: contain; border-radius: 9px; }
@@ -276,7 +274,7 @@
 <div class="auth-wrap">
   <div class="logo-row">
     <div class="logo-mark">
-      <img src="/static/img/logo.png" alt="SinoMed" width="42" height="42">
+      <img src="/static/img/logo-lungs.png" alt="SinoMed" width="42" height="42">
     </div>
     <span class="logo-name">SinoMed</span>
   </div>
@@ -377,12 +375,12 @@
           <div class="step-label">Qadam <strong>1/3</strong> — Rol tanlang</div>
           <div class="role-cards">
             <div class="role-card" data-role="student">
-              <span class="role-icon">🎓</span>
+              <span class="role-icon"><i class="fas fa-graduation-cap"></i></span>
               <span class="role-name">Talaba</span>
               <span class="role-desc">Universitetda o'qiyotgan talaba</span>
             </div>
             <div class="role-card" data-role="doctor">
-              <span class="role-icon">🩺</span>
+              <span class="role-icon"><i class="fas fa-stethoscope"></i></span>
               <span class="role-name">Shifokor</span>
               <span class="role-desc">Tibbiyot mutaxassisi</span>
             </div>
@@ -549,7 +547,7 @@ function renderOrgs(orgs, filter = '') {
     list.innerHTML = '<div class="org-empty">Muassasa topilmadi</div>';
     return;
   }
-  const icon = selectedRole === 'student' ? '🏛' : '🏥';
+  const icon = selectedRole === 'student' ? '<i class="fas fa-university"></i>' : '<i class="fas fa-hospital"></i>';
   list.innerHTML = filtered.map(o => `
     <div class="org-item ${o.id == selectedOrgId ? 'selected' : ''}" data-id="${o.id}" data-name="${o.name}" onclick="selectOrg(${o.id}, '${o.name.replace(/'/g,"\\'")}')">
       <div class="org-icon">${icon}</div>

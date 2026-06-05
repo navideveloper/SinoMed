@@ -13,7 +13,10 @@
   .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem; color: var(--fg-primary); }
   .card-title svg { color: var(--primary-light); width: 1.1rem; height: 1.1rem; }
   .img-wrap { border-radius: calc(var(--radius) - 4px); overflow: hidden; background: #000; }
-  .img-wrap img { width: 100%; max-height: 320px; object-fit: contain; display: block; }
+  .img-wrap img { width: 100%; max-height: 320px; object-fit: contain; display: block; cursor: zoom-in; }
+  #lb { display:none; position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:9999; align-items:center; justify-content:center; cursor:zoom-out; }
+  #lb.open { display:flex; }
+  #lb img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; }
   .info-row { display: flex; justify-content: space-between; padding: .55rem 0; border-bottom: 1px solid var(--border-color); font-size: .85rem; }
   .info-row:last-child { border-bottom: none; }
   .info-label { color: var(--fg-muted); }
@@ -23,8 +26,6 @@
   .badge-danger { background: rgba(244,67,54,.15); color: #ef5350; border-color: rgba(244,67,54,.3); }
   .badge-flag { background: rgba(244,67,54,.15); color: #ef5350; border-color: rgba(244,67,54,.3); }
   .badge-muted { background: var(--bg-hover); color: var(--fg-muted); border-color: var(--border-color); }
-  .json-collapsible summary { cursor: pointer; font-size: .78rem; color: var(--primary-light); margin-bottom: .5rem; font-weight: 600; }
-  .json-collapsible pre { background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: calc(var(--radius) - 4px); padding: .75rem; font-size: .72rem; overflow-x: auto; color: var(--fg-secondary); max-height: 200px; }
   .timeline { margin-top: 1.5rem; }
   .timeline-title { font-size: .9rem; font-weight: 700; color: var(--fg-primary); margin-bottom: 1rem; }
   .tl-item { display: flex; gap: .75rem; padding: .6rem 0; border-bottom: 1px solid var(--border-color); font-size: .8rem; }
@@ -37,10 +38,16 @@
 {% block content %}
 <main>
   <div class="container">
-    <div class="breadcrumb">
-      <a href="{% url 'analysis_log' %}">Tahlil loglari</a>
-      <span>/</span>
-      <span>Log #{{ log.pk }}</span>
+    <div class="breadcrumb" style="justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <a href="{% url 'analysis_log' %}">Tahlil loglari</a>
+        <span>/</span>
+        <span>Log #{{ log.pk }}</span>
+      </div>
+      <a href="{% url 'result_detail' log.analysis.pk %}"
+         style="display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .9rem;border:1px solid var(--border-color);border-radius:calc(var(--radius) - 2px);color:var(--primary-light);font-size:.82rem;font-weight:600;text-decoration:none">
+        <i class="fas fa-arrow-up-right-from-square"></i> Natijani ko'rish
+      </a>
     </div>
 
     <div class="detail-grid">
@@ -75,10 +82,6 @@
           <div class="info-row"><span class="info-label">Muassasa</span><span class="info-val">{{ log.institution|default:"—" }}</span></div>
           <div class="info-row"><span class="info-label">Sana</span><span class="info-val">{{ log.created_at|date:"d.m.Y H:i" }}</span></div>
 
-          <details class="json-collapsible" style="margin-top:1rem">
-            <summary>Raw AI output ko'rish</summary>
-            <pre>{{ log.ai_raw_output|pprint }}</pre>
-          </details>
         </div>
 
         <div class="card">
@@ -89,8 +92,8 @@
           <div class="info-row">
             <span class="info-label">Xulosa</span>
             <span class="info-val">
-              {% if log.doctor_verdict is True %}<span class="badge badge-ok">✓ Tasdiqladi</span>
-              {% elif log.doctor_verdict is False %}<span class="badge badge-danger">✗ Xato dedi</span>
+              {% if log.doctor_verdict is True %}<span class="badge badge-ok"><i class="fas fa-check"></i> Tasdiqladi</span>
+              {% elif log.doctor_verdict is False %}<span class="badge badge-danger"><i class="fas fa-times"></i> Xato dedi</span>
               {% else %}<span class="badge badge-muted">Ko'rilmagan</span>{% endif %}
             </span>
           </div>
@@ -99,7 +102,7 @@
           {% endif %}
           <div class="info-row">
             <span class="info-label">Training uchun</span>
-            <span class="info-val">{% if log.flagged_for_training %}<span class="badge badge-flag">🔴 Flagged</span>{% else %}—{% endif %}</span>
+            <span class="info-val">{% if log.flagged_for_training %}<span class="badge badge-flag"><i class="fas fa-circle" style="color:#ef5350;font-size:.65em"></i> Flagged</span>{% else %}—{% endif %}</span>
           </div>
         </div>
       </div>
@@ -121,4 +124,19 @@
 
   </div>
 </main>
+<div id="lb" onclick="this.classList.remove('open')"><img id="lb-img" src="" alt=""></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.img-wrap img').forEach(img => {
+  img.addEventListener('click', () => {
+    document.getElementById('lb-img').src = img.src;
+    document.getElementById('lb').classList.add('open');
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('lb').classList.remove('open');
+});
+</script>
 {% endblock %}
