@@ -13,7 +13,10 @@
   .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem; color: var(--fg-primary); }
   .card-title svg { color: var(--primary-light); width: 1.1rem; height: 1.1rem; }
   .img-wrap { border-radius: calc(var(--radius) - 4px); overflow: hidden; background: #000; }
-  .img-wrap img { width: 100%; max-height: 320px; object-fit: contain; display: block; }
+  .img-wrap img { width: 100%; max-height: 320px; object-fit: contain; display: block; cursor: zoom-in; }
+  #lb { display:none; position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:9999; align-items:center; justify-content:center; cursor:zoom-out; }
+  #lb.open { display:flex; }
+  #lb img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; }
   .info-row { display: flex; justify-content: space-between; padding: .55rem 0; border-bottom: 1px solid var(--border-color); font-size: .85rem; }
   .info-row:last-child { border-bottom: none; }
   .info-label { color: var(--fg-muted); }
@@ -35,10 +38,16 @@
 {% block content %}
 <main>
   <div class="container">
-    <div class="breadcrumb">
-      <a href="{% url 'analysis_log' %}">Tahlil loglari</a>
-      <span>/</span>
-      <span>Log #{{ log.pk }}</span>
+    <div class="breadcrumb" style="justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <a href="{% url 'analysis_log' %}">Tahlil loglari</a>
+        <span>/</span>
+        <span>Log #{{ log.pk }}</span>
+      </div>
+      <a href="{% url 'result_detail' log.analysis.pk %}"
+         style="display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .9rem;border:1px solid var(--border-color);border-radius:calc(var(--radius) - 2px);color:var(--primary-light);font-size:.82rem;font-weight:600;text-decoration:none">
+        <i class="fas fa-arrow-up-right-from-square"></i> Natijani ko'rish
+      </a>
     </div>
 
     <div class="detail-grid">
@@ -115,4 +124,19 @@
 
   </div>
 </main>
+<div id="lb" onclick="this.classList.remove('open')"><img id="lb-img" src="" alt=""></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.img-wrap img').forEach(img => {
+  img.addEventListener('click', () => {
+    document.getElementById('lb-img').src = img.src;
+    document.getElementById('lb').classList.add('open');
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('lb').classList.remove('open');
+});
+</script>
 {% endblock %}
