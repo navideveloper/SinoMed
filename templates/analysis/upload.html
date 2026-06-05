@@ -411,9 +411,44 @@
   }
 
   @media (max-width: 768px) {
-    .upload-card, .result-card {
-      padding: 1rem;
-    }
+    .upload-card, .result-card { padding: 1rem; }
+  }
+
+  /* Lightbox */
+  .result-image-wrap img { cursor: zoom-in; transition: opacity .2s; }
+  .result-image-wrap img:hover { opacity: .88; }
+
+  #lightbox {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.92); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center; flex-direction: column;
+  }
+  #lightbox.open { display: flex; }
+  #lb-toolbar {
+    position: fixed; top: 1rem; right: 1rem;
+    display: flex; gap: .5rem; z-index: 10000;
+  }
+  .lb-btn {
+    width: 2.4rem; height: 2.4rem; background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2); border-radius: 8px;
+    cursor: pointer; color: #fff; display: flex; align-items: center;
+    justify-content: center; font-size: 1.1rem; transition: all .15s;
+  }
+  .lb-btn:hover { background: rgba(255,255,255,.22); }
+  #lb-img-wrap {
+    overflow: hidden; display: flex; align-items: center;
+    justify-content: center; max-width: 92vw; max-height: 86vh; cursor: grab;
+  }
+  #lb-img-wrap.grabbing { cursor: grabbing; }
+  #lb-img-wrap img {
+    max-width: 90vw; max-height: 84vh; object-fit: contain;
+    transform-origin: center; transition: transform .1s;
+    user-select: none; pointer-events: none; border-radius: 4px;
+  }
+  #lb-zoom-label {
+    position: fixed; bottom: 1.2rem; left: 50%; transform: translateX(-50%);
+    font-size: .72rem; font-family: monospace; color: rgba(255,255,255,.5);
+    pointer-events: none;
   }
 {% endblock %}
 
@@ -440,14 +475,32 @@
           {% endfor %}
         </select>
 
-        <!-- Bone age uchun gender tanlash (faqat bone_age modelida ko'rinadi) -->
-        <div id="genderRow" style="display:none;margin-bottom:1rem">
+        <!-- Bone age uchun qo'shimcha maydonlar (faqat bone_age modelida ko'rinadi) -->
+        <div id="boneAgeFields" style="display:none;margin-bottom:1rem">
+
+          <!-- Tug'ilgan sana -->
+          <label style="font-size:.78rem;font-weight:600;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem">Tug'ilgan sana (oy / yil)</label>
+          <div style="display:flex;gap:.5rem;margin-bottom:.85rem">
+            <select id="birthMonth" style="flex:1;padding:.55rem .75rem;background:var(--bg-dark);border:1.5px solid var(--border-color);border-radius:calc(var(--radius)-4px);color:var(--fg-primary);font-size:.85rem;outline:none;font-family:var(--font)">
+              <option value="">— Oy —</option>
+              <option value="1">Yanvar</option><option value="2">Fevral</option>
+              <option value="3">Mart</option><option value="4">Aprel</option>
+              <option value="5">May</option><option value="6">Iyun</option>
+              <option value="7">Iyul</option><option value="8">Avgust</option>
+              <option value="9">Sentabr</option><option value="10">Oktabr</option>
+              <option value="11">Noyabr</option><option value="12">Dekabr</option>
+            </select>
+            <input type="number" id="birthYear" placeholder="Yil (2010)" min="1900" max="2025"
+              style="flex:1;padding:.55rem .75rem;background:var(--bg-dark);border:1.5px solid var(--border-color);border-radius:calc(var(--radius)-4px);color:var(--fg-primary);font-size:.85rem;outline:none;font-family:var(--mono)">
+          </div>
+
+          <!-- Jins -->
           <label style="font-size:.78rem;font-weight:600;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem">Bemor jinsi</label>
           <div style="display:flex;gap:.75rem">
-            <label style="flex:1;display:flex;align-items:center;gap:.5rem;padding:.55rem .9rem;background:var(--bg-dark);border:1.5px solid var(--border-color);border-radius:calc(var(--radius)-4px);cursor:pointer;font-size:.85rem;color:var(--fg-secondary);transition:all .2s" id="labelErkak">
+            <label style="flex:1;display:flex;align-items:center;gap:.5rem;padding:.55rem .9rem;background:var(--bg-dark);border:1.5px solid var(--border-color);border-radius:calc(var(--radius)-4px);cursor:pointer;font-size:.85rem;color:var(--fg-secondary)">
               <input type="radio" name="gender" value="erkak" id="genderErkak" checked style="accent-color:var(--primary-light)"> 👨 Erkak
             </label>
-            <label style="flex:1;display:flex;align-items:center;gap:.5rem;padding:.55rem .9rem;background:var(--bg-dark);border:1.5px solid var(--border-color);border-radius:calc(var(--radius)-4px);cursor:pointer;font-size:.85rem;color:var(--fg-secondary);transition:all .2s" id="labelAyol">
+            <label style="flex:1;display:flex;align-items:center;gap:.5rem;padding:.55rem .9rem;background:var(--bg-dark);border:1.5px solid var(--border-color);border-radius:calc(var(--radius)-4px);cursor:pointer;font-size:.85rem;color:var(--fg-secondary)">
               <input type="radio" name="gender" value="ayol" id="genderAyol" style="accent-color:var(--primary-light)"> 👩 Ayol
             </label>
           </div>
@@ -499,6 +552,17 @@
   </div>
 </div>
 
+<!-- Lightbox modal -->
+<div id="lightbox">
+  <div id="lb-toolbar">
+    <button class="lb-btn" onclick="lbZoom(0.25)">+</button>
+    <button class="lb-btn" onclick="lbZoom(-0.25)">−</button>
+    <button class="lb-btn" onclick="lbReset()" style="font-size:.75rem">1:1</button>
+    <button class="lb-btn" onclick="lbClose()">✕</button>
+  </div>
+  <div id="lb-img-wrap"><img id="lb-img" src="" alt=""></div>
+  <div id="lb-zoom-label">100%</div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -507,17 +571,41 @@ const CSRF = '{{ csrf_token }}';
 let currentFile = null;
 let currentAnalysisId = null;
 
-const modelSelect = document.getElementById('modelTypeSelect');
-const genderRow   = document.getElementById('genderRow');
+const modelSelect   = document.getElementById('modelTypeSelect');
+const boneAgeFields = document.getElementById('boneAgeFields');
 
-function toggleGenderRow() {
-  genderRow.style.display = modelSelect.value === 'bone_age' ? 'block' : 'none';
+function toggleBoneAgeFields() {
+  boneAgeFields.style.display = modelSelect.value === 'bone_age' ? 'block' : 'none';
 }
-modelSelect.addEventListener('change', toggleGenderRow);
-toggleGenderRow(); // sahifa yuklanishida tekshir
+modelSelect.addEventListener('change', toggleBoneAgeFields);
+toggleBoneAgeFields();
 
 function getIsFemale() {
   return document.getElementById('genderAyol')?.checked || false;
+}
+
+/** Tug'ilgan oy/yildan hozirgi sanagacha oylar sonini hisoblaydi */
+function calcActualMonths() {
+  const month = parseInt(document.getElementById('birthMonth')?.value || '0');
+  const year  = parseInt(document.getElementById('birthYear')?.value  || '0');
+  if (!month || !year || year < 1900) return null;
+  const now = new Date();
+  const months = (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month);
+  return months > 0 ? months : null;
+}
+
+/** Oylar farqiga qarab matn va rang qaytaradi */
+function boneAgeAccuracy(aiMonths, actualMonths) {
+  if (!aiMonths || !actualMonths) return null;
+  const diff = Math.abs(aiMonths - actualMonths);
+  const aiYears    = (aiMonths    / 12).toFixed(1);
+  const realYears  = (actualMonths / 12).toFixed(1);
+  let icon, color, text;
+  if (diff <= 3)       { icon = '🎯'; color = '#81c784'; text = 'Juda aniq'; }
+  else if (diff <= 6)  { icon = '✅'; color = '#81c784'; text = 'Yaxshi'; }
+  else if (diff <= 12) { icon = '⚠️'; color = '#ffb74d'; text = "O'rtacha"; }
+  else                  { icon = '❌'; color = '#ef5350'; text = 'Katta farq'; }
+  return { diff, aiYears, realYears, icon, color, text };
 }
 
 const dropZone = document.getElementById('dropZone');
@@ -614,32 +702,73 @@ analyzeBtn.addEventListener('click', async () => {
 
 function displayResult(r, imgSrc) {
   const icons = {
-    normal: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>`,
+    normal:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>`,
     warning: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
-    danger: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
+    danger:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
   };
-  const gradcamHtml = r.gradcam_url ? `<div class="result-image-wrap"><img src="${r.gradcam_url}" alt="Grad-CAM"></div>` :
-    imgSrc ? `<div class="result-image-wrap"><img src="${imgSrc}" alt="Tahlil rasmi"></div>` : '';
+
+  const gradcamHtml = r.gradcam_url
+    ? `<div class="result-image-wrap"><img src="${r.gradcam_url}" alt="Grad-CAM"></div>`
+    : imgSrc ? `<div class="result-image-wrap"><img src="${imgSrc}" alt="Tahlil rasmi"></div>` : '';
+
+  // Bone age: tug'ilgan sana kiritilgan bo'lsa taqqoslash bloki
+  let boneCompareHtml = '';
+  if (r.model_type === 'bone_age' && r.jami_oylik) {
+    const actualMonths = calcActualMonths();
+    const acc = boneAgeAccuracy(r.jami_oylik, actualMonths);
+    if (acc) {
+      boneCompareHtml = `
+        <div style="background:rgba(0,180,216,.07);border:1px solid rgba(0,180,216,.2);border-radius:10px;padding:.85rem 1rem;margin-top:.25rem">
+          <div style="font-size:.72rem;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem">AI aniqlik tahlili</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;text-align:center;margin-bottom:.6rem">
+            <div style="background:var(--bg-dark);border-radius:8px;padding:.5rem">
+              <div style="font-size:1.1rem;font-weight:800;color:var(--primary-light);font-family:var(--mono)">${acc.aiYears}</div>
+              <div style="font-size:.65rem;color:var(--fg-muted)">AI yoshi</div>
+            </div>
+            <div style="background:var(--bg-dark);border-radius:8px;padding:.5rem">
+              <div style="font-size:1.1rem;font-weight:800;color:#c4b5fd;font-family:var(--mono)">${acc.realYears}</div>
+              <div style="font-size:.65rem;color:var(--fg-muted)">Haqiqiy yoshi</div>
+            </div>
+            <div style="background:var(--bg-dark);border-radius:8px;padding:.5rem">
+              <div style="font-size:1.1rem;font-weight:800;font-family:var(--mono);color:${acc.color}">${acc.diff} oy</div>
+              <div style="font-size:.65rem;color:var(--fg-muted)">Farq</div>
+            </div>
+          </div>
+          <div style="text-align:center;font-size:.82rem;font-weight:600;color:${acc.color}">${acc.icon} ${acc.text}</div>
+        </div>`;
+    } else {
+      boneCompareHtml = `<p style="font-size:.78rem;color:var(--fg-muted);margin-top:.25rem">
+        💡 Tug'ilgan sanani kiriting — AI aniqligini ko'rish mumkin</p>`;
+    }
+  }
+
+  // Confidence bar: bone age da 100% emas, faqat pnevmoniya/prostate uchun
+  const showConfBar = r.model_type !== 'bone_age';
+  const confHtml = showConfBar ? `
+    <div class="confidence-row">
+      <div class="confidence-bar"><div class="confidence-fill" id="confFill" style="width:0%"></div></div>
+      <span class="confidence-label">${r.confidence.toFixed(1)}%</span>
+    </div>` : '';
 
   document.getElementById('resultContent').innerHTML = `
     <div class="result-body">
       ${gradcamHtml}
       <div class="result-info">
         <div><span class="diagnosis-badge diagnosis-${r.diagnosis_type}">${icons[r.diagnosis_type] || ''}${r.diagnosis}</span></div>
-        <div class="confidence-row">
-          <div class="confidence-bar"><div class="confidence-fill" id="confFill" style="width:0%"></div></div>
-          <span class="confidence-label">${r.confidence.toFixed(1)}%</span>
-        </div>
-        <p class="result-note">${r.note || ''}</p>
+        ${confHtml}
+        ${boneCompareHtml}
+        <p class="result-note" style="white-space:pre-line">${r.note || ''}</p>
         <p class="result-disclaimer">⚠️ Bu natija AI tahlili. Yakuniy qaror shifokorga tegishli.</p>
         ${currentAnalysisId ? `<a href="/analyze/${currentAnalysisId}/result/" style="color:var(--primary-light);font-size:.875rem;font-weight:600">→ Batafsil natijani ko'rish</a>` : ''}
       </div>
     </div>`;
 
-  requestAnimationFrame(() => setTimeout(() => {
-    const f = document.getElementById('confFill');
-    if (f) f.style.width = r.confidence + '%';
-  }, 50));
+  if (showConfBar) {
+    requestAnimationFrame(() => setTimeout(() => {
+      const f = document.getElementById('confFill');
+      if (f) f.style.width = r.confidence + '%';
+    }, 50));
+  }
 }
 
 function displayError(msg) {
@@ -650,5 +779,42 @@ function displayError(msg) {
       <p style="font-size:.8rem;color:var(--fg-muted)">${msg}</p>
     </div>`;
 }
+
+/* ── Lightbox ── */
+let lbScale=1, lbTX=0, lbTY=0, lbDrag=false, lbMx=0, lbMy=0, lbDx=0, lbDy=0;
+const lb=document.getElementById('lightbox');
+const lbImg=document.getElementById('lb-img');
+const lbWrap=document.getElementById('lb-img-wrap');
+const lbZoomL=document.getElementById('lb-zoom-label');
+
+function lbOpen(src){
+  lbImg.src=src; lbScale=1; lbTX=0; lbTY=0; lbApply();
+  lb.classList.add('open'); document.body.style.overflow='hidden';
+}
+function lbClose(){ lb.classList.remove('open'); document.body.style.overflow=''; }
+function lbZoom(d){ lbScale=Math.min(5,Math.max(0.2,lbScale+d)); lbApply(); }
+function lbReset(){ lbScale=1; lbTX=0; lbTY=0; lbApply(); }
+function lbApply(){
+  lbImg.style.transform=`translate(${lbTX}px,${lbTY}px) scale(${lbScale})`;
+  lbZoomL.textContent=Math.round(lbScale*100)+'%';
+}
+lbWrap.addEventListener('wheel',e=>{ e.preventDefault(); lbZoom(e.deltaY<0?.15:-.15); },{passive:false});
+lbWrap.addEventListener('mousedown',e=>{ lbDrag=true; lbMx=e.clientX; lbMy=e.clientY; lbDx=lbTX; lbDy=lbTY; lbWrap.classList.add('grabbing'); });
+window.addEventListener('mousemove',e=>{ if(!lbDrag)return; lbTX=lbDx+(e.clientX-lbMx); lbTY=lbDy+(e.clientY-lbMy); lbApply(); });
+window.addEventListener('mouseup',()=>{ lbDrag=false; lbWrap.classList.remove('grabbing'); });
+lbWrap.addEventListener('dblclick',lbReset);
+lb.addEventListener('click',e=>{ if(e.target===lb)lbClose(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape')lbClose(); });
+
+/* Event delegation — dinamik qo'shilgan rasmlarga ham ishlaydi */
+document.getElementById('resultCard').addEventListener('click', e => {
+  const img = e.target.closest('.result-image-wrap img');
+  if (img) lbOpen(img.src);
+});
+/* Yuklangan asl rasm ham kliklansin */
+document.getElementById('dropZone').addEventListener('click', e => {
+  const img = e.target.closest('#uploadAreaImage img');
+  if (img && img.src) lbOpen(img.src);
+});
 </script>
 {% endblock %}

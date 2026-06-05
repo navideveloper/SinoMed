@@ -32,22 +32,99 @@ def _save_heatmap(result: AnalysisResult, b64_data: str) -> None:
         pass  # heatmap optional
 
 
+def _draw_prostate_detections(result: AnalysisResult, detections: list) -> None:
+    """
+    Prostate detections uchun bounding box larni original rasm ustiga chizib
+    gradcam_image ga saqlaydi.
+    box format: [x1, y1, x2, y2]
+    """
+    if not detections:
+        return
+    try:
+        import io
+        from PIL import Image, ImageDraw
+
+        img = Image.open(result.analysis.image.path).convert('RGB')
+        draw = ImageDraw.Draw(img)
+
+        # Grade bo'yicha rang
+        grade_colors = {
+            'grade3': (0, 180, 216),    # ko'k
+            'grade4': (255, 152,   0),  # sariq
+            'grade5': (244,  67,  54),  # qizil
+        }
+        default_color = (0, 212, 255)
+
+        for det in detections:
+            box = det.get('box', [])
+            if len(box) != 4:
+                continue
+            x1, y1, x2, y2 = [float(v) for v in box]
+            label       = det.get('label', '')
+            conf_pct    = det.get('confidence_percent', 0)
+
+            # Rangni label dan aniqlash
+            color = default_color
+            for grade_key, grade_color in grade_colors.items():
+                if grade_key in label.lower():
+                    color = grade_color
+                    break
+
+            line_width = max(2, int(min(img.width, img.height) * 0.004))
+
+            # Bounding box
+            draw.rectangle([x1, y1, x2, y2], outline=color, width=line_width)
+
+            # Label background
+            text        = f"{label} {conf_pct}%"
+            font_size   = max(12, int(min(img.width, img.height) * 0.025))
+            label_h     = font_size + 6
+            label_y0    = max(0, y1 - label_h)
+            draw.rectangle(
+                [x1, label_y0, x1 + len(text) * font_size * 0.6 + 8, y1],
+                fill=color,
+            )
+            draw.text((x1 + 4, label_y0 + 2), text, fill=(255, 255, 255))
+
+        buf = io.BytesIO()
+        img.save(buf, format='PNG', quality=92)
+        buf.seek(0)
+        result.gradcam_image.save(
+            f'prostate_{result.analysis_id}.png',
+            ContentFile(buf.read()),
+            save=True,
+        )
+    except Exception:
+        pass  # drawing optional — asosiy natijaga ta'sir qilmaydi
+
+
 def _call_ai(model_type: str, image_path: str, extra_data: dict = None) -> dict:
     """
     AI servisiga multipart/form-data POST jo'natadi.
-    extra_data — qo'shimcha form fields (masalan bone_age uchun is_female).
+    Prostate: 'file' parametri + X-API-Key header.
+    Pneumonia/BoneAge: 'image' parametri.
     """
     url = settings.AI_ENDPOINTS.get(model_type, '')
     if not url:
         raise ValueError(f"'{model_type}' uchun AI endpoint sozlanmagan")
 
+    # Prostate: parametr nomi 'file', qolganlarida 'image'
+    file_param = 'file' if model_type == 'prostate' else 'image'
+
+    headers = {}
+    if model_type == 'prostate':
+        api_key = getattr(settings, 'PROSTATE_API_KEY', '')
+        if api_key:
+            headers['X-API-Key'] = api_key
+
     with open(image_path, 'rb') as f:
-        files = {'image': (f.name, f, 'image/jpeg')}
-        data = extra_data or {}
+        import os as _os
+        filename = _os.path.basename(image_path)
         resp = http_client.post(
             url,
-            files=files,
-            data=data,
+            files={file_param: (filename, f, 'image/jpeg')},
+            data=extra_data or {},
+            headers=headers,
             timeout=settings.AI_SERVICE_TIMEOUT,
         )
 
@@ -96,21 +173,35 @@ def _parse_ai_response(model_type: str, ai_resp: dict) -> dict:
         }
 
     elif model_type == 'prostate':
-        # credentials TBD — o'xshash pnevmoniya formatida bo'lishi kutilmoqda
-        raw_status = ai_resp.get('status', "NOMA'LUM")
-        s = raw_status.upper()
-        if s in ('NORMAL', 'SOGLOM'):
-            dtype = AnalysisResult.DiagnosisType.NORMAL
-        elif s in ('SARATON', 'CANCER', 'PROSTATE', 'PATHOLOGY'):
+        # OpenAPI spec: {disease_probability_percent, conclusion, detections_count, detections}
+        probability   = int(ai_resp.get('disease_probability_percent', 0))
+        conclusion    = ai_resp.get('conclusion', "Noma'lum")
+        det_count     = ai_resp.get('detections_count', 0)
+        detections    = ai_resp.get('detections', [])
+
+        if probability >= 70:
             dtype = AnalysisResult.DiagnosisType.DANGER
-        else:
+        elif probability >= 40:
             dtype = AnalysisResult.DiagnosisType.WARNING
+        else:
+            dtype = AnalysisResult.DiagnosisType.NORMAL
+
+        # Aniqlangan sohalar ro'yxati (label + confidence)
+        det_text = ''
+        if detections:
+            parts = [f"{d['label']} ({d['confidence_percent']}%)" for d in detections[:5]]
+            det_text = ' | '.join(parts)
+
+        note = conclusion
+        if det_count:
+            note += f"\n{det_count} ta soha aniqlandi" + (f": {det_text}" if det_text else '')
+
         return {
-            'diagnosis':   raw_status,
+            'diagnosis':   conclusion,
             'dtype':       dtype,
-            'confidence':  float(ai_resp.get('probability', ai_resp.get('confidence', 0.0))),
-            'note':        '',
-            'heatmap_b64': ai_resp.get('heatmap_image', ''),
+            'confidence':  float(probability),
+            'note':        note,
+            'heatmap_b64': '',
         }
 
     # Fallback
@@ -124,7 +215,7 @@ def _parse_ai_response(model_type: str, ai_resp: dict) -> dict:
 
 
 def _result_to_dict(result: AnalysisResult) -> dict:
-    return {
+    d = {
         'analysis_id':    result.analysis_id,
         'diagnosis':      result.diagnosis,
         'diagnosis_type': result.diagnosis_type,
@@ -132,7 +223,13 @@ def _result_to_dict(result: AnalysisResult) -> dict:
         'note':           result.note,
         'gradcam_url':    result.gradcam_image.url if result.gradcam_image else None,
         'status':         'completed',
+        'model_type':     result.analysis.model_type,
     }
+    # Bone age: jami_oylik ni JS comparison uchun qaytaramiz
+    if result.analysis.model_type == 'bone_age' and result.raw_output:
+        d['jami_oylik'] = result.raw_output.get('jami_oylik')
+        d['jinsi']      = result.raw_output.get('jinsi', '')
+    return d
 
 
 # ---------------------------------------------------------------------------
@@ -228,8 +325,11 @@ def api_analyze(request):
             raw_output=ai_resp,
         )
 
-        # Heatmap ni saqlash (bone_age da yo'q)
-        _save_heatmap(result, parsed['heatmap_b64'])
+        # Vizualizatsiya: pnevmoniya → heatmap (base64), prostate → box drawing
+        if analysis.model_type == 'prostate':
+            _draw_prostate_detections(result, ai_resp.get('detections', []))
+        else:
+            _save_heatmap(result, parsed['heatmap_b64'])
 
         analysis.status = Analysis.Status.COMPLETED
         analysis.save(update_fields=['status'])
@@ -337,8 +437,14 @@ def result_detail(request, pk):
 
         return redirect('result_detail', pk=pk)
 
+    result = getattr(analysis, 'result', None)
+    detections = []
+    if result and analysis.model_type == 'prostate' and result.raw_output:
+        detections = result.raw_output.get('detections', [])
+
     context = {
-        'analysis': analysis,
-        'result': getattr(analysis, 'result', None),
+        'analysis':   analysis,
+        'result':     result,
+        'detections': detections,
     }
     return render(request, 'analysis/result.html', context)

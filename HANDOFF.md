@@ -1,86 +1,61 @@
 # SinoMed — Project Handoff Document
-> Bu fayl yangi AI yoki ishchi uchun loyihani tez tushunib olish uchun yozilgan.
-> **Ish boshlashdan oldin QUYIDAGI TARTIBDA o'qi:**
-
----
+> Yangi AI yoki ishchi uchun. Ish boshlashdan oldin **quyidagi tartibda** o'qi:
 
 ## 📚 O'qish tartibi (majburiy)
-
-Yangi sessiya yoki yangi LLM boshlanganda — bu fayllarni quyidagi tartibda o'qi:
-
 ```
-1. HANDOFF.md              ← bu fayl (hozir o'qiyapsan)
-2. docs/PRD.md             ← to'liq product requirements, rollar, flow, backlog
-3. memory/project_sinomed_hackathon.md  ← texnik holat, models, URLs, templates
+1. HANDOFF.md              ← bu fayl
+2. docs/PRD.md             ← to'liq talablar, rollar, flow
+3. memory/project_sinomed_hackathon.md  ← texnik holat, models, URLs
 ```
-
-> `memory/` papkasi: `C:\Users\Oybek\.claude\projects\C--Users-Oybek-Documents-Projects-programming-Telegram\memory\`
-
-Uch faylni o'qigandan so'ng loyiha to'liq tushuniladi — qo'shimcha savol berma.
+> memory/ : `C:\Users\Oybek\.claude\projects\C--Users-Oybek-Documents-Projects-programming-Telegram\memory\`
 
 ---
 
-## Loyiha haqida
-**SinoMed** — tibbiy AI platforma (National AI Hackathon 2026, Andijon, Fedora jamoasi).
-- AI tahlil qiladi → shifokor tasdiqlaydi → audit log saqlanadi
-- 3 ta model: suyak yoshi (qo'l rentgeni), prostata saraton, o'pka yallig'lanishi
-
----
-
-## Muhim texnik ma'lumotlar
+## Texnik ma'lumotlar
 
 ```bash
-# Python — DOIM to'liq yo'l bilan
+# Python — DOIM to'liq yo'l
 C:\Python313\python.exe manage.py runserver 8002
 C:\Python313\python.exe manage.py migrate
 C:\Python313\python.exe manage.py check
 
 # python.exe = Python 3.14 (paketlar yo'q) — ISHLATMA
-
-# Branch
-git checkout Oybek   # barcha ish shu yerda
-git push origin Oybek
-
-# QOIDA: commit message ga "Co-Authored-By" yoki AI belgisi QO'YMA
+# Branch: Oybek | git push origin Oybek
+# QOIDA: commit da Co-Authored-By QO'YMA
 ```
 
 ---
 
 ## App struktura
-
 ```
-sinomed/
-├── accounts/       # User auth, registration, user management CRUD
-├── analysis/       # X-ray upload, AI call, result view
-├── audit/          # AuditLog (security) + AnalysisLog (AI results)
-├── billing/        # Plan/Subscription/Payment + personal dashboard
-├── organizations/  # Organization model + org admin dashboard
-├── config/         # settings.py, urls.py
-├── static/
-│   └── img/
-│       ├── logo.png        ← asosiy logo (yashil o'pka, oq fon)
-│       └── logo-lungs.svg  ← fallback SVG
-└── templates/      # Barcha HTML (DTL)
+accounts/       — User auth, 3-step register, approval flow, user CRUD
+analysis/       — X-ray upload, AI call, result + doctor panel
+audit/          — AuditLog + AnalysisLog
+billing/        — Plan/Subscription/Payment + personal dashboard
+organizations/  — Organization model + org admin dashboard
+config/         — settings.py, urls.py
+static/img/     — logo.png (yashil o'pka), logo-lungs.svg
+templates/      — barcha HTML (DTL)
 ```
 
 ---
 
-## Modellar (soddalashtirilgan)
-
+## Modellar
 ```python
 # accounts
-User: username, role(student|doctor|org_admin), organization(FK),
+User: role(student|doctor|org_admin), organization(FK),
       approval_status(pending|approved|rejected), rejection_reason,
-      phone, balance, institution(legacy), is_active
+      phone, balance, is_active
 
 # organizations
 Organization: name, org_type(university|hospital), code, is_active
-# Fixture: 3 university + 3 hospital (loaded)
+# 3 university + 3 hospital fixture yuklangan
 
 # analysis
 Analysis: user, model_type(bone_age|prostate|pneumonia), image, status
-AnalysisResult: analysis(1:1), diagnosis, diagnosis_type, confidence,
-                gradcam_image, raw_output, doctor_confirmed, doctor_note
+AnalysisResult: analysis(1:1), diagnosis, diagnosis_type(normal|warning|danger),
+                confidence, note, gradcam_image, raw_output(JSON),
+                doctor_confirmed, doctor_note, doctor_report, reviewed_by
 
 # audit
 AuditLog: user, action, ip_address, data(JSON), timestamp
@@ -93,43 +68,42 @@ Plan, Subscription, Payment
 
 ---
 
-## Rollar va ko'rinish
-
-| Rol | Dashboard | Audit | Org Admin | User CRUD |
-|-----|-----------|-------|-----------|-----------|
-| superuser | `/dashboard/` | ✅ to'liq | ✅ barcha org | ✅ to'liq |
-| org_admin | `/org/dashboard/` | ✅ o'z org | ✅ o'z org | ✅ cheklangan |
-| doctor | `/dashboard/` | ❌ | ❌ | ❌ |
-| student | `/dashboard/` | ❌ | ❌ | ❌ |
+## Rollar
+| Rol | Dashboard | AI tahlil | Audit | User CRUD |
+|-----|-----------|-----------|-------|-----------|
+| superuser | `/dashboard/` | ✅ | ✅ to'liq | ✅ to'liq |
+| org_admin | `/org/dashboard/` | ✅ | ✅ o'z org | ✅ cheklangan |
+| doctor | `/dashboard/` | ✅ (tasdiqlash) | ❌ | ❌ |
+| student | `/dashboard/` | ✅ (faqat ko'rish) | ❌ | ❌ |
 
 ---
 
 ## Registration flow
 ```
 1. Rol tanlash (student/doctor)
-2. Muassasa tanlash — AJAX: GET /auth/api/organizations/?role=student
+2. Muassasa tanlash — AJAX: GET /auth/api/organizations/?role=...
 3. Ma'lumotlar → submit
-→ User yaratiladi: is_active=False, approval_status=pending
-→ Org admin /org/dashboard/ da ko'radi → Tasdiqlaydi/Rad etadi
-→ Tasdiqlangach user login qila oladi
+→ is_active=False, approval_status=pending
+→ Org admin /org/dashboard/ da tasdiqlaydi/rad etadi
+→ Login: pending → sariq xabar | rejected → qizil + sabab
 ```
 
 ---
 
-## URL map (asosiy)
+## URL map
 ```
 /                          landing
-/scan/                     upload & analyze
-/result/<pk>/              natija + doctor panel
+/scan/                     upload & analyze (3 model selectbox)
+/analyze/<pk>/result/      natija + doctor panel + lightbox
 /api/analyze/              AJAX POST → AI call
 
-/auth/login/               login (pending/rejected xabarlari bor)
+/auth/login/               login
 /auth/register/            3-step registration
 /auth/api/organizations/   AJAX org list
-/auth/users/               user list (admin/org_admin)
+/auth/users/               user list (superadmin/org_admin)
 /auth/users/create/        yangi user (superadmin)
 /auth/users/<pk>/edit/     tahrirlash
-/auth/users/<pk>/delete/   o'chirish (POST)
+/auth/users/<pk>/delete/   o'chirish
 
 /org/dashboard/            org admin panel
 /org/users/<pk>/approve/   tasdiqlash (POST)
@@ -138,128 +112,109 @@ Plan, Subscription, Payment
 /dashboard/                shaxsiy kabinet
 /audit/analyses/           AI tahlil loglari
 /audit/log/                security audit (superuser)
-
 /admin/                    Django admin
 ```
 
 ---
 
-## AI Service integratsiya
+## AI Modellar — to'liq holat
 
-### Ulangan modellar (2026-06-05)
-| Model | Endpoint | Holat |
-|-------|----------|-------|
-| `pneumonia` | `http://192.168.48.79:8001/api/` | ✅ Ulangan |
-| `bone_age`  | `http://192.168.48.79:8002/api/predict-bone-age` | ✅ Ulangan |
-| `prostate`  | TBD | ⏳ Credentials kutilmoqda |
+> IP o'zgarganda: `.env` da `AI_SERVER_IP=yangi.ip` — boshqa hech narsa tegmaydi
 
-> AI modellar `192.168.48.79` IP li laptop da ishlaydi.
-> Test uchun ikkala qurilma **bitta tarmoqda** bo'lishi shart.
-
-### API formatlar
-```
-# Pnevmoniya
-POST multipart/form-data  →  {status, probability, heatmap_image (base64)}
-
-# Bone Age
-POST multipart/form-data
-  image     — fayl (majburiy)
-  is_female — text: "true" (ixtiyoriy, default: erkak)
-Javob: {formatlangan_yosh, jami_oylik, jinsi, yosh_yil}
-```
-
-### settings.py
 ```python
+# config/settings.py
+AI_SERVER_IP = os.getenv('AI_SERVER_IP', '10.49.158.145')
 AI_ENDPOINTS = {
-    'pneumonia': os.getenv('PNEUMONIA_AI_URL', 'http://192.168.48.79:8001/api/'),
-    'bone_age':  os.getenv('BONE_AGE_AI_URL',  'http://192.168.48.79:8002/api/predict-bone-age'),
-    'prostate':  os.getenv('PROSTATE_AI_URL',  ''),  # TBD
+    'pneumonia': f'http://{AI_SERVER_IP}:8001/api/',
+    'bone_age':  f'http://{AI_SERVER_IP}:8002/api/predict-bone-age',
+    'prostate':  f'http://{AI_SERVER_IP}:8003/predict',
 }
+PROSTATE_API_KEY = os.getenv('PROSTATE_API_KEY', '')
 AI_SERVICE_TIMEOUT = 30
 ```
 
-### IP o'zgarsa — faqat .env ga yozing:
-```env
-PNEUMONIA_AI_URL=http://yangi-ip:8001/api/
-BONE_AGE_AI_URL=http://yangi-ip:8002/api/predict-bone-age
+| Model | Port | Param | Javob |
+|-------|------|-------|-------|
+| `pneumonia` | 8001 | `image` | `{status, probability, heatmap_image(base64)}` |
+| `bone_age` | 8002 | `image` + `is_female` | `{formatlangan_yosh, jami_oylik, jinsi, yosh_yil}` |
+| `prostate` | 8003 | **`file`** + `X-API-Key` | `{disease_probability_percent, conclusion, detections[]}` |
+
+### Bone age — tug'ilgan sana taqqoslash
+- UI da oy/yil kiritilsa → AI `jami_oylik` vs haqiqiy oylar → farq ko'rsatiladi
+- `≤3 oy` 🎯 Juda aniq | `≤6` ✅ | `≤12` ⚠️ | `>12` ❌
+
+### Prostate — detection drawing
+- `_draw_prostate_detections()` — Pillow bilan box chizadi → `gradcam_image` ga saqlaydi
+- grade3→ko'k, grade4→sariq, grade5→qizil
+- `result.html`: annotated rasm + har detection `label + %`
+
+### views.py arxitektura
+```
+_call_ai(model_type, image_path, extra_data)  — requests multipart POST
+_parse_ai_response(model_type, ai_resp)        — har model uchun parser
+_save_heatmap(result, b64)                     — base64 → media/gradcam/
+_draw_prostate_detections(result, detections)  — Pillow box drawing
+_result_to_dict(result)                        — JSON response (+ jami_oylik bone_age uchun)
 ```
 
-### Prostate credentials kelganda
-1. `.env` → `PROSTATE_AI_URL=http://192.168.48.79:PORT/endpoint`
-2. `analysis/views.py` → `_parse_ai_response()` prostate parser allaqachon bor
-3. Javob formati boshqacha bo'lsa — parser ni yangilang
+---
+
+## UI xususiyatlari
+- **Lightbox**: barcha rasmlarga bosish → modal, zoom (+/-/wheel), drag, pinch (mobil), Esc/dblclick reset
+  - ⚠️ Qoida: lightbox `<div id="lightbox">` `{% block content %}` **ichida** (endblock dan oldin) bo'lishi shart
+  - Django template inheritance da blokdan tashqari HTML render bo'lmaydi → `getElementById` null qaytaradi
+- **Scan sahifasi**: model selectbox → bone_age tanlanganda tug'ilgan sana + jins fieldlari chiqadi
+- **Logo**: `static/img/logo.png` (yashil o'pka), navbar oq background konteynerda
+- **v1.0** badge — footer da
 
 ---
 
 ## Database
-- **Engine**: PostgreSQL 17.2 (local: `localhost:5432`)
-- **DB name**: `sinomed_db`
-- **User**: `postgres` / **Password**: env orqali (`DB_PASSWORD`)
-- `settings.py` DATABASES `os.getenv()` bilan — prod da `.env` orqali o'zgartiriladi
-- SQLite (`db.sqlite3`) + `db_backup.json` → `.gitignore` da, GitHubga ketmaydi
-
-## .env (hali yo'q, yaratish kerak)
-```env
-SECRET_KEY=django-insecure-...
-AI_SERVICE_URL=http://server-ip:8001
-DEBUG=True
-DB_PASSWORD=1234
+```
+Engine: PostgreSQL 17.2, sinomed_db, localhost:5432
+User: postgres
+.env: DB_PASSWORD=1234 (lokal)
 ```
 
----
+## .env (loyiha root da, gitga ketmaydi)
+```env
+AI_SERVER_IP=10.49.158.145
+DB_NAME=sinomed_db
+DB_USER=postgres
+DB_PASSWORD=1234
+DB_HOST=localhost
+DB_PORT=5432
+DEBUG=True
+SECRET_KEY=django-insecure-sinomed-hackathon-2026-fedora-team
+# PROSTATE_API_KEY=...
+```
 
 ## Superuser
 ```
-username: oybek
-password: 123456
+username: oybek | password: 123456
 ```
-
----
 
 ## CSS Variables (dark blue medical theme)
 ```css
---bg-dark: #0a0f1f
---bg-card: #121a2e
---bg-hover: #1a2541
---border-color: rgba(0,183,214,0.15)
---fg-primary: #e3f2fd
---fg-secondary: #90caf9
---fg-muted: #5d7fa3
---primary: #0077b6
---primary-light: #00b4d8
---accent: #00d4ff
+--bg-dark:#0a0f1f  --bg-card:#121a2e  --bg-hover:#1a2541
+--border-color:rgba(0,183,214,0.15)
+--fg-primary:#e3f2fd  --fg-secondary:#90caf9  --fg-muted:#5d7fa3
+--primary:#0077b6  --primary-light:#00b4d8  --accent:#00d4ff
 ```
-
----
-
-## Logo
-- **Asosiy PNG**: `static/img/logo.png` — yashil o'pka, oq fon
-- **Fallback SVG**: `static/img/logo-lungs.svg`
-- **Navbar** (`base.html`): `.logo-mark 2.55rem` → `<img logo.png>`, matn yashil gradient `#34d399 → #0d9488`
-- **Auth** (`accounts/auth.html`): `.logo-mark` → `<img logo.png>`
-- Logo oq fondagi PNG — navbar da `background: #fff; padding: 2px` konteynerda ko'rsatiladi
-- `"v1.0"` badge navbar dan footer ga ko'chirildi
 
 ---
 
 ## Keyingi vazifalar
-1. `.env` fayl yaratish (SECRET_KEY + AI_SERVICE_URL)
-2. AI credentials kelganda `analysis/views.py` → `api_analyze` ni ulash
-3. Payment/plan UI (org admin dashboard da)
-4. Production deploy (VPS, Nginx)
-
----
+1. **Production deploy** — VPS, Nginx, PostgreSQL prod
+2. **Prostate API key** — agar kerak bo'lsa `.env` ga `PROSTATE_API_KEY=...`
+3. **Payment/plan UI** — org admin dashboard da
 
 ## Barcha docs
-
 ```
-HANDOFF.md                                              ← bu fayl
-docs/PRD.md                                             ← product requirements
-docs/superpowers/specs/2026-06-04-audit-analysis-log-design.md
-docs/superpowers/plans/2026-06-04-audit-analysis-log.md
-organizations/fixtures/initial_organizations.json       ← 6 ta org seed data
+HANDOFF.md                 ← bu fayl
+docs/PRD.md                ← product requirements
+organizations/fixtures/initial_organizations.json
 ```
 
 ---
-
-*Last updated: 2026-06-05 | Branch: Oybek | Last commit: see git log*
+*Last updated: 2026-06-05 | Branch: Oybek | Fix: lightbox div {% block content %} ichiga ko'chirildi*

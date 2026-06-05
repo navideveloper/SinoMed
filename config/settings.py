@@ -97,8 +97,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # AI model endpoints (Abdurasul's FastAPI service)
 # IP o'zgarsa — .env fayliga yozing: PNEUMONIA_AI_URL=http://new-ip:8001/api/
 AI_SERVICE_TIMEOUT = 30
+# ============================================================
+# AI SERVER — IP ni faqat shu yerdan o'zgartiring
+# Tarmoq o'zgarganda: AI_SERVER_IP = 'yangi.ip.manzil'
+# Yoki .env ga: AI_SERVER_IP=yangi.ip.manzil
+# ============================================================
+AI_SERVER_IP = os.getenv('AI_SERVER_IP', '172.20.10.4')
+
 AI_ENDPOINTS = {
-    'pneumonia': os.getenv('PNEUMONIA_AI_URL', 'http://192.168.48.79:8001/api/'),
-    'bone_age':  os.getenv('BONE_AGE_AI_URL',  'http://192.168.48.79:8002/api/predict-bone-age'),
-    'prostate':  os.getenv('PROSTATE_AI_URL',  ''),   # credentials kutilmoqda
+    'pneumonia': os.getenv('PNEUMONIA_AI_URL', f'http://{AI_SERVER_IP}:8001/api/'),
+    'bone_age':  os.getenv('BONE_AGE_AI_URL',  f'http://{AI_SERVER_IP}:8002/api/predict-bone-age'),
+    'prostate':  os.getenv('PROSTATE_AI_URL',  f'http://{AI_SERVER_IP}:8003/predict'),
 }
+PROSTATE_API_KEY = os.getenv('PROSTATE_API_KEY', '')  # X-API-Key header, .env ga yozing
