@@ -213,6 +213,37 @@ username: oybek | password: 123456
 
 ---
 
+## So'nggi bugfixlar va featurelar (2026-06-05)
+
+### Bugfixlar
+- **Rol "Talaba" superuser uchun** — `user_detail.html` + `users.html`: `is_superuser` tekshiruvi, oltin `badge-superuser` qo'shildi
+- **Balans tugmasi overflow** — `balance-form` column direction, button 100% width
+- **ROL dropdown duplikat** — `user_form.html`: hardcoded `<option org_admin>` olib tashlandi
+- **Raw AI output** — `analysis_log_detail.html` dan olib tashlandi (DB + eksportda bor)
+
+### Yangi featurelar
+- **Org Admin user yaratish** — `user_create_view`: org_admin o'z muassasasiga talaba/shifokor yarata oladi
+  - Muassasa: lock (faqat o'z org), rol: faqat talaba/shifokor, auto-approved
+  - Backend da POST validation ham bor (role abuse bloklangan)
+- **Shaxsiy CSV eksport** — `/audit/export/my/` URL, barcha login bo'lgan userlar o'z tahlillarini yuklab oladi
+  - Dashboard da "Oxirgi tahlillar" yonida `CSV yuklab olish` tugmasi
+
+### UI/UX
+- **Theme toggle** — Chiqish tugmasi yoniga ko'chirildi (action buttons yonida)
+- **Audit nav linki** — Shifokor uchun ham ko'rinadi (o'z tahlillari)
+- **Export tugmalari** — Audit sahifasida faqat superuser/org_admin ko'radi
+- **Emoji → Font Awesome 6.4** — 11 template, barcha ikonlar FA6
+
+## Rollar va ruxsatlar (to'liq)
+
+| URL | Talaba | Shifokor | Org Admin | SuperAdmin |
+|-----|--------|----------|-----------|------------|
+| `/auth/users/` | redirect | redirect | o'z org | hammasi |
+| `/auth/users/create/` | redirect | redirect | o'z org (talaba/shifokor) | hammasi |
+| `/audit/analyses/` | 403 | o'z tahlillari | o'z org | hammasi |
+| `/audit/export/my/` | o'z CSV | o'z CSV | o'z CSV | o'z CSV |
+| `/audit/export/json/` | 403 | 403 | o'z org | hammasi |
+
 ## Keyingi vazifalar
 1. **Production deploy** — VPS, Nginx, PostgreSQL prod
 2. **Prostate API key** — agar kerak bo'lsa `.env` ga `PROSTATE_API_KEY=...`
@@ -229,4 +260,4 @@ organizations/fixtures/initial_organizations.json
 ```
 
 ---
-*Last updated: 2026-06-05 | Branch: Oybek | chore: logo yangilandi, README o'zbekcha, taqdimot qo'shildi*
+*Last updated: 2026-06-05 | Branch: Oybek | feat: org_admin create + personal export + bugfixes*
