@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Foydalanuvchilar{% endblock %}
+
+{% block extra_style %}
+  main { flex: 1; padding-block: 2rem 3rem; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem; }
+  .page-header h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -.03em; background: linear-gradient(90deg, var(--fg-primary), var(--primary-light)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stats-strip { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; margin-bottom: 1.75rem; }
+  @media(min-width:640px){ .stats-strip { grid-template-columns: repeat(5, 1fr); } }
+  .stat-pill { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: .875rem 1rem; text-align: center; }
+  .stat-pill .val { font-size: 1.5rem; font-weight: 800; color: var(--primary-light); font-family: var(--mono); }
+  .stat-pill .lbl { font-size: .7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .05em; margin-top: .2rem; }
+  .stat-pill.danger .val { color: #ef5350; }
+  .filter-bar { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; }
+  .filter-group { display: flex; flex-direction: column; gap: .3rem; }
+  .filter-group label { font-size: .72rem; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .05em; }
+  .filter-input, .filter-select { padding: .5rem .75rem; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: calc(var(--radius) - 4px); color: var(--fg-primary); font-size: .85rem; font-family: var(--font); outline: none; min-width: 140px; }
+  .filter-input:focus, .filter-select:focus { border-color: var(--primary-light); }
+  .filter-select option { background: var(--bg-card); }
+  .btn-filter { padding: .5rem 1.25rem; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; border: none; border-radius: calc(var(--radius) - 4px); font-weight: 600; font-size: .85rem; cursor: pointer; }
+  .table-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); overflow: hidden; }
+  .htable { width: 100%; border-collapse: collapse; }
+  .htable th { padding: .75rem 1rem; font-size: .68rem; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border-color); text-align: left; white-space: nowrap; }
+  .htable td { padding: .75rem 1rem; font-size: .82rem; border-bottom: 1px solid var(--border-color); color: var(--fg-secondary); }
+  .htable tr:last-child td { border-bottom: none; }
+  .htable tr:hover td { background: var(--bg-hover); }
+  .htable tr.inactive td { opacity: .55; }
+  .user-cell { display: flex; align-items: center; gap: .6rem; }
+  .avatar { width: 2rem; height: 2rem; border-radius: 8px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: .85rem; flex-shrink: 0; }
+  .badge { display: inline-block; padding: .2rem .55rem; border-radius: 20px; font-size: .68rem; font-weight: 600; border: 1px solid; }
+  .badge-doctor { background: rgba(0,119,182,.15); color: var(--primary-light); border-color: rgba(0,119,182,.3); }
+  .badge-student { background: rgba(0,212,255,.1); color: var(--accent); border-color: rgba(0,212,255,.2); }
+  .badge-university { background: rgba(255,152,0,.15); color: #ffb74d; border-color: rgba(255,152,0,.3); }
+  .badge-org_admin { background: rgba(139,92,246,.15); color: #c4b5fd; border-color: rgba(139,92,246,.3); }
+  .badge-active { background: rgba(76,175,80,.15); color: #81c784; border-color: rgba(76,175,80,.3); }
+  .badge-inactive { background: rgba(244,67,54,.1); color: #ef5350; border-color: rgba(244,67,54,.2); }
+  .view-link { color: var(--primary-light); font-weight: 500; font-size: .8rem; }
+  .view-link:hover { text-decoration: underline; }
+  .toggle-btn { padding: .3rem .7rem; border-radius: 6px; font-size: .72rem; font-weight: 600; cursor: pointer; border: 1px solid; transition: all .2s; }
+  .toggle-btn.deactivate { background: rgba(244,67,54,.1); color: #ef5350; border-color: rgba(244,67,54,.3); }
+  .toggle-btn.deactivate:hover { background: rgba(244,67,54,.25); }
+  .toggle-btn.activate { background: rgba(76,175,80,.1); color: #81c784; border-color: rgba(76,175,80,.3); }
+  .toggle-btn.activate:hover { background: rgba(76,175,80,.25); }
+  .pagination { display: flex; align-items: center; justify-content: center; gap: .5rem; padding: 1rem; flex-wrap: wrap; }
+  .page-btn { padding: .4rem .75rem; border: 1px solid var(--border-color); border-radius: calc(var(--radius) - 4px); font-size: .82rem; color: var(--fg-secondary); background: transparent; cursor: pointer; transition: all .2s; }
+  .page-btn:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="container">
+
+    <div class="page-header">
+      <div>
+        <h1>Foydalanuvchilar</h1>
+        <p style="color:var(--fg-muted);font-size:.85rem;margin-top:.25rem">Tizim foydalanuvchilarini boshqarish</p>
+      </div>
+      {% if user.is_superuser %}
+      <a href="{% url 'user_create' %}" class="btn btn-primary" style="text-decoration:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Yangi foydalanuvchi
+      </a>
+      {% endif %}
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat-pill"><div class="val">{{ stats.total }}</div><div class="lbl">Jami</div></div>
+      <div class="stat-pill"><div class="val">{{ stats.doctors }}</div><div class="lbl">Shifokorlar</div></div>
+      <div class="stat-pill"><div class="val">{{ stats.students }}</div><div class="lbl">Talabalar</div></div>
+      <div class="stat-pill" style="background:rgba(255,152,0,.06);border-color:rgba(255,152,0,.2)"><div class="val" style="color:#ffb74d">{{ stats.pending }}</div><div class="lbl">Kutilmoqda</div></div>
+      <div class="stat-pill danger"><div class="val">{{ stats.inactive }}</div><div class="lbl">Nofaol</div></div>
+    </div>
+
+    <form method="get" class="filter-bar">
+      <div class="filter-group">
+        <label>Qidirish</label>
+        <input type="text" name="search" class="filter-input" placeholder="Ism, username..." value="{{ filters.search }}">
+      </div>
+      <div class="filter-group">
+        <label>Rol</label>
+        <select name="role" class="filter-select">
+          <option value="">Hammasi</option>
+          {% for val, label in roles %}
+            <option value="{{ val }}" {% if filters.role == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Holat</label>
+        <select name="status" class="filter-select">
+          <option value="">Hammasi</option>
+          <option value="active" {% if filters.status == 'active' %}selected{% endif %}>Faol</option>
+          <option value="inactive" {% if filters.status == 'inactive' %}selected{% endif %}>Nofaol</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Tasdiqlash</label>
+        <select name="approval" class="filter-select">
+          <option value="">Hammasi</option>
+          {% for val, label in approval_choices %}
+            <option value="{{ val }}" {% if filters.approval == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn-filter">Qidirish</button>
+      {% if filters.search or filters.role or filters.status or filters.approval %}
+        <a href="{% url 'user_list' %}" style="font-size:.82rem;color:var(--fg-muted);align-self:center">✕ Tozalash</a>
+      {% endif %}
+    </form>
+
+    <div class="table-card">
+      <div style="overflow-x:auto">
+        <table class="htable">
+          <thead>
+            <tr>
+              <th>Foydalanuvchi</th>
+              <th>Rol</th>
+              <th>Muassasa</th>
+              <th>Tahlillar</th>
+              {% if user.is_superuser %}<th>Balans</th>{% endif %}
+              <th>Holat</th>
+              <th>Ro'yxat sanasi</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr class="{% if not u.is_active %}inactive{% endif %}" id="user-row-{{ u.pk }}">
+              <td>
+                <div class="user-cell">
+                  <div class="avatar">{{ u.first_name|first|upper|default:u.username|first|upper }}</div>
+                  <div>
+                    <div style="font-weight:600;color:var(--fg-primary)">{{ u.get_full_name|default:u.username }}</div>
+                    <div style="font-size:.72rem;color:var(--fg-muted)">@{{ u.username }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge badge-{{ u.role }}">{{ u.get_role_display }}</span>
+              </td>
+              <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                {% if u.organization %}
+                  <span title="{{ u.organization.name }}">{{ u.organization.name|truncatechars:28 }}</span>
+                {% else %}
+                  <span style="color:var(--fg-muted)">—</span>
+                {% endif %}
+              </td>
+              <td style="font-family:var(--mono);font-weight:600;color:var(--primary-light)">{{ u.total_analyses }}</td>
+              {% if user.is_superuser %}
+              <td style="font-family:var(--mono);font-size:.8rem">{{ u.balance|floatformat:0 }} so'm</td>
+              {% endif %}
+              <td>
+                {% if u.approval_status == 'pending' %}
+                  <span class="badge" style="background:rgba(255,152,0,.15);color:#ffb74d;border-color:rgba(255,152,0,.3)">⏳ Kutilmoqda</span>
+                {% elif u.approval_status == 'rejected' %}
+                  <span class="badge badge-inactive">✗ Rad etildi</span>
+                {% else %}
+                  <span class="badge {% if u.is_active %}badge-active{% else %}badge-inactive{% endif %}" id="status-badge-{{ u.pk }}">
+                    {% if u.is_active %}Faol{% else %}Nofaol{% endif %}
+                  </span>
+                {% endif %}
+              </td>
+              <td style="font-size:.75rem;color:var(--fg-muted)">{{ u.date_joined|date:"d.m.Y" }}</td>
+              <td>
+                <div style="display:flex;gap:.4rem;align-items:center">
+                  <a href="{% url 'user_detail' u.pk %}" class="view-link">Ko'rish</a>
+                  {% if not u.is_superuser %}
+                  <button
+                    class="toggle-btn {% if u.is_active %}deactivate{% else %}activate{% endif %}"
+                    id="toggle-btn-{{ u.pk }}"
+                    onclick="toggleUser({{ u.pk }}, this)"
+                  >{% if u.is_active %}Nofaol{% else %}Faollashtir{% endif %}</button>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--fg-muted)">Foydalanuvchilar topilmadi</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if users.has_other_pages %}
+      <div class="pagination">
+        {% if users.has_previous %}
+          <a href="?page={{ users.previous_page_number }}&search={{ filters.search }}&role={{ filters.role }}&status={{ filters.status }}"><button class="page-btn">← Oldingi</button></a>
+        {% endif %}
+        <span style="font-size:.82rem;color:var(--fg-muted)">{{ users.number }} / {{ users.paginator.num_pages }}</span>
+        {% if users.has_next %}
+          <a href="?page={{ users.next_page_number }}&search={{ filters.search }}&role={{ filters.role }}&status={{ filters.status }}"><button class="page-btn">Keyingi →</button></a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : null;
+}
+
+async function toggleUser(pk, btn) {
+  btn.disabled = true;
+  const res = await fetch(`/auth/users/${pk}/toggle-active/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+  });
+  const data = await res.json();
+  if (res.ok) {
+    const row = document.getElementById(`user-row-${pk}`);
+    const badge = document.getElementById(`status-badge-${pk}`);
+    if (data.is_active) {
+      row.classList.remove('inactive');
+      badge.className = 'badge badge-active';
+      badge.textContent = 'Faol';
+      btn.className = 'toggle-btn deactivate';
+      btn.textContent = 'Nofaol';
+    } else {
+      row.classList.add('inactive');
+      badge.className = 'badge badge-inactive';
+      badge.textContent = 'Nofaol';
+      btn.className = 'toggle-btn activate';
+      btn.textContent = 'Faollashtir';
+    }
+  }
+  btn.disabled = false;
+}
+</script>
+{% endblock %}

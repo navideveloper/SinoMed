@@ -1,0 +1,24 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="leftLung" x1="10" y1="56" x2="28" y2="8" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#6ee7b7"/>
+    </linearGradient>
+    <linearGradient id="rightLung" x1="54" y1="56" x2="36" y2="8" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#6ee7b7"/>
+    </linearGradient>
+  </defs>
+  <!-- Left lung lobe -->
+  <path d="M30 54 C30 54 8 50 6 34 C4 18 14 10 22 10 C26 10 30 14 30 18 Z" fill="url(#leftLung)"/>
+  <!-- Left bronchi white lines -->
+  <path d="M30 18 C28 26 20 30 14 36" stroke="white" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <path d="M30 24 C26 30 20 38 16 46" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+  <!-- Right lung lobe -->
+  <path d="M34 54 C34 54 56 50 58 34 C60 18 50 10 42 10 C38 10 34 14 34 18 Z" fill="url(#rightLung)"/>
+  <!-- Right bronchi white lines -->
+  <path d="M34 18 C36 26 44 30 50 36" stroke="white" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <path d="M34 24 C38 30 44 38 48 46" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+  <!-- Center bronchus (trachea) -->
+  <path d="M32 8 L32 18" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.8"/>
+</svg>

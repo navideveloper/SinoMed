@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bosh sahifa{% endblock %}
+
+{% block extra_style %}
+  main {
+    flex: 1;
+  }
+
+  .hero {
+    min-height: calc(100vh - 4rem);
+    background: linear-gradient(135deg, rgba(0, 119, 182, 0.1) 0%, rgba(0, 180, 216, 0.05) 100%), var(--bg-dark);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 3rem;
+  }
+
+  .hero-inner {
+    padding-block: 4.5rem 5rem;
+  }
+
+  @media (min-width: 768px) {
+    .hero-inner {
+      padding-block: 6rem 5.5rem;
+    }
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-family: var(--mono);
+    font-weight: 600;
+    background: rgba(0, 180, 216, 0.15);
+    color: var(--primary-light);
+    border: 1px solid rgba(0, 180, 216, 0.3);
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
+    animation: fadeDown 0.5s ease-out forwards;
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--primary-light);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.3); }
+  }
+
+  .hero-heading {
+    text-align: center;
+    margin-bottom: 3.5rem;
+    animation: fadeDown 0.5s 0.1s ease-out both;
+  }
+
+  .hero-heading h1 {
+    font-size: clamp(2.1rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.13;
+    letter-spacing: -0.035em;
+    margin-bottom: 1.25rem;
+    background: linear-gradient(90deg, var(--fg-primary), var(--primary-light));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .highlight {
+    background: linear-gradient(90deg, var(--primary-light), var(--accent));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-heading p {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--fg-muted);
+    max-width: 36rem;
+    margin-inline: auto;
+    line-height: 1.7;
+  }
+
+  .scan-grid {
+    display: grid;
+    gap: 1.25rem;
+    max-width: 52rem;
+    margin-inline: auto;
+    margin-bottom: 5rem;
+  }
+
+  @media (min-width: 640px) {
+    .scan-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .scan-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+  }
+
+  .scan-card {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 1.5rem 1rem 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    opacity: 0;
+    animation: slideUp 0.5s ease-out forwards;
+    transition: all 0.3s;
+  }
+
+  .scan-card:nth-child(1) { animation-delay: 0.15s; }
+  .scan-card:nth-child(2) { animation-delay: 0.25s; }
+  .scan-card:nth-child(3) { animation-delay: 0.35s; }
+
+  .scan-card:hover {
+    border-color: var(--primary-light);
+    background: var(--bg-hover);
+    box-shadow: var(--shadow-glow), var(--shadow-md);
+    transform: translateY(-3px);
+  }
+
+  .scan-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .scan-icon svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .icon-amber {
+    background: rgba(255, 152, 0, 0.15);
+    color: #ffb74d;
+  }
+
+  .icon-blue {
+    background: rgba(0, 180, 216, 0.15);
+    color: var(--primary-light);
+  }
+
+  .icon-red {
+    background: rgba(244, 67, 54, 0.15);
+    color: #ef5350;
+  }
+
+  .scan-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--fg-primary);
+  }
+
+  .scan-card p {
+    font-size: 0.875rem;
+    color: var(--fg-muted);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .scan-tag {
+    font-size: 0.7rem;
+    font-family: var(--mono);
+    font-weight: 500;
+    background: rgba(0, 119, 182, 0.15);
+    color: var(--primary-light);
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-top: 0.25rem;
+  }
+
+  .card-arrow {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--bg-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .card-arrow svg {
+    width: 12px;
+    height: 12px;
+    color: var(--primary-light);
+  }
+
+  .scan-card:hover .card-arrow {
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    .card-arrow {
+      opacity: 1;
+    }
+  }
+
+  .stats-strip {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 3rem;
+    margin-bottom: 5rem;
+    animation: fadeDown 0.5s 0.5s ease-out both;
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 0.5rem 0;
+  }
+
+  .stat-num {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--primary-light);
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--fg-muted);
+    margin-top: 2px;
+  }
+
+  .features-row {
+    display: grid;
+    gap: 1.5rem;
+    text-align: center;
+    max-width: 44rem;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 640px) {
+    .features-row {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .feat {
+    opacity: 0;
+    animation: slideUp 0.5s ease-out forwards;
+  }
+
+  .feat:nth-child(1) { animation-delay: 0.55s; }
+  .feat:nth-child(2) { animation-delay: 0.65s; }
+  .feat:nth-child(3) { animation-delay: 0.75s; }
+
+  .feat-icon {
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 12px;
+    margin-inline: auto;
+    margin-bottom: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .feat-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .fi-teal {
+    background: rgba(0, 180, 216, 0.15);
+    color: var(--primary-light);
+  }
+
+  .fi-blue {
+    background: rgba(0, 180, 216, 0.15);
+    color: var(--accent);
+  }
+
+  .fi-yellow {
+    background: rgba(255, 152, 0, 0.15);
+    color: #ffb74d;
+  }
+
+  .feat h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+    color: var(--fg-primary);
+  }
+
+  .feat p {
+    font-size: 0.82rem;
+    color: var(--fg-muted);
+    line-height: 1.6;
+  }
+
+  .section-label {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    font-family: var(--mono);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+{% endblock %}
+
+{% block content %}
+<main>
+  <section class="hero">
+    <div class="container hero-inner">
+      <div style="text-align:center">
+        <div class="hero-badge">
+          <div class="badge-dot"></div>
+          AI tibbiy tahlil tizimi
+        </div>
+      </div>
+      <div class="hero-heading">
+        <h1>
+          Rentgen tasvirlarini
+          <span class="highlight">AI bilan tahlil qiling</span>
+        </h1>
+        <p>Shifokorlar va talabalar uchun sun'iy intellekt asosidagi o'rgatuvchi yordamchi — patologiyalarni soniyalar ichida aniqlab beradi</p>
+      </div>
+
+      <div id="scan" class="scan-grid">
+        <a class="scan-card" href="{% url 'upload_analyze' %}?type=bone_age">
+          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></div>
+          <div class="scan-icon icon-amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18.2 2c-1.3 0-2.4.5-3.2 1.3L3.3 15c-.8.8-1.3 1.9-1.3 3.2C2 20.8 3.2 22 5.8 22c1.3 0 2.4-.5 3.2-1.3L20.7 9c.8-.8 1.3-1.9 1.3-3.2C22 3.2 20.8 2 18.2 2z"/><path d="m10 6 4 4M6 10l4 4"/></svg>
+          </div>
+          <h3>Suyak yoshi</h3>
+          <p>Qo'l rentgeni orqali bemorning biologik yoshini aniqlash</p>
+          <span class="scan-tag">qo'l · yosh aniqlash</span>
+        </a>
+
+        <a class="scan-card" href="{% url 'upload_analyze' %}?type=prostate">
+          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></div>
+          <div class="scan-icon icon-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+          </div>
+          <h3>Prostata tahlili</h3>
+          <p>Rentgen asosida prostata bezi saratonini erta aniqlash</p>
+          <span class="scan-tag">prostata · saraton</span>
+        </a>
+
+        <a class="scan-card" href="{% url 'upload_analyze' %}?type=pneumonia">
+          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></div>
+          <div class="scan-icon icon-red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/></svg>
+          </div>
+          <h3>Pnevmoniya</h3>
+          <p>O'pka rentgeni orqali yallig'lanish va infeksiyani aniqlash</p>
+          <span class="scan-tag">o'pka · pnevmoniya</span>
+        </a>
+      </div>
+
+      <div class="stats-strip">
+        <div class="stat-item"><div class="stat-num">96.4%</div><div class="stat-label">Aniqlik darajasi</div></div>
+        <div class="stat-item"><div class="stat-num">&lt; 5s</div><div class="stat-label">Tahlil vaqti</div></div>
+        <div class="stat-item"><div class="stat-num">3</div><div class="stat-label">AI model</div></div>
+        <div class="stat-item"><div class="stat-num">100%</div><div class="stat-label">Inson nazorati</div></div>
+      </div>
+
+      <p class="section-label">Nima uchun SinoMed?</p>
+      <div class="features-row">
+        <div class="feat">
+          <div class="feat-icon fi-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+          <h3>O'rgatuvchi tizim</h3>
+          <p>Talaba avval o'zi baholaydi, keyin AI natijasi bilan solishtiradi — real amaliyot</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon fi-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h3>Xavfsiz va etik</h3>
+          <p>Audit log, inson tasdig'i majburiy — AI taklif qiladi, qarorni shifokor qiladi</p>
+        </div>
+        <div class="feat">
+          <div class="feat-icon fi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <h3>Tezkor natija</h3>
+          <p>Grad-CAM vizualizatsiya — AI qayerga qarayotganini shifokor ko'radi</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

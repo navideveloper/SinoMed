@@ -1,0 +1,390 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}SinoMed{% endblock %} — AI tibbiy tahlil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* Dark Medical Theme */
+    :root {
+      --bg-dark: #0a0f1f;
+      --bg-card: #121a2e;
+      --bg-hover: #1a2541;
+      --border-color: rgba(0, 183, 214, 0.15);
+      --fg-primary: #e3f2fd;
+      --fg-secondary: #90caf9;
+      --fg-muted: #5d7fa3;
+      --primary: #0077b6;
+      --primary-light: #00b4d8;
+      --accent: #00d4ff;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+      --radius: 0.75rem;
+      --font: 'Inter', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --shadow-sm: 0 4px 12px rgba(0, 119, 182, 0.1);
+      --shadow-md: 0 12px 32px rgba(0, 119, 182, 0.15);
+      --shadow-glow: 0 0 30px rgba(0, 180, 216, 0.25);
+    }
+
+    [data-theme="light"] {
+      --bg-dark: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-hover: #f0f4f8;
+      --border-color: rgba(0, 119, 182, 0.2);
+      --fg-primary: #0f1419;
+      --fg-secondary: #334155;
+      --fg-muted: #64748b;
+      --primary: #0077b6;
+      --primary-light: #00b4d8;
+      --accent: #0096c7;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-dark);
+      color: var(--fg-primary);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s ease;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+    img, svg { display: block; max-width: 100%; }
+
+    .container { width: 100%; max-width: 1280px; margin-inline: auto; padding-inline: 1.25rem; }
+    @media (min-width: 640px) { .container { padding-inline: 2rem; } }
+
+    /* Navbar */
+    .navbar {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.875rem 0;
+      sticky: top;
+      z-index: 100;
+    }
+
+    .navbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      height: auto;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      margin-right: auto;
+    }
+
+    .logo-mark {
+      width: 2.55rem;
+      height: 2.55rem;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: #ffffff;
+      padding: 2px;
+    }
+
+    .logo-mark img { width: 100%; height: 100%; object-fit: contain; border-radius: 7px; }
+
+    .logo-name {
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, #34d399, #0d9488);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: calc(var(--radius) - 2px);
+      transition: all 0.2s;
+      white-space: nowrap;
+      cursor: pointer;
+      padding: 0.45rem 0.75rem;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-ghost {
+      color: var(--fg-muted);
+      padding: 0.45rem 0.6rem;
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg-hover);
+      color: var(--fg-secondary);
+    }
+
+    .btn-outline {
+      padding: 0.45rem 0.9rem;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--fg-secondary);
+    }
+
+    .btn-outline:hover {
+      background: var(--bg-hover);
+      border-color: var(--primary-light);
+      color: var(--primary-light);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff;
+      padding: 0.45rem 0.9rem;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .nav-label { display: none; }
+    @media (min-width: 640px) { .nav-label { display: inline; } }
+
+    .theme-toggle {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--fg-secondary);
+      padding: 0.45rem 0.6rem;
+      border-radius: calc(var(--radius) - 2px);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-hover);
+      border-color: var(--primary-light);
+      color: var(--primary-light);
+    }
+
+    /* Messages */
+    .messages-container { padding: 0.75rem 0 0; }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+      border-left: 3px solid;
+    }
+
+    .alert-error {
+      background: rgba(244, 67, 54, 0.1);
+      color: #ff6b6b;
+      border-left-color: var(--danger);
+    }
+
+    .alert-success {
+      background: rgba(76, 175, 80, 0.1);
+      color: #81c784;
+      border-left-color: var(--success);
+    }
+
+    .alert-info {
+      background: rgba(0, 180, 216, 0.1);
+      color: var(--accent);
+      border-left-color: var(--primary-light);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-card);
+      padding-block: 1.75rem;
+      margin-top: auto;
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-brand span {
+      font-size: 0.875rem;
+      color: var(--fg-muted);
+    }
+
+    .footer-brand svg {
+      color: var(--primary-light);
+    }
+
+    {% block extra_style %}{% endblock %}
+  </style>
+</head>
+<body data-theme="dark">
+
+<nav class="navbar" aria-label="Asosiy navigatsiya">
+  <div class="container navbar-inner">
+    <a class="logo" href="{% url 'index' %}">
+      <div class="logo-mark">
+        <img src="{% static 'img/logo.png' %}" alt="SinoMed logo" width="38" height="38">
+      </div>
+      <span class="logo-name">SinoMed</span>
+    </a>
+    <div class="nav-right">
+      <a href="{% url 'index' %}#scan">
+        <button class="btn btn-ghost" type="button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span class="nav-label">Tahlillar</span>
+        </button>
+      </a>
+      <a href="{% url 'pricing' %}">
+        <button class="btn btn-ghost" type="button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17.5 5H9.5a4 4 0 0 0 0 8h8a4 4 0 0 1 0 8H6.5"/></svg>
+          <span class="nav-label">Narxlar</span>
+        </button>
+      </a>
+      <button class="theme-toggle" id="themeToggle" title="Rangi o'zgartirish" onclick="toggleTheme()">
+        <i class="fas fa-sun" id="themeIcon"></i>
+      </button>
+      {% if user.is_authenticated %}
+        {% if user.is_org_admin %}
+        <a href="{% url 'org_dashboard' %}">
+          <button class="btn btn-ghost" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+            <span class="nav-label">Muassasa</span>
+          </button>
+        </a>
+        {% else %}
+        <a href="{% url 'dashboard' %}">
+          <button class="btn btn-ghost" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+            <span class="nav-label">Kabinet</span>
+          </button>
+        </a>
+        {% endif %}
+        {% if user.is_superuser or user.is_org_admin %}
+        <a href="{% url 'org_dashboard' %}">
+          <button class="btn btn-ghost" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="nav-label">Boshqaruv</span>
+          </button>
+        </a>
+        <a href="{% url 'analysis_log' %}">
+          <button class="btn btn-ghost" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <span class="nav-label">Audit</span>
+          </button>
+        </a>
+        <a href="{% url 'user_list' %}">
+          <button class="btn btn-ghost" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span class="nav-label">Foydalanuvchilar</span>
+          </button>
+        </a>
+        {% endif %}
+        <a href="{% url 'logout' %}">
+          <button class="btn btn-outline" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Chiqish
+          </button>
+        </a>
+      {% else %}
+        <a href="{% url 'login' %}">
+          <button class="btn btn-outline" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Kirish
+          </button>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="container messages-container">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+{% block content %}{% endblock %}
+
+<footer aria-label="Sayt haqida">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <span>© SinoMed 2026 · Fedora jamoasi · Andijon viloyati AI Hackathon</span>
+    </div>
+    <span style="font-size:0.65rem;font-family:var(--mono);background:rgba(0,180,216,0.12);color:var(--primary-light);padding:2px 8px;border-radius:20px;border:1px solid rgba(0,180,216,0.2);font-weight:600;">v1.0</span>
+  </div>
+</footer>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const icon = document.getElementById('themeIcon');
+  const currentTheme = html.getAttribute('data-theme') || 'dark';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+  html.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+
+  if (newTheme === 'dark') {
+    icon.className = 'fas fa-sun';
+  } else {
+    icon.className = 'fas fa-moon';
+  }
+}
+
+// Initialize theme on page load
+document.addEventListener('DOMContentLoaded', function() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  const icon = document.getElementById('themeIcon');
+  if (icon) {
+    icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  }
+});
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

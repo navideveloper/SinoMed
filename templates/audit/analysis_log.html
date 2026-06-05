@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tahlil loglari{% endblock %}
+
+{% block extra_style %}
+  main { flex: 1; padding-block: 2rem 3rem; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem; }
+  .page-header h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -.03em; background: linear-gradient(90deg, var(--fg-primary), var(--primary-light)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .export-btns { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .btn-export { padding: .5rem 1rem; border-radius: var(--radius); font-size: .8rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border-color); background: transparent; color: var(--fg-secondary); transition: all .2s; display: inline-flex; align-items: center; gap: .4rem; }
+  .btn-export:hover { background: var(--bg-hover); border-color: var(--primary-light); color: var(--primary-light); }
+  .btn-export-zip { background: rgba(0,180,216,.1); border-color: var(--primary-light); color: var(--primary-light); }
+  .stats-strip { display: grid; grid-template-columns: repeat(2,1fr); gap: .75rem; margin-bottom: 1.75rem; }
+  @media(min-width:640px){ .stats-strip { grid-template-columns: repeat(4,1fr); } }
+  .stat-pill { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: .875rem 1rem; text-align: center; }
+  .stat-pill .val { font-size: 1.5rem; font-weight: 800; color: var(--primary-light); font-family: var(--mono); }
+  .stat-pill .lbl { font-size: .7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .05em; margin-top: .2rem; }
+  .stat-pill.flagged .val { color: #ef5350; }
+  .filter-bar { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; }
+  .filter-group { display: flex; flex-direction: column; gap: .3rem; }
+  .filter-group label { font-size: .72rem; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .05em; }
+  .filter-input, .filter-select { padding: .5rem .75rem; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: calc(var(--radius) - 4px); color: var(--fg-primary); font-size: .85rem; font-family: var(--font); outline: none; }
+  .filter-input:focus, .filter-select:focus { border-color: var(--primary-light); }
+  .filter-select option { background: var(--bg-card); }
+  .btn-filter { padding: .5rem 1.25rem; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; border: none; border-radius: calc(var(--radius) - 4px); font-weight: 600; font-size: .85rem; cursor: pointer; }
+  .table-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); overflow: hidden; }
+  .htable { width: 100%; border-collapse: collapse; }
+  .htable th { padding: .75rem 1rem; font-size: .68rem; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border-color); text-align: left; }
+  .htable td { padding: .75rem 1rem; font-size: .82rem; border-bottom: 1px solid var(--border-color); color: var(--fg-secondary); }
+  .htable tr:last-child td { border-bottom: none; }
+  .htable tr:hover td { background: var(--bg-hover); }
+  .htable tr.flagged td { background: rgba(244,67,54,.04); }
+  .htable tr.flagged:hover td { background: rgba(244,67,54,.08); }
+  .badge { display: inline-block; padding: .2rem .55rem; border-radius: 20px; font-size: .68rem; font-weight: 600; border: 1px solid; }
+  .badge-ok { background: rgba(76,175,80,.15); color: #81c784; border-color: rgba(76,175,80,.3); }
+  .badge-danger { background: rgba(244,67,54,.15); color: #ef5350; border-color: rgba(244,67,54,.3); }
+  .badge-muted { background: var(--bg-hover); color: var(--fg-muted); border-color: var(--border-color); }
+  .badge-flag { background: rgba(244,67,54,.15); color: #ef5350; border-color: rgba(244,67,54,.3); }
+  .view-link { color: var(--primary-light); font-weight: 500; }
+  .view-link:hover { text-decoration: underline; }
+  .pagination { display: flex; align-items: center; justify-content: center; gap: .5rem; padding: 1rem; flex-wrap: wrap; }
+  .page-btn { padding: .4rem .75rem; border: 1px solid var(--border-color); border-radius: calc(var(--radius) - 4px); font-size: .82rem; color: var(--fg-secondary); background: transparent; cursor: pointer; transition: all .2s; }
+  .page-btn:hover, .page-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="container">
+
+    <div class="page-header">
+      <div>
+        <h1>Tahlil loglari</h1>
+        <p style="color:var(--fg-muted);font-size:.85rem;margin-top:.25rem">AI tahlillar tarixi va shifokor xulosalari</p>
+      </div>
+      <div class="export-btns">
+        <a href="{% url 'export_json' %}?format=json"><button class="btn-export">⬇ JSON</button></a>
+        <a href="{% url 'export_json' %}?format=csv"><button class="btn-export">⬇ CSV</button></a>
+        <a href="{% url 'export_zip' %}"><button class="btn-export btn-export-zip">📦 ZIP arxiv</button></a>
+      </div>
+    </div>
+
+    {% if user.is_superuser %}
+    <div class="stats-strip">
+      <div class="stat-pill"><div class="val">{{ stats.total }}</div><div class="lbl">Jami tahlillar</div></div>
+      <div class="stat-pill flagged"><div class="val">{{ stats.flagged }}</div><div class="lbl">Flagged</div></div>
+      <div class="stat-pill"><div class="val">{{ stats.avg_confidence }}%</div><div class="lbl">O'rtacha aniqlik</div></div>
+      <div class="stat-pill"><div class="val">{{ stats.this_month }}</div><div class="lbl">Bu oy</div></div>
+    </div>
+    {% endif %}
+
+    <form method="get" class="filter-bar">
+      <div class="filter-group">
+        <label>Model turi</label>
+        <select name="model_type" class="filter-select">
+          <option value="">Hammasi</option>
+          {% for val, label in model_types %}
+            <option value="{{ val }}" {% if filters.model_type == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Natija</label>
+        <select name="verdict" class="filter-select">
+          <option value="">Hammasi</option>
+          <option value="flagged" {% if filters.verdict == 'flagged' %}selected{% endif %}>🔴 Flagged</option>
+          <option value="confirmed" {% if filters.verdict == 'confirmed' %}selected{% endif %}>✓ Tasdiqlangan</option>
+          <option value="unreviewed" {% if filters.verdict == 'unreviewed' %}selected{% endif %}>— Ko'rilmagan</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Dan</label>
+        <input type="date" name="date_from" class="filter-input" value="{{ filters.date_from }}">
+      </div>
+      <div class="filter-group">
+        <label>Gacha</label>
+        <input type="date" name="date_to" class="filter-input" value="{{ filters.date_to }}">
+      </div>
+      <button type="submit" class="btn-filter">Qidirish</button>
+      {% if filters.model_type or filters.verdict or filters.date_from or filters.date_to %}
+        <a href="{% url 'analysis_log' %}" style="font-size:.82rem;color:var(--fg-muted);align-self:center">✕ Tozalash</a>
+      {% endif %}
+    </form>
+
+    <div class="table-card">
+      <div style="overflow-x:auto">
+        <table class="htable">
+          <thead>
+            <tr>
+              <th>Sana</th>
+              <th>Model</th>
+              <th>AI natija</th>
+              <th>Ishonch</th>
+              <th>Shifokor</th>
+              <th>Flag</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr class="{% if log.flagged_for_training %}flagged{% endif %}">
+              <td style="font-family:var(--mono);font-size:.75rem">{{ log.created_at|date:"d.m.Y H:i" }}</td>
+              <td>{{ log.analysis.get_model_type_display }}</td>
+              <td>
+                {% if log.error_type %}
+                  <span class="badge badge-danger">{{ log.get_error_type_display }}</span>
+                {% else %}
+                  {{ log.ai_diagnosis|default:"—" }}
+                {% endif %}
+              </td>
+              <td style="font-family:var(--mono)">
+                {% if log.ai_confidence %}{{ log.ai_confidence|floatformat:1 }}%{% else %}—{% endif %}
+              </td>
+              <td>
+                {% if log.doctor_verdict is True %}
+                  <span class="badge badge-ok">✓ Tasdiqladi</span>
+                {% elif log.doctor_verdict is False %}
+                  <span class="badge badge-danger">✗ Xato dedi</span>
+                {% else %}
+                  <span class="badge badge-muted">Ko'rilmagan</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if log.flagged_for_training %}
+                  <span class="badge badge-flag">🔴 Training</span>
+                {% else %}—{% endif %}
+              </td>
+              <td><a href="{% url 'analysis_log_detail' log.pk %}" class="view-link">Batafsil</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--fg-muted)">Log yozuvlari topilmadi</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if logs.has_other_pages %}
+      <div class="pagination">
+        {% if logs.has_previous %}
+          <a href="?page={{ logs.previous_page_number }}&model_type={{ filters.model_type }}&verdict={{ filters.verdict }}&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}"><button class="page-btn">← Oldingi</button></a>
+        {% endif %}
+        <span style="font-size:.82rem;color:var(--fg-muted)">{{ logs.number }} / {{ logs.paginator.num_pages }}</span>
+        {% if logs.has_next %}
+          <a href="?page={{ logs.next_page_number }}&model_type={{ filters.model_type }}&verdict={{ filters.verdict }}&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}"><button class="page-btn">Keyingi →</button></a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</main>
+{% endblock %}

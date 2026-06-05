@@ -1,3 +1,22 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
+venv/
+db.sqlite3
+db_backup.json
+media/
+*.log
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+*.egg-info/
+dist/
+build/
 # Python
 __pycache__/
 *.py[cod]

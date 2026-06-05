@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Audit log{% endblock %}
+
+{% block extra_style %}
+  main { flex: 1; padding-block: 2rem 3rem; }
+  .page-header { margin-bottom: 1.75rem; }
+  .page-header h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -.03em; background: linear-gradient(90deg, var(--fg-primary), var(--primary-light)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .filter-bar { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; }
+  .filter-group { display: flex; flex-direction: column; gap: .3rem; }
+  .filter-group label { font-size: .72rem; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .05em; }
+  .filter-input, .filter-select { padding: .5rem .75rem; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: calc(var(--radius) - 4px); color: var(--fg-primary); font-size: .85rem; font-family: var(--font); outline: none; }
+  .filter-input:focus, .filter-select:focus { border-color: var(--primary-light); }
+  .filter-select option { background: var(--bg-card); }
+  .btn-filter { padding: .5rem 1.25rem; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; border: none; border-radius: calc(var(--radius) - 4px); font-weight: 600; font-size: .85rem; cursor: pointer; }
+  .table-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); overflow: hidden; }
+  .htable { width: 100%; border-collapse: collapse; }
+  .htable th { padding: .75rem 1rem; font-size: .68rem; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border-color); text-align: left; }
+  .htable td { padding: .75rem 1rem; font-size: .82rem; border-bottom: 1px solid var(--border-color); color: var(--fg-secondary); }
+  .htable tr:last-child td { border-bottom: none; }
+  .htable tr:hover td { background: var(--bg-hover); }
+  .badge { display: inline-block; padding: .2rem .55rem; border-radius: 20px; font-size: .68rem; font-weight: 600; border: 1px solid var(--border-color); background: var(--bg-hover); color: var(--fg-muted); }
+  .pagination { display: flex; align-items: center; justify-content: center; gap: .5rem; padding: 1rem; }
+  .page-btn { padding: .4rem .75rem; border: 1px solid var(--border-color); border-radius: calc(var(--radius) - 4px); font-size: .82rem; color: var(--fg-secondary); background: transparent; cursor: pointer; transition: all .2s; }
+  .page-btn:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .json-collapsible summary { cursor: pointer; font-size: .75rem; color: var(--primary-light); }
+  .json-collapsible pre { background: var(--bg-dark); padding: .5rem; border-radius: 4px; font-size: .7rem; max-height: 120px; overflow: auto; margin-top: .25rem; }
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="container">
+    <div class="page-header">
+      <h1>Xavfsizlik audit logi</h1>
+      <p style="color:var(--fg-muted);font-size:.85rem;margin-top:.25rem">Tizimga kirish, chiqish va to'lov hodisalari</p>
+    </div>
+
+    <form method="get" class="filter-bar">
+      <div class="filter-group">
+        <label>Foydalanuvchi</label>
+        <input type="text" name="username" class="filter-input" placeholder="username" value="{{ filters.username }}">
+      </div>
+      <div class="filter-group">
+        <label>Harakat</label>
+        <select name="action" class="filter-select">
+          <option value="">Hammasi</option>
+          {% for val, label in actions %}
+            <option value="{{ val }}" {% if filters.action == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Dan</label>
+        <input type="date" name="date_from" class="filter-input" value="{{ filters.date_from }}">
+      </div>
+      <div class="filter-group">
+        <label>Gacha</label>
+        <input type="date" name="date_to" class="filter-input" value="{{ filters.date_to }}">
+      </div>
+      <button type="submit" class="btn-filter">Qidirish</button>
+    </form>
+
+    <div class="table-card">
+      <div style="overflow-x:auto">
+        <table class="htable">
+          <thead>
+            <tr>
+              <th>Vaqt</th>
+              <th>Foydalanuvchi</th>
+              <th>Harakat</th>
+              <th>IP manzil</th>
+              <th>Ma'lumot</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr>
+              <td style="font-family:var(--mono);font-size:.75rem;white-space:nowrap">{{ log.timestamp|date:"d.m.Y H:i" }}</td>
+              <td>{{ log.user.get_full_name|default:log.user.username|default:"—" }}</td>
+              <td><span class="badge">{{ log.get_action_display }}</span></td>
+              <td style="font-family:var(--mono);font-size:.75rem">{{ log.ip_address|default:"—" }}</td>
+              <td>
+                {% if log.data %}
+                <details class="json-collapsible">
+                  <summary>ko'rish</summary>
+                  <pre>{{ log.data|pprint }}</pre>
+                </details>
+                {% else %}—{% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--fg-muted)">Yozuvlar topilmadi</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if logs.has_other_pages %}
+      <div class="pagination">
+        {% if logs.has_previous %}<a href="?page={{ logs.previous_page_number }}&username={{ filters.username }}&action={{ filters.action }}"><button class="page-btn">← Oldingi</button></a>{% endif %}
+        <span style="font-size:.82rem;color:var(--fg-muted)">{{ logs.number }} / {{ logs.paginator.num_pages }}</span>
+        {% if logs.has_next %}<a href="?page={{ logs.next_page_number }}&username={{ filters.username }}&action={{ filters.action }}"><button class="page-btn">Keyingi →</button></a>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</main>
+{% endblock %}
