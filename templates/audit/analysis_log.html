@@ -54,9 +54,9 @@
         <p style="color:var(--fg-muted);font-size:.85rem;margin-top:.25rem">AI tahlillar tarixi va shifokor xulosalari</p>
       </div>
       <div class="export-btns">
-        <a href="{% url 'export_json' %}?format=json"><button class="btn-export">⬇ JSON</button></a>
-        <a href="{% url 'export_json' %}?format=csv"><button class="btn-export">⬇ CSV</button></a>
-        <a href="{% url 'export_zip' %}"><button class="btn-export btn-export-zip">📦 ZIP arxiv</button></a>
+        <a href="{% url 'export_json' %}?format=json"><button class="btn-export"><i class="fas fa-download"></i> JSON</button></a>
+        <a href="{% url 'export_json' %}?format=csv"><button class="btn-export"><i class="fas fa-download"></i> CSV</button></a>
+        <a href="{% url 'export_zip' %}"><button class="btn-export btn-export-zip"><i class="fas fa-box-archive"></i> ZIP arxiv</button></a>
       </div>
     </div>
 
@@ -83,7 +83,7 @@
         <label>Natija</label>
         <select name="verdict" class="filter-select">
           <option value="">Hammasi</option>
-          <option value="flagged" {% if filters.verdict == 'flagged' %}selected{% endif %}>🔴 Flagged</option>
+          <option value="flagged" {% if filters.verdict == 'flagged' %}selected{% endif %}>⦿ Flagged</option>
           <option value="confirmed" {% if filters.verdict == 'confirmed' %}selected{% endif %}>✓ Tasdiqlangan</option>
           <option value="unreviewed" {% if filters.verdict == 'unreviewed' %}selected{% endif %}>— Ko'rilmagan</option>
         </select>
@@ -98,7 +98,7 @@
       </div>
       <button type="submit" class="btn-filter">Qidirish</button>
       {% if filters.model_type or filters.verdict or filters.date_from or filters.date_to %}
-        <a href="{% url 'analysis_log' %}" style="font-size:.82rem;color:var(--fg-muted);align-self:center">✕ Tozalash</a>
+        <a href="{% url 'analysis_log' %}" style="font-size:.82rem;color:var(--fg-muted);align-self:center"><i class="fas fa-times"></i> Tozalash</a>
       {% endif %}
     </form>
 
@@ -133,16 +133,16 @@
               </td>
               <td>
                 {% if log.doctor_verdict is True %}
-                  <span class="badge badge-ok">✓ Tasdiqladi</span>
+                  <span class="badge badge-ok"><i class="fas fa-check"></i> Tasdiqladi</span>
                 {% elif log.doctor_verdict is False %}
-                  <span class="badge badge-danger">✗ Xato dedi</span>
+                  <span class="badge badge-danger"><i class="fas fa-times"></i> Xato dedi</span>
                 {% else %}
                   <span class="badge badge-muted">Ko'rilmagan</span>
                 {% endif %}
               </td>
               <td>
                 {% if log.flagged_for_training %}
-                  <span class="badge badge-flag">🔴 Training</span>
+                  <span class="badge badge-flag"><i class="fas fa-circle" style="color:#ef5350;font-size:.65em"></i> Training</span>
                 {% else %}—{% endif %}
               </td>
               <td><a href="{% url 'analysis_log_detail' log.pk %}" class="view-link">Batafsil</a></td>

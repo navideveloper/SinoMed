@@ -163,6 +163,12 @@ _result_to_dict(result)                        — JSON response (+ jami_oylik b
 - **Lightbox**: barcha rasmlarga bosish → modal, zoom (+/-/wheel), drag, pinch (mobil), Esc/dblclick reset
   - ⚠️ Qoida: lightbox `<div id="lightbox">` `{% block content %}` **ichida** (endblock dan oldin) bo'lishi shart
   - Django template inheritance da blokdan tashqari HTML render bo'lmaydi → `getElementById` null qaytaradi
+- **Ikonlar**: emoji yo'q — barcha UI elementlari **Font Awesome 6.4** (`fas fa-*`) ishlatadi
+  - CDN: `base.html` `<head>` da `font-awesome/6.4.0/css/all.min.css`
+  - `fa-graduation-cap` talaba | `fa-stethoscope` shifokor | `fa-university` muassasa | `fa-hospital` kasalxona
+  - `fa-check` / `fa-times` tasdiqlash/rad | `fa-triangle-exclamation` ogohlantirish | `fa-clock` kutish
+  - `fa-bullseye` / `fa-circle-check` / `fa-circle-xmark` bone age aniqligi (JS `innerHTML` orqali)
+  - `fa-mars` / `fa-venus` jins radio tugmalar
 - **Scan sahifasi**: model selectbox → bone_age tanlanganda tug'ilgan sana + jins fieldlari chiqadi
 - **Logo**: `static/img/logo.png` (yashil o'pka), navbar oq background konteynerda
 - **v1.0** badge — footer da
@@ -217,4 +223,4 @@ organizations/fixtures/initial_organizations.json
 ```
 
 ---
-*Last updated: 2026-06-05 | Branch: Oybek | Fix: lightbox div {% block content %} ichiga ko'chirildi*
+*Last updated: 2026-06-05 | Branch: Oybek | refactor: emoji → Font Awesome 6 icons (11 fayl, 12 template)*

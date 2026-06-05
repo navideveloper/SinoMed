@@ -490,7 +490,7 @@
           <div class="info-row">
             <span class="info-label">Shifokor xulosasi</span>
             <span class="info-val" style="color: {% if result.doctor_confirmed %}#81c784{% else %}#ef5350{% endif %};">
-              {% if result.doctor_confirmed %}✓ Tasdiqlangan{% else %}✗ Xato topildi{% endif %}
+              {% if result.doctor_confirmed %}<i class="fas fa-check"></i> Tasdiqlangan{% else %}<i class="fas fa-times"></i> Xato topildi{% endif %}
             </span>
           </div>
           {% if result.reviewed_by %}
@@ -512,13 +512,13 @@
           </div>
 
           {% if result.doctor_confirmed is True %}
-            <div class="doctor-confirmed">✓ Siz bu natijani <strong>tasdiqladingiz</strong>{% if result.doctor_note %} — "{{ result.doctor_note }}"{% endif %}</div>
+            <div class="doctor-confirmed"><i class="fas fa-check"></i> Siz bu natijani <strong>tasdiqladingiz</strong>{% if result.doctor_note %} — "{{ result.doctor_note }}"{% endif %}</div>
           {% elif result.doctor_confirmed is False %}
-            <div class="doctor-rejected">✗ Siz AI xatosi haqida <strong>hisobot yubordingiz</strong>{% if result.doctor_report %}: "{{ result.doctor_report }}"{% endif %}</div>
+            <div class="doctor-rejected"><i class="fas fa-times"></i> Siz AI xatosi haqida <strong>hisobot yubordingiz</strong>{% if result.doctor_report %}: "{{ result.doctor_report }}"{% endif %}</div>
           {% else %}
             <div class="action-tabs">
-              <div class="action-tab" id="tabConfirm" onclick="showTab('confirm')">✓ Tasdiqlash</div>
-              <div class="action-tab" id="tabReport" onclick="showTab('report')">⚠ Xato bildirish</div>
+              <div class="action-tab" id="tabConfirm" onclick="showTab('confirm')"><i class="fas fa-check"></i> Tasdiqlash</div>
+              <div class="action-tab" id="tabReport" onclick="showTab('report')"><i class="fas fa-triangle-exclamation"></i> Xato bildirish</div>
             </div>
 
             <div id="panelConfirm" style="display: none;">
@@ -526,7 +526,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="action" value="confirm">
                 <textarea name="note" class="form-textarea" placeholder="Ixtiyoriy izoh (masalan: klinik ko'rish bilan mos keladi)"></textarea>
-                <button type="submit" class="submit-action submit-confirm" style="margin-top: 0.75rem; width: 100%;">✓ Natijani tasdiqlash</button>
+                <button type="submit" class="submit-action submit-confirm" style="margin-top: 0.75rem; width: 100%;"><i class="fas fa-check"></i> Natijani tasdiqlash</button>
               </form>
             </div>
 
@@ -536,7 +536,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="action" value="report">
                 <textarea name="report" class="form-textarea" placeholder="AI qanday xato qildi? Haqiqiy tashxis qanday?" required></textarea>
-                <button type="submit" class="submit-action submit-report" style="margin-top: 0.75rem; width: 100%;">⚠ Xato hisobot yuborish</button>
+                <button type="submit" class="submit-action submit-report" style="margin-top: 0.75rem; width: 100%;"><i class="fas fa-triangle-exclamation"></i> Xato hisobot yuborish</button>
               </form>
             </div>
           {% endif %}
@@ -568,7 +568,7 @@
     <button class="lb-btn" onclick="lbZoom(0.25)" title="Kattalashtirish">+</button>
     <button class="lb-btn" onclick="lbZoom(-0.25)" title="Kichiklashtirish">−</button>
     <button class="lb-btn" onclick="lbReset()" title="Asl o'lcham" style="font-size:.75rem">1:1</button>
-    <button class="lb-btn" onclick="lbClose()" title="Yopish">✕</button>
+    <button class="lb-btn" onclick="lbClose()" title="Yopish"><i class="fas fa-xmark"></i></button>
   </div>
   <div id="lb-img-wrap">
     <img id="lb-img" src="" alt="">

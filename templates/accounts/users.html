@@ -106,7 +106,7 @@
       </div>
       <button type="submit" class="btn-filter">Qidirish</button>
       {% if filters.search or filters.role or filters.status or filters.approval %}
-        <a href="{% url 'user_list' %}" style="font-size:.82rem;color:var(--fg-muted);align-self:center">✕ Tozalash</a>
+        <a href="{% url 'user_list' %}" style="font-size:.82rem;color:var(--fg-muted);align-self:center"><i class="fas fa-times"></i> Tozalash</a>
       {% endif %}
     </form>
 
@@ -153,9 +153,9 @@
               {% endif %}
               <td>
                 {% if u.approval_status == 'pending' %}
-                  <span class="badge" style="background:rgba(255,152,0,.15);color:#ffb74d;border-color:rgba(255,152,0,.3)">⏳ Kutilmoqda</span>
+                  <span class="badge" style="background:rgba(255,152,0,.15);color:#ffb74d;border-color:rgba(255,152,0,.3)"><i class="fas fa-clock"></i> Kutilmoqda</span>
                 {% elif u.approval_status == 'rejected' %}
-                  <span class="badge badge-inactive">✗ Rad etildi</span>
+                  <span class="badge badge-inactive"><i class="fas fa-times"></i> Rad etildi</span>
                 {% else %}
                   <span class="badge {% if u.is_active %}badge-active{% else %}badge-inactive{% endif %}" id="status-badge-{{ u.pk }}">
                     {% if u.is_active %}Faol{% else %}Nofaol{% endif %}

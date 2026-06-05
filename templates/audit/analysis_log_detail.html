@@ -89,8 +89,8 @@
           <div class="info-row">
             <span class="info-label">Xulosa</span>
             <span class="info-val">
-              {% if log.doctor_verdict is True %}<span class="badge badge-ok">✓ Tasdiqladi</span>
-              {% elif log.doctor_verdict is False %}<span class="badge badge-danger">✗ Xato dedi</span>
+              {% if log.doctor_verdict is True %}<span class="badge badge-ok"><i class="fas fa-check"></i> Tasdiqladi</span>
+              {% elif log.doctor_verdict is False %}<span class="badge badge-danger"><i class="fas fa-times"></i> Xato dedi</span>
               {% else %}<span class="badge badge-muted">Ko'rilmagan</span>{% endif %}
             </span>
           </div>
@@ -99,7 +99,7 @@
           {% endif %}
           <div class="info-row">
             <span class="info-label">Training uchun</span>
-            <span class="info-val">{% if log.flagged_for_training %}<span class="badge badge-flag">🔴 Flagged</span>{% else %}—{% endif %}</span>
+            <span class="info-val">{% if log.flagged_for_training %}<span class="badge badge-flag"><i class="fas fa-circle" style="color:#ef5350;font-size:.65em"></i> Flagged</span>{% else %}—{% endif %}</span>
           </div>
         </div>
       </div>

@@ -239,7 +239,7 @@ main { flex: 1; padding-block: 2rem 3rem; }
                 {% endfor %}
                 <option value="org_admin"
                   {% if mode == 'edit' and target_user.role == 'org_admin' %}selected{% endif %}>
-                  🏛 Muassasa admini
+                  <i class="fas fa-university"></i> Muassasa admini
                 </option>
               </select>
             </div>
@@ -294,13 +294,13 @@ main { flex: 1; padding-block: 2rem 3rem; }
               <div class="user-meta-name">{{ target_user.get_full_name|default:target_user.username }}</div>
               <div class="user-meta-sub">@{{ target_user.username }}</div>
               {% if target_user.is_superuser %}
-                <span class="user-meta-badge badge-superuser">⭐ SuperAdmin</span>
+                <span class="user-meta-badge badge-superuser"><i class="fas fa-star"></i> SuperAdmin</span>
               {% elif target_user.role == 'org_admin' %}
-                <span class="user-meta-badge badge-org-admin">🏛 Muassasa admin</span>
+                <span class="user-meta-badge badge-org-admin"><i class="fas fa-university"></i> Muassasa admin</span>
               {% elif target_user.role == 'doctor' %}
-                <span class="user-meta-badge badge-doctor">🩺 Shifokor</span>
+                <span class="user-meta-badge badge-doctor"><i class="fas fa-stethoscope"></i> Shifokor</span>
               {% else %}
-                <span class="user-meta-badge badge-student">🎓 Talaba</span>
+                <span class="user-meta-badge badge-student"><i class="fas fa-graduation-cap"></i> Talaba</span>
               {% endif %}
             </div>
             <div style="font-size:.78rem;color:var(--fg-muted);text-align:center">
@@ -362,7 +362,7 @@ main { flex: 1; padding-block: 2rem 3rem; }
 {% if mode == 'edit' and user.is_superuser and not target_user.is_superuser %}
 <div class="modal-overlay" id="deleteModal">
   <div class="modal-box">
-    <div class="modal-title">⚠️ O'chirishni tasdiqlang</div>
+    <div class="modal-title"><i class="fas fa-triangle-exclamation"></i> O'chirishni tasdiqlang</div>
     <div class="modal-sub">
       <strong>{{ target_user.username }}</strong> foydalanuvchisi va unga bog'liq barcha ma'lumotlar o'chiriladi.
       Bu amalni qaytarib bo'lmaydi.
