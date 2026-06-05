@@ -237,10 +237,6 @@ main { flex: 1; padding-block: 2rem 3rem; }
                   {% if mode == 'edit' and target_user.role == val %}selected
                   {% elif mode == 'create' %}{% endif %}>{{ label }}</option>
                 {% endfor %}
-                <option value="org_admin"
-                  {% if mode == 'edit' and target_user.role == 'org_admin' %}selected{% endif %}>
-                  <i class="fas fa-university"></i> Muassasa admini
-                </option>
               </select>
             </div>
             {% endif %}
