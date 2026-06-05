@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Suyak yoshi tahlili — SinoMed</title>
+  <meta name="description" content="Sun'iy intellekt yordamida suyak yoshini aniqlang. Batafsil natijalar va tavsiyalar." />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           hsl(210, 20%, 98%);
+      --fg:           hsl(215, 35%, 12%);
+      --card:         hsl(0, 0%, 100%);
+      --primary:      hsl(220, 70%, 50%);
+      --primary-light:hsl(220, 70%, 92%);
+      --primary-fg:   hsl(0, 0%, 100%);
+      --accent:       hsl(200, 90%, 46%);
+      --accent-light: hsl(200, 80%, 93%);
+      --warning:      hsl(38, 92%, 50%);
+      --danger:       hsl(4, 74%, 55%);
+      --muted:        hsl(215, 20%, 94%);
+      --muted-fg:     hsl(215, 15%, 48%);
+      --border:       hsl(215, 20%, 88%);
+      --radius:       0.875rem;
+      --font:         'DM Sans', sans-serif;
+      --mono:         'JetBrains Mono', sans-serif;
+      --shadow-sm:    0 2px 8px -2px hsla(215,35%,12%,0.08);
+      --shadow-md:    0 8px 28px -6px hsla(215,35%,12%,0.12);
+    }
+
+    body {
+      font-family: var(--font);
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, hsla(220,70%,50%,0.06) 0%, transparent 70%), var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+    .container { width: 100%; max-width: 1280px; margin-inline: auto; padding-inline: 1.25rem; }
+    @media (min-width: 640px) { .container { padding-inline: 2rem; } }
+
+    /* Navbar */
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      background: hsla(210,20%,98%,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .navbar-inner { display: flex; align-items: center; justify-content: space-between; height: 4rem; gap: 1rem; }
+    .logo { display: flex; align-items: center; gap: 0.625rem; }
+    .logo-mark { width: 2.4rem; height: 2.4rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .logo-mark img { width: -webkit-fill-available; }
+    .logo-name { font-size: 1.125rem; font-weight: 700; letter-spacing: -.02em; }
+    .logo-version { font-size: 0.65rem; font-family: var(--mono); background: var(--primary-light); color: var(--primary); padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+    .nav-right { display: flex; align-items: center; gap: 0.5rem; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 500; border-radius: calc(var(--radius) - 2px); transition: background .15s, transform .1s; white-space: nowrap; }
+    .btn:active { transform: scale(0.97); }
+    .btn-ghost { padding: .45rem .75rem; color: var(--muted-fg); }
+    .btn-ghost:hover { background: var(--muted); color: var(--fg); }
+    .btn-outline { padding: .45rem .9rem; border: 1px solid var(--border); background: var(--card); color: var(--fg); }
+    .btn-outline:hover { background: var(--muted); }
+    .nav-label { display: none; }
+    @media (min-width: 540px) { .nav-label { display: inline; } }
+
+    /* Breadcrumb */
+    .breadcrumb { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; font-size: 0.875rem; color: var(--muted-fg); }
+    .breadcrumb a { color: var(--primary); }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    /* Main layout */
+    main { padding-top: 20px; }
+
+    .analysis-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    @media (min-width: 768px) {
+      .analysis-layout { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Card base */
+    .upload-card, .result-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .result-card {
+      display: flex;
+      flex-direction: column;
+    }
+    .result-card #resultContent {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .card-title {
+      font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .card-title svg { color: var(--primary); }
+
+    /* ── Form Elements ── */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted-fg);
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) - 4px);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      color: var(--fg);
+      background: var(--card);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px hsla(220, 70%, 50%, 0.1);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .gender-toggle {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .gender-btn {
+      flex: 1;
+      padding: 0.65rem;
+      border: 2px solid var(--border);
+      border-radius: calc(var(--radius) - 4px);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--muted-fg);
+      background: var(--card);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .gender-btn:hover {
+      border-color: var(--primary);
+      color: var(--fg);
+    }
+    .gender-btn.active-male {
+      border-color: hsl(220, 70%, 50%);
+      background: hsl(220, 70%, 95%);
+      color: hsl(220, 70%, 40%);
+      font-weight: 600;
+    }
+    .gender-btn.active-female {
+      border-color: hsl(330, 70%, 55%);
+      background: hsl(330, 70%, 95%);
+      color: hsl(330, 70%, 45%);
+      font-weight: 600;
+    }
+
+    /* ── Upload Area ── */
+    .upload-area {
+      position: relative;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      overflow: hidden;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .upload-area:hover { border-color: var(--primary); background: var(--primary-light); }
+    .upload-area.drag-over { border-color: var(--primary); background: var(--primary-light); }
+    .upload-area.has-image { padding: 0; border-style: solid; border-color: var(--border); cursor: default; }
+    .upload-area.has-image:hover { background: transparent; border-color: var(--border); }
+
+    .upload-placeholder { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; pointer-events: none; }
+    .upload-placeholder svg { color: var(--muted-fg); }
+    .upload-placeholder p { font-size: 0.875rem; color: var(--muted-fg); }
+    .upload-placeholder .small { font-size: 0.75rem; }
+
+    .upload-area-image {
+      display: none;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+    }
+    .upload-area-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: hsl(210, 20%, 94%);
+      min-height: 200px;
+    }
+
+    .cancel-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: hsla(0,0%,0%,0.55);
+      color: white;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .cancel-btn:hover { background: hsla(4,74%,55%,0.85); transform: scale(1.1); }
+    .cancel-btn svg { pointer-events: none; }
+
+    #fileInput { display: none; }
+
+    /* Analyze button */
+    .analyze-btn {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--primary);
+      color: white;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .analyze-btn:hover:not(:disabled) { background: hsl(220, 70%, 44%); }
+    .analyze-btn:active:not(:disabled) { transform: scale(0.98); }
+    .analyze-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* ── Result Card ── */
+    .result-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 0;
+      color: var(--muted-fg);
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .result-body {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .result-image-wrap {
+      border-radius: calc(var(--radius) - 4px);
+      overflow: hidden;
+      background: hsl(210, 20%, 94%);
+      flex-shrink: 0;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .result-image-wrap img {
+      width: 100%;
+      height: 200px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .result-info { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .age-display {
+      text-align: center;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, hsl(220, 70%, 96%), hsl(220, 70%, 99%));
+      border-radius: var(--radius);
+      border: 1px solid hsl(220, 70%, 85%);
+    }
+    .age-number {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      font-family: var(--mono);
+      line-height: 1;
+    }
+    .age-unit {
+      font-size: 1rem;
+      color: var(--muted-fg);
+      margin-top: 0.25rem;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .info-item {
+      background: var(--muted);
+      padding: 0.85rem;
+      border-radius: calc(var(--radius) - 4px);
+      text-align: center;
+    }
+    .info-item-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted-fg);
+      margin-bottom: 0.3rem;
+    }
+    .info-item-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    .comparison-box {
+      background: hsl(38, 92%, 96%);
+      border: 1px solid hsl(38, 90%, 80%);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .comparison-box.warning {
+      background: hsl(4, 74%, 96%);
+      border-color: hsl(4, 74%, 85%);
+    }
+    .comparison-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+    .comparison-text {
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    .result-disclaimer {
+      font-size: 0.75rem;
+      color: var(--muted-fg);
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Error message */
+    .error-message {
+      background: hsl(4, 74%, 96%);
+      color: hsl(4, 74%, 35%);
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      border-left: 4px solid var(--danger);
+      font-size: 0.875rem;
+      margin-top: 0.75rem;
+      display: none;
+    }
+    .error-message.show { display: block; }
+
+    /* History */
+    .history-section {
+      margin-top: 2rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .history-table { width: 100%; border-collapse: collapse; }
+    .history-table th {
+      text-align: left; padding: 0.75rem 0.5rem;
+      font-size: 0.7rem; font-weight: 600; color: var(--muted-fg);
+      text-transform: uppercase; border-bottom: 2px solid var(--border);
+    }
+    .history-table td { padding: 0.75rem 0.5rem; font-size: 0.8rem; border-bottom: 1px solid var(--border); }
+    .history-table tr:hover { background-color: var(--muted); }
+
+    /* Loading */
+    .loading-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .loading-spinner { background: var(--card); padding: 2rem; border-radius: var(--radius); text-align: center; }
+    .spinner {
+      width: 50px; height: 50px;
+      border: 3px solid var(--muted);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    footer { border-top: 1px solid var(--border); background: var(--card); padding-block: 1.75rem; margin-top: 2rem; }
+    .footer-inner { display: flex; align-items: center; justify-content: center; }
+    .footer-inner span { font-size: .875rem; color: var(--muted-fg); }
+
+    @media (max-width: 768px) {
+      .upload-card, .result-card { padding: 1rem; }
+      .info-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container navbar-inner">
+    <a class="logo" href="./index.html">
+      <span class="logo-name">SinoMed</span>
+      <span class="logo-version">v0.1</span>
+    </a>
+    <div class="nav-right">
+      <a href="./index.html#scan">
+        <button class="btn btn-ghost">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          <span class="nav-label">Tahlil turlari</span>
+        </button>
+      </a>
+      <a href="./pricing.html">
+        <button class="btn btn-ghost" style="color: hsl(40, 90%, 55%);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/>
+            <path d="M5 21h14"/>
+          </svg>
+          <span class="nav-label">Narxlar</span>
+        </button>
+      </a>
+      <a href="./dashboard.html">
+        <button class="btn btn-outline">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="7" height="9" x="3" y="3" rx="1"/>
+            <rect width="7" height="5" x="14" y="3" rx="1"/>
+            <rect width="7" height="9" x="14" y="12" rx="1"/>
+            <rect width="7" height="5" x="3" y="16" rx="1"/>
+          </svg>
+          <span class="nav-label">Kabinet</span>
+        </button>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="./index.html">Bosh sahifa</a>
+      <span>/</span>
+      <span>Suyak yoshi tahlili</span>
+    </div>
+
+    <div class="analysis-layout">
+
+      <div class="upload-card">
+        <div class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Bemor ma'lumotlari va rasm
+        </div>
+
+        <!-- Bemor ma'lumotlari - Kun avtomatik 1, faqat oy va yil -->
+        <div class="form-group">
+          <label class="form-label">Tug'ilgan sana (oy va yil)</label>
+          <div class="form-row">
+            <div>
+              <select id="birthMonth" class="form-select" required>
+                <option value="">Oy</option>
+                <option value="1">Yanvar</option>
+                <option value="2">Fevral</option>
+                <option value="3">Mart</option>
+                <option value="4">Aprel</option>
+                <option value="5">May</option>
+                <option value="6">Iyun</option>
+                <option value="7">Iyul</option>
+                <option value="8">Avgust</option>
+                <option value="9">Sentabr</option>
+                <option value="10">Oktabr</option>
+                <option value="11">Noyabr</option>
+                <option value="12">Dekabr</option>
+              </select>
+            </div>
+            <div>
+              <input type="number" id="birthYear" class="form-input" placeholder="Yil" min="1900" max="2026" required>
+            </div>
+          </div>
+          <input type="hidden" id="birthDay" value="1">
+          <p style="font-size: 0.7rem; color: var(--muted-fg); margin-top: 0.35rem;">Kun avtomatik ravishda 1-sana sifatida olinadi</p>
+        </div>
+
+        <!-- Jins tanlash -->
+        <div class="form-group">
+          <label class="form-label">Jinsi</label>
+          <div class="gender-toggle">
+            <button type="button" class="gender-btn active-male" id="genderMale" onclick="setGender('male')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="10" cy="14" r="5"/>
+                <line x1="10" y1="19" x2="10" y2="22"/>
+                <line x1="8" y1="22" x2="12" y2="22"/>
+                <path d="M20 4l-6 6"/>
+                <path d="M14 4h6v6"/>
+              </svg>
+              Erkak
+            </button>
+            <button type="button" class="gender-btn" id="genderFemale" onclick="setGender('female')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="10" r="5"/>
+                <line x1="12" y1="15" x2="12" y2="22"/>
+                <line x1="10" y1="18" x2="14" y2="18"/>
+                <line x1="15" y1="5" x2="22" y2="5"/>
+              </svg>
+              Ayol
+            </button>
+          </div>
+        </div>
+
+        <!-- Rasm yuklash -->
+        <div class="form-group">
+          <label class="form-label">Qo'l rentgen tasviri</label>
+          <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-placeholder" id="uploadPlaceholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <p>Rasmni shu yerga torting yoki <strong>yuklash</strong> uchun bosing</p>
+              <p class="small">DICOM, PNG, JPG, JPEG (max 15MB)</p>
+            </div>
+
+            <div class="upload-area-image" id="uploadAreaImage">
+              <img id="previewImg" alt="Yuklangan rasm" style="pointer-events: none;">
+            </div>
+
+            <button class="cancel-btn" id="cancelBtn" title="Rasmni o'chirish" onclick="event.stopPropagation(); clearImage();">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        
+        <div class="error-message" id="errorMessage"></div>
+
+        <button class="analyze-btn" id="analyzeBtn" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+          </svg>
+          AI tahlil qilish
+        </button>
+      </div>
+
+      <div class="result-card" id="resultCard">
+        <div class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          Tahlil natijasi
+        </div>
+
+        <div id="resultContent">
+          <div class="result-empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M9 12h6M12 9v6"/>
+              <circle cx="12" cy="12" r="10"/>
+            </svg>
+            <p>Bemor ma'lumotlarini to'ldiring va rasm yuklang</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="history-section">
+      <div class="card-title" style="margin-bottom: 1rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        So'nggi tahlillar
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="history-table" id="historyTable">
+          <thead>
+            <tr>
+              <th>Sana</th>
+              <th>Bemor</th>
+              <th>Suyak yoshi</th>
+              <th>Xronologik yosh</th>
+              <th>Farq</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--muted-fg);">Hali tahlillar mavjud emas</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner">
+    <div class="spinner"></div>
+    <p>AI suyak yoshini aniqlamoqda...</p>
+    <p style="font-size: 0.75rem; color: var(--muted-fg); margin-top: 0.5rem;">Bu bir necha soniya davom etishi mumkin</p>
+  </div>
+</div>
+
+<footer>
+  <div class="container footer-inner">
+    <span>© SinoMed 2026 · Andijon viloyati AI Hackathon</span>
+  </div>
+</footer>
+
+<script>
+  // API konfiguratsiyasi
+  const API_URL = 'http://127.0.0.1:8002/api/predict-bone-age';
+  
+  let currentImage = null;
+  let currentImageFile = null;
+  let selectedGender = 'male';
+  let history = [];
+
+  /* ── Gender tanlash ── */
+  function setGender(gender) {
+    selectedGender = gender;
+    const maleBtn = document.getElementById('genderMale');
+    const femaleBtn = document.getElementById('genderFemale');
+    
+    maleBtn.classList.remove('active-male', 'active-female');
+    femaleBtn.classList.remove('active-male', 'active-female');
+    
+    if (gender === 'male') {
+      maleBtn.classList.add('active-male');
+    } else {
+      femaleBtn.classList.add('active-female');
+    }
+  }
+
+  /* ── Tug'ilgan sanani hisoblash ── */
+  function getBirthDate() {
+    const day = 1; // Har doim 1-kun
+    const month = parseInt(document.getElementById('birthMonth').value);
+    const year = parseInt(document.getElementById('birthYear').value);
+    
+    if (!month || !year) return null;
+    
+    const birthDate = new Date(year, month - 1, day);
+    
+    if (birthDate.getFullYear() !== year || birthDate.getMonth() !== month - 1) {
+      return null;
+    }
+    
+    return birthDate;
+  }
+
+  function calculateChronologicalAge(birthDate) {
+    const today = new Date();
+    let years = today.getFullYear() - birthDate.getFullYear();
+    let months = today.getMonth() - birthDate.getMonth();
+    
+    if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
+      years--;
+      months += 12;
+    }
+    
+    if (today.getDate() < birthDate.getDate()) {
+      months--;
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+    }
+    
+    const totalMonths = years * 12 + months;
+    
+    return {
+      years: years,
+      months: months,
+      totalMonths: totalMonths,
+      formatted: `${years} yosh, ${months} oy`
+    };
+  }
+
+  function formatBirthDate(date) {
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `01.${month}.${year}`;
+  }
+
+  /* ── History ── */
+  function loadHistory() {
+    const saved = localStorage.getItem('SinoMed_bone_age_history');
+    if (saved) { history = JSON.parse(saved); renderHistory(); }
+  }
+  function saveHistory() {
+    localStorage.setItem('SinoMed_bone_age_history', JSON.stringify(history.slice(0, 10)));
+  }
+  function addToHistory(birthDate, gender, boneAgeResult, chronologicalAge, imageSrc) {
+    const now = new Date();
+    const pad = n => n.toString().padStart(2, '0');
+    const formattedDate = `${pad(now.getDate())}.${pad(now.getMonth()+1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    
+    history.unshift({ 
+      id: Date.now(), 
+      date: formattedDate, 
+      birthDate: formatBirthDate(birthDate),
+      gender: gender === 'female' ? 'Ayol' : 'Erkak',
+      boneAge: boneAgeResult.formatlangan_yosh,
+      boneAgeMonths: boneAgeResult.jami_oylik,
+      chronologicalAge: chronologicalAge.formatted,
+      chronologicalAgeMonths: chronologicalAge.totalMonths,
+      difference: boneAgeResult.jami_oylik - chronologicalAge.totalMonths,
+      imageSrc: imageSrc,
+      details: {
+        birthDate: birthDate,
+        gender: gender,
+        boneAgeResult: boneAgeResult,
+        chronologicalAge: chronologicalAge
+      }
+    });
+    if (history.length > 10) history = history.slice(0, 10);
+    saveHistory();
+    renderHistory();
+  }
+  
+  function renderHistory() {
+    const tbody = document.getElementById('historyBody');
+    if (!history.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted-fg);">Hali tahlillar mavjud emas</td></tr>';
+      return;
+    }
+    tbody.innerHTML = history.map(item => {
+      let diffText = '';
+      let diffColor = '';
+      const absDiff = Math.abs(item.difference);
+      if (item.difference > 12) {
+        diffText = `+${Math.floor(absDiff/12)} yil ${absDiff%12} oy`;
+        diffColor = 'color:hsl(4, 74%, 55%); font-weight: 600;';
+      } else if (item.difference > 0) {
+        diffText = `+${absDiff} oy`;
+        diffColor = 'color:hsl(38, 90%, 40%); font-weight: 600;';
+      } else if (item.difference < -12) {
+        diffText = `-${Math.floor(absDiff/12)} yil ${absDiff%12} oy`;
+        diffColor = 'color:hsl(220, 70%, 50%); font-weight: 600;';
+      } else if (item.difference < 0) {
+        diffText = `-${absDiff} oy`;
+        diffColor = 'color:hsl(220, 70%, 50%); font-weight: 600;';
+      } else {
+        diffText = '0 oy';
+        diffColor = 'color:hsl(162, 84%, 23%); font-weight: 600;';
+      }
+      
+      return `<tr onclick="viewHistoryDetail(${item.id})" style="cursor:pointer;">
+        <td>${item.date}</td>
+        <td>${item.birthDate} (${item.gender})</td>
+        <td><strong>${item.boneAge}</strong></td>
+        <td>${item.chronologicalAge}</td>
+        <td><span style="${diffColor}">${diffText}</span></td>
+      </tr>`;
+    }).join('');
+  }
+  
+  function viewHistoryDetail(id) {
+    const item = history.find(h => h.id === id);
+    if (item && item.details) {
+      currentImage = item.imageSrc || '';
+      displayResult(
+        item.details.boneAgeResult, 
+        item.details.chronologicalAge, 
+        item.details.birthDate, 
+        item.details.gender
+      );
+    }
+  }
+
+  /* ── Natijani ko'rsatish ── */
+  function displayResult(boneAgeResult, chronologicalAge, birthDate, gender) {
+    const boneAgeMonths = boneAgeResult.jami_oylik;
+    const chronoMonths = chronologicalAge.totalMonths;
+    const diffMonths = boneAgeMonths - chronoMonths;
+    
+    let comparisonClass = '';
+    let comparisonTitle = '';
+    let comparisonText = '';
+    
+    if (Math.abs(diffMonths) <= 6) {
+      comparisonClass = '';
+      comparisonTitle = '✅ Suyak yoshi me\'yorida';
+      comparisonText = 'Suyak yoshi xronologik yoshga mos kelmoqda. Bu normal rivojlanish ko\'rsatkichi.';
+    } else if (diffMonths > 6 && diffMonths <= 24) {
+      comparisonClass = '';
+      comparisonTitle = '⚠️ Suyak yoshi oldinda';
+      comparisonText = `Suyak yoshi xronologik yoshdan ${Math.floor(diffMonths/12)} yil ${diffMonths%12} oy oldinda. Bu erta rivojlanish belgisi bo'lishi mumkin.`;
+    } else if (diffMonths > 24) {
+      comparisonClass = 'warning';
+      comparisonTitle = '🚨 Suyak yoshi sezilarli darajada oldinda';
+      comparisonText = `Suyak yoshi xronologik yoshdan ${Math.floor(diffMonths/12)} yil ${diffMonths%12} oy oldinda. Endokrinolog maslahati tavsiya etiladi.`;
+    } else if (diffMonths < -6 && diffMonths >= -24) {
+      comparisonClass = '';
+      comparisonTitle = '⚠️ Suyak yoshi ortda';
+      comparisonText = `Suyak yoshi xronologik yoshdan ${Math.abs(Math.floor(diffMonths/12))} yil ${Math.abs(diffMonths%12)} oy ortda. Bu kechikkan rivojlanish belgisi bo'lishi mumkin.`;
+    } else {
+      comparisonClass = 'warning';
+      comparisonTitle = '🚨 Suyak yoshi sezilarli darajada ortda';
+      comparisonText = `Suyak yoshi xronologik yoshdan ${Math.abs(Math.floor(diffMonths/12))} yil ${Math.abs(diffMonths%12)} oy ortda. Pediatr va endokrinolog maslahati tavsiya etiladi.`;
+    }
+
+    const genderLabel = gender === 'female' ? 'Ayol' : 'Erkak';
+    const birthDateStr = formatBirthDate(birthDate);
+
+    document.getElementById('resultContent').innerHTML = `
+      <div class="result-body">
+        <div class="age-display">
+          <div class="age-number">${boneAgeResult.formatlangan_yosh}</div>
+          <div class="age-unit">suyak yoshi (${boneAgeMonths} oy)</div>
+        </div>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-item-label">Jinsi</div>
+            <div class="info-item-value">${genderLabel}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-label">Tug'ilgan sana</div>
+            <div class="info-item-value">${birthDateStr}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-label">Xronologik yosh</div>
+            <div class="info-item-value">${chronologicalAge.formatted}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-label">Farq</div>
+            <div class="info-item-value" style="color: ${diffMonths > 0 ? 'hsl(4, 74%, 55%)' : diffMonths < 0 ? 'hsl(220, 70%, 50%)' : 'hsl(162, 84%, 23%)'}">
+              ${diffMonths > 0 ? '+' : ''}${diffMonths} oy
+            </div>
+          </div>
+        </div>
+        
+        <div class="comparison-box ${comparisonClass}">
+          <div class="comparison-title">${comparisonTitle}</div>
+          <div class="comparison-text">${comparisonText}</div>
+        </div>
+        
+        ${currentImage ? `<div class="result-image-wrap"><img src="${currentImage}" alt="Tahlil qilingan rasm"></div>` : ''}
+        
+        <p class="result-disclaimer">⚠️ Bu natija AI tomonidan taxmin qilingan. Shifokor maslahatini o'rnini bosa olmaydi. Aniq tashxis uchun mutaxassisga murojaat qiling.</p>
+      </div>`;
+  }
+
+  /* ── Xatolik xabarini ko'rsatish ── */
+  function showError(message) {
+    const errorEl = document.getElementById('errorMessage');
+    errorEl.textContent = message;
+    errorEl.classList.add('show');
+    setTimeout(() => {
+      errorEl.classList.remove('show');
+    }, 5000);
+  }
+
+  function hideError() {
+    const errorEl = document.getElementById('errorMessage');
+    errorEl.classList.remove('show');
+  }
+
+  /* ── Validatsiya ── */
+  function validateForm() {
+    const birthDate = getBirthDate();
+    if (!birthDate) {
+      showError('Iltimos, tug\'ilgan oy va yilni kiriting!');
+      return false;
+    }
+    
+    if (birthDate > new Date()) {
+      showError('Tug\'ilgan sana kelajakdagi sana bo\'lishi mumkin emas!');
+      return false;
+    }
+    
+    if (!currentImage || !currentImageFile) {
+      showError('Iltimos, qo\'l rentgen rasmini yuklang!');
+      return false;
+    }
+    
+    return true;
+  }
+
+  /* ── API orqali tahlil qilish ── */
+  async function analyzeBoneAge(imageFile, isFemale) {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    formData.append('is_female', isFemale.toString());
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Server xatosi: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        throw new Error('Server bilan bog\'lanib bo\'lmadi. Iltimos, API server ishlayotganini tekshiring.');
+      }
+      throw error;
+    }
+  }
+
+  /* ── Upload Handling ── */
+  const dropZone    = document.getElementById('dropZone');
+  const fileInput   = document.getElementById('fileInput');
+  const analyzeBtn  = document.getElementById('analyzeBtn');
+  const cancelBtn   = document.getElementById('cancelBtn');
+  const placeholder = document.getElementById('uploadPlaceholder');
+  const areaImage   = document.getElementById('uploadAreaImage');
+  const previewImg  = document.getElementById('previewImg');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+
+  // Inputlar o'zgarganda tugmani tekshirish
+  ['birthMonth', 'birthYear'].forEach(id => {
+    document.getElementById(id).addEventListener('input', checkFormValidity);
+    document.getElementById(id).addEventListener('change', checkFormValidity);
+  });
+
+  function checkFormValidity() {
+    const birthDate = getBirthDate();
+    const hasImage = currentImage && currentImageFile;
+    
+    if (birthDate && hasImage) {
+      analyzeBtn.disabled = false;
+    } else {
+      analyzeBtn.disabled = true;
+    }
+  }
+
+  // Drag and drop
+  dropZone.addEventListener('dragover', (e) => { 
+    e.preventDefault();
+    e.stopPropagation();
+    dropZone.classList.add('drag-over'); 
+  });
+  
+  dropZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropZone.classList.remove('drag-over');
+  });
+  
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length > 0) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleFile(e.target.files[0]);
+    }
+  });
+
+  function handleFile(file) {
+    if (!file.type.startsWith('image/')) { 
+      showError('Faqat rasm fayllarini yuklang! (JPG, PNG, JPEG)'); 
+      return; 
+    }
+    
+    if (file.size > 15 * 1024 * 1024) {
+      showError('Fayl hajmi 15MB dan katta bo\'lishi mumkin emas!');
+      return;
+    }
+
+    hideError();
+    currentImageFile = file;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      currentImage = e.target.result;
+      previewImg.src = currentImage;
+
+      areaImage.style.display = 'block';
+      placeholder.style.display = 'none';
+      cancelBtn.style.display = 'flex';
+      dropZone.classList.add('has-image');
+
+      checkFormValidity();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearImage() {
+    currentImage = null;
+    currentImageFile = null;
+    previewImg.src = '';
+    fileInput.value = '';
+
+    areaImage.style.display = 'none';
+    placeholder.style.display = 'flex';
+    cancelBtn.style.display = 'none';
+    dropZone.classList.remove('has-image');
+
+    checkFormValidity();
+  }
+
+  analyzeBtn.addEventListener('click', async () => {
+    if (!validateForm()) return;
+    
+    const birthDate = getBirthDate();
+    const chronologicalAge = calculateChronologicalAge(birthDate);
+    const isFemale = selectedGender === 'female';
+    
+    loadingOverlay.style.display = 'flex';
+    analyzeBtn.disabled = true;
+    hideError();
+
+    try {
+      const result = await analyzeBoneAge(currentImageFile, isFemale);
+      displayResult(result, chronologicalAge, birthDate, selectedGender);
+      addToHistory(birthDate, selectedGender, result, chronologicalAge, currentImage);
+    } catch (error) {
+      showError(`Xatolik: ${error.message}`);
+      console.error('Tahlil xatosi:', error);
+    } finally {
+      loadingOverlay.style.display = 'none';
+      analyzeBtn.disabled = false;
+    }
+  });
+
+  function setDefaultDate() {
+    const today = new Date();
+    const defaultYear = today.getFullYear() - 7;
+    document.getElementById('birthMonth').value = '6';
+    document.getElementById('birthYear').value = defaultYear;
+    checkFormValidity();
+  }
+
+  loadHistory();
+  setDefaultDate();
+  setGender('male');
+  window.viewHistoryDetail = viewHistoryDetail;
+  window.setGender = setGender;
+  window.clearImage = clearImage;
+</script>
+</body>
+</html>
