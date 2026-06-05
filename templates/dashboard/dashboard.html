@@ -428,7 +428,7 @@
         <div>
           <h1>Mening kabinetim</h1>
           <p>Salom, <strong>{{ user.get_full_name|default:user.username }}</strong> — xush kelibsiz
-            <span class="role-badge">{{ user.get_role_display }}</span>
+            <span class="role-badge">{% if user.is_superuser %}SuperAdmin{% else %}{{ user.get_role_display }}{% endif %}</span>
           </p>
         </div>
         <a href="{% url 'upload_analyze' %}">

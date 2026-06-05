@@ -33,12 +33,12 @@ def dashboard(request):
             total=Count('analyses', filter=Q(analyses__status=Analysis.Status.COMPLETED))
         ).order_by('-total')[:10]
 
-    # Shifokor uchun: o'z muassasasidagi ko'rilmagan tahlillar
+    # Shifokor uchun: o'z muassasasi + superuser tahlillaridan ko'rilmaganlar
     pending_reviews = []
     if user.is_doctor and user.organization_id:
-        from analysis.models import AnalysisResult
+        from django.db.models import Q
         pending_reviews = Analysis.objects.filter(
-            user__organization_id=user.organization_id,
+            Q(user__organization_id=user.organization_id) | Q(user__is_superuser=True),
             status=Analysis.Status.COMPLETED,
             result__doctor_confirmed__isnull=True,
         ).select_related('user', 'result').order_by('-created_at')[:10]
