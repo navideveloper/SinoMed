@@ -33,6 +33,7 @@
   .badge-doctor { background: rgba(0,119,182,.15); color: var(--primary-light); border-color: rgba(0,119,182,.3); }
   .badge-student { background: rgba(0,212,255,.1); color: var(--accent); border-color: rgba(0,212,255,.2); }
   .badge-university { background: rgba(255,152,0,.15); color: #ffb74d; border-color: rgba(255,152,0,.3); }
+  .badge-org_admin { background: rgba(139,92,246,.15); color: #c4b5fd; border-color: rgba(139,92,246,.3); }
   .badge-active { background: rgba(76,175,80,.15); color: #81c784; border-color: rgba(76,175,80,.3); }
   .badge-inactive { background: rgba(244,67,54,.1); color: #ef5350; border-color: rgba(244,67,54,.2); }
   .view-link { color: var(--primary-light); font-weight: 500; font-size: .8rem; }
@@ -170,7 +171,7 @@
                     class="toggle-btn {% if u.is_active %}deactivate{% else %}activate{% endif %}"
                     id="toggle-btn-{{ u.pk }}"
                     onclick="toggleUser({{ u.pk }}, this)"
-                  >{% if u.is_active %}O'chir{% else %}Faollashtir{% endif %}</button>
+                  >{% if u.is_active %}Nofaol{% else %}Faollashtir{% endif %}</button>
                   {% endif %}
                 </div>
               </td>
@@ -221,7 +222,7 @@ async function toggleUser(pk, btn) {
       badge.className = 'badge badge-active';
       badge.textContent = 'Faol';
       btn.className = 'toggle-btn deactivate';
-      btn.textContent = "O'chir";
+      btn.textContent = 'Nofaol';
     } else {
       row.classList.add('inactive');
       badge.className = 'badge badge-inactive';

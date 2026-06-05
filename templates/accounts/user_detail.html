@@ -23,6 +23,7 @@
   .badge-doctor { background: rgba(0,119,182,.15); color: var(--primary-light); border-color: rgba(0,119,182,.3); }
   .badge-student { background: rgba(0,212,255,.1); color: var(--accent); border-color: rgba(0,212,255,.2); }
   .badge-university { background: rgba(255,152,0,.15); color: #ffb74d; border-color: rgba(255,152,0,.3); }
+  .badge-org_admin { background: rgba(139,92,246,.15); color: #c4b5fd; border-color: rgba(139,92,246,.3); }
   .badge-active { background: rgba(76,175,80,.15); color: #81c784; border-color: rgba(76,175,80,.3); }
   .badge-inactive { background: rgba(244,67,54,.1); color: #ef5350; border-color: rgba(244,67,54,.2); }
   .htable { width: 100%; border-collapse: collapse; }
@@ -83,9 +84,9 @@
           {% if not target_user.is_superuser %}
           <div class="action-row">
             {% if target_user.is_active %}
-              <button class="btn-danger" id="toggle-btn" onclick="toggleUser()">Foydalanuvchini o'chirish</button>
+              <button class="btn-danger" id="toggle-btn" onclick="toggleUser()">Nofaol qilish</button>
             {% else %}
-              <button class="btn-success" id="toggle-btn" onclick="toggleUser()">Foydalanuvchini faollashtirish</button>
+              <button class="btn-success" id="toggle-btn" onclick="toggleUser()">Faollashtirish</button>
             {% endif %}
           </div>
           {% endif %}
@@ -192,10 +193,10 @@ async function toggleUser() {
     const badge = document.getElementById('status-badge');
     if (data.is_active) {
       badge.className = 'badge badge-active'; badge.textContent = 'Faol';
-      btn.className = 'btn-danger'; btn.textContent = "Foydalanuvchini o'chirish";
+      btn.className = 'btn-danger'; btn.textContent = 'Nofaol qilish';
     } else {
       badge.className = 'badge badge-inactive'; badge.textContent = 'Nofaol';
-      btn.className = 'btn-success'; btn.textContent = 'Foydalanuvchini faollashtirish';
+      btn.className = 'btn-success'; btn.textContent = 'Faollashtirish';
     }
     showToast(data.message);
   }
