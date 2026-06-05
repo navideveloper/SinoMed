@@ -411,9 +411,44 @@
   }
 
   @media (max-width: 768px) {
-    .upload-card, .result-card {
-      padding: 1rem;
-    }
+    .upload-card, .result-card { padding: 1rem; }
+  }
+
+  /* Lightbox */
+  .result-image-wrap img { cursor: zoom-in; transition: opacity .2s; }
+  .result-image-wrap img:hover { opacity: .88; }
+
+  #lightbox {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.92); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center; flex-direction: column;
+  }
+  #lightbox.open { display: flex; }
+  #lb-toolbar {
+    position: fixed; top: 1rem; right: 1rem;
+    display: flex; gap: .5rem; z-index: 10000;
+  }
+  .lb-btn {
+    width: 2.4rem; height: 2.4rem; background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2); border-radius: 8px;
+    cursor: pointer; color: #fff; display: flex; align-items: center;
+    justify-content: center; font-size: 1.1rem; transition: all .15s;
+  }
+  .lb-btn:hover { background: rgba(255,255,255,.22); }
+  #lb-img-wrap {
+    overflow: hidden; display: flex; align-items: center;
+    justify-content: center; max-width: 92vw; max-height: 86vh; cursor: grab;
+  }
+  #lb-img-wrap.grabbing { cursor: grabbing; }
+  #lb-img-wrap img {
+    max-width: 90vw; max-height: 84vh; object-fit: contain;
+    transform-origin: center; transition: transform .1s;
+    user-select: none; pointer-events: none; border-radius: 4px;
+  }
+  #lb-zoom-label {
+    position: fixed; bottom: 1.2rem; left: 50%; transform: translateX(-50%);
+    font-size: .72rem; font-family: monospace; color: rgba(255,255,255,.5);
+    pointer-events: none;
   }
 {% endblock %}
 
@@ -518,6 +553,18 @@
 </div>
 
 {% endblock %}
+
+<!-- Lightbox modal -->
+<div id="lightbox">
+  <div id="lb-toolbar">
+    <button class="lb-btn" onclick="lbZoom(0.25)">+</button>
+    <button class="lb-btn" onclick="lbZoom(-0.25)">−</button>
+    <button class="lb-btn" onclick="lbReset()" style="font-size:.75rem">1:1</button>
+    <button class="lb-btn" onclick="lbClose()">✕</button>
+  </div>
+  <div id="lb-img-wrap"><img id="lb-img" src="" alt=""></div>
+  <div id="lb-zoom-label">100%</div>
+</div>
 
 {% block extra_js %}
 <script>
@@ -713,7 +760,7 @@ function displayResult(r, imgSrc) {
         ${boneCompareHtml}
         <p class="result-note" style="white-space:pre-line">${r.note || ''}</p>
         <p class="result-disclaimer">⚠️ Bu natija AI tahlili. Yakuniy qaror shifokorga tegishli.</p>
-        ${currentAnalysisId ? `<a href="/result/${currentAnalysisId}/" style="color:var(--primary-light);font-size:.875rem;font-weight:600">→ Batafsil natijani ko'rish</a>` : ''}
+        ${currentAnalysisId ? `<a href="/analyze/${currentAnalysisId}/result/" style="color:var(--primary-light);font-size:.875rem;font-weight:600">→ Batafsil natijani ko'rish</a>` : ''}
       </div>
     </div>`;
 
@@ -733,5 +780,42 @@ function displayError(msg) {
       <p style="font-size:.8rem;color:var(--fg-muted)">${msg}</p>
     </div>`;
 }
+
+/* ── Lightbox ── */
+let lbScale=1, lbTX=0, lbTY=0, lbDrag=false, lbMx=0, lbMy=0, lbDx=0, lbDy=0;
+const lb=document.getElementById('lightbox');
+const lbImg=document.getElementById('lb-img');
+const lbWrap=document.getElementById('lb-img-wrap');
+const lbZoomL=document.getElementById('lb-zoom-label');
+
+function lbOpen(src){
+  lbImg.src=src; lbScale=1; lbTX=0; lbTY=0; lbApply();
+  lb.classList.add('open'); document.body.style.overflow='hidden';
+}
+function lbClose(){ lb.classList.remove('open'); document.body.style.overflow=''; }
+function lbZoom(d){ lbScale=Math.min(5,Math.max(0.2,lbScale+d)); lbApply(); }
+function lbReset(){ lbScale=1; lbTX=0; lbTY=0; lbApply(); }
+function lbApply(){
+  lbImg.style.transform=`translate(${lbTX}px,${lbTY}px) scale(${lbScale})`;
+  lbZoomL.textContent=Math.round(lbScale*100)+'%';
+}
+lbWrap.addEventListener('wheel',e=>{ e.preventDefault(); lbZoom(e.deltaY<0?.15:-.15); },{passive:false});
+lbWrap.addEventListener('mousedown',e=>{ lbDrag=true; lbMx=e.clientX; lbMy=e.clientY; lbDx=lbTX; lbDy=lbTY; lbWrap.classList.add('grabbing'); });
+window.addEventListener('mousemove',e=>{ if(!lbDrag)return; lbTX=lbDx+(e.clientX-lbMx); lbTY=lbDy+(e.clientY-lbMy); lbApply(); });
+window.addEventListener('mouseup',()=>{ lbDrag=false; lbWrap.classList.remove('grabbing'); });
+lbWrap.addEventListener('dblclick',lbReset);
+lb.addEventListener('click',e=>{ if(e.target===lb)lbClose(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape')lbClose(); });
+
+/* Event delegation — dinamik qo'shilgan rasmlarga ham ishlaydi */
+document.getElementById('resultCard').addEventListener('click', e => {
+  const img = e.target.closest('.result-image-wrap img');
+  if (img) lbOpen(img.src);
+});
+/* Yuklangan asl rasm ham kliklansin */
+document.getElementById('dropZone').addEventListener('click', e => {
+  const img = e.target.closest('#uploadAreaImage img');
+  if (img && img.src) lbOpen(img.src);
+});
 </script>
 {% endblock %}
