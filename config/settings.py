@@ -99,6 +99,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AI_SERVICE_TIMEOUT = 30
 AI_ENDPOINTS = {
     'pneumonia': os.getenv('PNEUMONIA_AI_URL', 'http://127.0.0.1:8001/api/'),
-    'bone_age':  os.getenv('BONE_AGE_AI_URL',  ''),   # credentials kutilmoqda
+    'bone_age':  os.getenv('BONE_AGE_AI_URL',  'http://127.0.0.1:8002/api/predict-bone-age'),
     'prostate':  os.getenv('PROSTATE_AI_URL',  ''),   # credentials kutilmoqda
 }

@@ -16,22 +16,11 @@ from .models import Analysis, AnalysisResult
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _status_to_diagnosis_type(status: str) -> str:
-    """Map AI `status` string to DiagnosisType choice."""
-    s = (status or '').upper()
-    if s in ('NORMAL', 'SOGLOM', 'HEALTHY'):
-        return AnalysisResult.DiagnosisType.NORMAL
-    if s in ('PNEVMONIYA', 'PNEUMONIA', 'SARATON', 'CANCER', 'PROSTATE', 'PATHOLOGY'):
-        return AnalysisResult.DiagnosisType.DANGER
-    return AnalysisResult.DiagnosisType.WARNING
-
-
 def _save_heatmap(result: AnalysisResult, b64_data: str) -> None:
     """Decode base64 heatmap and save to gradcam_image field."""
     if not b64_data:
         return
     try:
-        # Strip "data:image/png;base64," prefix if present
         raw = b64_data.split(',', 1)[-1]
         img_bytes = base64.b64decode(raw)
         result.gradcam_image.save(
@@ -40,28 +29,98 @@ def _save_heatmap(result: AnalysisResult, b64_data: str) -> None:
             save=True,
         )
     except Exception:
-        pass  # heatmap optional — tahlil natijasiga ta'sir qilmaydi
+        pass  # heatmap optional
 
 
-def _call_ai(model_type: str, image_path: str) -> dict:
+def _call_ai(model_type: str, image_path: str, extra_data: dict = None) -> dict:
     """
     AI servisiga multipart/form-data POST jo'natadi.
-    Javob: {'status': str, 'probability': float, 'heatmap_image': str|None}
-    Xato bo'lsa: {'error': str} yoki exception
+    extra_data — qo'shimcha form fields (masalan bone_age uchun is_female).
     """
     url = settings.AI_ENDPOINTS.get(model_type, '')
     if not url:
         raise ValueError(f"'{model_type}' uchun AI endpoint sozlanmagan")
 
     with open(image_path, 'rb') as f:
+        files = {'image': (f.name, f, 'image/jpeg')}
+        data = extra_data or {}
         resp = http_client.post(
             url,
-            files={'image': (f.name, f, 'image/jpeg')},
+            files=files,
+            data=data,
             timeout=settings.AI_SERVICE_TIMEOUT,
         )
 
     resp.raise_for_status()
     return resp.json()
+
+
+def _parse_ai_response(model_type: str, ai_resp: dict) -> dict:
+    """
+    Har model uchun AI javobini bir xil ichki formatga o'tkazadi.
+    Qaytaradi: {diagnosis, diagnosis_type, confidence, note, heatmap_b64}
+    """
+    if model_type == 'pneumonia':
+        # {"status": "PNEVMONIYA", "probability": 98.45, "heatmap_image": "..."}
+        raw_status = ai_resp.get('status', "NOMA'LUM")
+        s = raw_status.upper()
+        if s in ('NORMAL', 'SOGLOM', 'HEALTHY'):
+            dtype = AnalysisResult.DiagnosisType.NORMAL
+        elif s in ('PNEVMONIYA', 'PNEUMONIA'):
+            dtype = AnalysisResult.DiagnosisType.DANGER
+        else:
+            dtype = AnalysisResult.DiagnosisType.WARNING
+        return {
+            'diagnosis':   raw_status,
+            'dtype':       dtype,
+            'confidence':  float(ai_resp.get('probability', 0.0)),
+            'note':        '',
+            'heatmap_b64': ai_resp.get('heatmap_image', ''),
+        }
+
+    elif model_type == 'bone_age':
+        # {"formatlangan_yosh": "10 yosh, 4 oy", "jami_oylik": 124,
+        #  "jinsi": "Ayol", "yosh_yil": 10.3}
+        formatlangan = ai_resp.get('formatlangan_yosh', "Noma'lum")
+        jinsi        = ai_resp.get('jinsi', '')
+        jami_oylik   = ai_resp.get('jami_oylik', '')
+        yosh_yil     = float(ai_resp.get('yosh_yil', 0.0))
+        note = f"Jinsi: {jinsi}" + (f" | Jami oylik: {jami_oylik}" if jami_oylik else '')
+        return {
+            'diagnosis':   formatlangan,
+            'dtype':       AnalysisResult.DiagnosisType.NORMAL,  # yoshni aniqlash kasallik emas
+            'confidence':  100.0,   # regression model — aniq qiymat
+            'note':        note,
+            'heatmap_b64': '',
+            'yosh_yil':    yosh_yil,
+        }
+
+    elif model_type == 'prostate':
+        # credentials TBD — o'xshash pnevmoniya formatida bo'lishi kutilmoqda
+        raw_status = ai_resp.get('status', "NOMA'LUM")
+        s = raw_status.upper()
+        if s in ('NORMAL', 'SOGLOM'):
+            dtype = AnalysisResult.DiagnosisType.NORMAL
+        elif s in ('SARATON', 'CANCER', 'PROSTATE', 'PATHOLOGY'):
+            dtype = AnalysisResult.DiagnosisType.DANGER
+        else:
+            dtype = AnalysisResult.DiagnosisType.WARNING
+        return {
+            'diagnosis':   raw_status,
+            'dtype':       dtype,
+            'confidence':  float(ai_resp.get('probability', ai_resp.get('confidence', 0.0))),
+            'note':        '',
+            'heatmap_b64': ai_resp.get('heatmap_image', ''),
+        }
+
+    # Fallback
+    return {
+        'diagnosis':   str(ai_resp),
+        'dtype':       AnalysisResult.DiagnosisType.WARNING,
+        'confidence':  0.0,
+        'note':        '',
+        'heatmap_b64': '',
+    }
 
 
 def _result_to_dict(result: AnalysisResult) -> dict:
@@ -126,6 +185,7 @@ def api_analyze(request):
     try:
         data = json.loads(request.body)
         analysis_id = data.get('analysis_id')
+        is_female   = data.get('is_female', False)   # bone_age uchun
     except (json.JSONDecodeError, KeyError):
         return JsonResponse({'error': 'Invalid request'}, status=400)
 
@@ -145,38 +205,39 @@ def api_analyze(request):
     error_detail = ''
 
     try:
-        ai_resp = _call_ai(analysis.model_type, analysis.image.path)
+        # Bone age uchun is_female parametri qo'shiladi
+        extra = {}
+        if analysis.model_type == 'bone_age' and is_female:
+            extra['is_female'] = 'true'
+
+        ai_resp = _call_ai(analysis.model_type, analysis.image.path, extra)
 
         # AI xato qaytargan bo'lsa
         if 'error' in ai_resp:
             raise ValueError(ai_resp['error'])
 
-        # Javobni parse qilamiz
-        raw_status   = ai_resp.get('status', 'NOMA\'LUM')
-        probability  = float(ai_resp.get('probability', 0.0))
-        heatmap_b64  = ai_resp.get('heatmap_image', '')
-
-        diagnosis_type = _status_to_diagnosis_type(raw_status)
+        # Har model uchun javobni parse qilamiz
+        parsed = _parse_ai_response(analysis.model_type, ai_resp)
 
         result = AnalysisResult.objects.create(
             analysis=analysis,
-            diagnosis=raw_status,
-            diagnosis_type=diagnosis_type,
-            confidence=probability,
-            note='',
+            diagnosis=parsed['diagnosis'],
+            diagnosis_type=parsed['dtype'],
+            confidence=parsed['confidence'],
+            note=parsed['note'],
             raw_output=ai_resp,
         )
 
-        # Heatmap ni saqlash
-        _save_heatmap(result, heatmap_b64)
+        # Heatmap ni saqlash (bone_age da yo'q)
+        _save_heatmap(result, parsed['heatmap_b64'])
 
         analysis.status = Analysis.Status.COMPLETED
         analysis.save(update_fields=['status'])
 
         AnalysisLog.objects.create(
             analysis=analysis,
-            ai_diagnosis=raw_status,
-            ai_confidence=probability,
+            ai_diagnosis=parsed['diagnosis'],
+            ai_confidence=parsed['confidence'],
             ai_raw_output=ai_resp,
             institution=request.user.institution,
         )
