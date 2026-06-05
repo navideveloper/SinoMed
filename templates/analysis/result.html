@@ -320,6 +320,68 @@
   .empty-state p {
     margin-bottom: 0.5rem;
   }
+
+  /* Lightbox */
+  .img-wrap img { cursor: zoom-in; transition: opacity .2s; }
+  .img-wrap img:hover { opacity: .88; }
+
+  #lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,.92);
+    backdrop-filter: blur(6px);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  #lightbox.open { display: flex; }
+
+  #lb-toolbar {
+    position: fixed;
+    top: 1rem; right: 1rem;
+    display: flex; gap: .5rem; z-index: 10000;
+  }
+  .lb-btn {
+    width: 2.4rem; height: 2.4rem;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 8px; cursor: pointer; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; transition: all .15s; user-select: none;
+  }
+  .lb-btn:hover { background: rgba(255,255,255,.22); }
+
+  #lb-caption {
+    position: fixed; bottom: 1.2rem; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 20px; padding: .35rem 1rem;
+    font-size: .78rem; color: rgba(255,255,255,.7);
+    white-space: nowrap; pointer-events: none;
+  }
+
+  #lb-img-wrap {
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    max-width: 92vw; max-height: 86vh;
+    cursor: grab;
+  }
+  #lb-img-wrap.grabbing { cursor: grabbing; }
+  #lb-img-wrap img {
+    max-width: 90vw; max-height: 84vh;
+    object-fit: contain;
+    transform-origin: center center;
+    transition: transform .1s;
+    user-select: none; pointer-events: none;
+    border-radius: 4px;
+  }
+
+  #lb-zoom-label {
+    position: fixed; bottom: 3.2rem; left: 50%; transform: translateX(-50%);
+    font-size: .72rem; font-family: var(--mono);
+    color: rgba(255,255,255,.5); pointer-events: none;
+  }
 {% endblock %}
 
 {% block content %}
@@ -501,13 +563,115 @@
 </main>
 {% endblock %}
 
+<!-- Lightbox modal -->
+<div id="lightbox">
+  <div id="lb-toolbar">
+    <button class="lb-btn" onclick="lbZoom(0.25)" title="Kattalashtirish">+</button>
+    <button class="lb-btn" onclick="lbZoom(-0.25)" title="Kichiklashtirish">−</button>
+    <button class="lb-btn" onclick="lbReset()" title="Asl o'lcham" style="font-size:.75rem">1:1</button>
+    <button class="lb-btn" onclick="lbClose()" title="Yopish">✕</button>
+  </div>
+  <div id="lb-img-wrap">
+    <img id="lb-img" src="" alt="">
+  </div>
+  <div id="lb-zoom-label">100%</div>
+  <div id="lb-caption"></div>
+</div>
+
 {% block extra_js %}
 <script>
+/* ── Doctor tabs ── */
 function showTab(tab) {
   document.getElementById('panelConfirm').style.display = tab === 'confirm' ? 'block' : 'none';
-  document.getElementById('panelReport').style.display = tab === 'report' ? 'block' : 'none';
+  document.getElementById('panelReport').style.display  = tab === 'report'  ? 'block' : 'none';
   document.getElementById('tabConfirm').className = 'action-tab' + (tab === 'confirm' ? ' active-confirm' : '');
-  document.getElementById('tabReport').className = 'action-tab' + (tab === 'report' ? ' active-report' : '');
+  document.getElementById('tabReport').className  = 'action-tab' + (tab === 'report'  ? ' active-report'  : '');
 }
+
+/* ── Lightbox ── */
+let lbScale = 1, lbMinScale = 0.2, lbMaxScale = 5;
+let lbDrag = false, lbDx = 0, lbDy = 0, lbMx = 0, lbMy = 0;
+let lbTransX = 0, lbTransY = 0;
+
+const lb      = document.getElementById('lightbox');
+const lbImg   = document.getElementById('lb-img');
+const lbWrap  = document.getElementById('lb-img-wrap');
+const lbZoomL = document.getElementById('lb-zoom-label');
+const lbCap   = document.getElementById('lb-caption');
+
+function lbOpen(src, caption) {
+  lbImg.src = src;
+  lbCap.textContent = caption || '';
+  lbScale = 1; lbTransX = 0; lbTransY = 0;
+  lbApply();
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function lbClose() {
+  lb.classList.remove('open');
+  document.body.style.overflow = '';
+}
+function lbZoom(delta) {
+  lbScale = Math.min(lbMaxScale, Math.max(lbMinScale, lbScale + delta));
+  lbApply();
+}
+function lbReset() {
+  lbScale = 1; lbTransX = 0; lbTransY = 0; lbApply();
+}
+function lbApply() {
+  lbImg.style.transform = `translate(${lbTransX}px,${lbTransY}px) scale(${lbScale})`;
+  lbZoomL.textContent = Math.round(lbScale * 100) + '%';
+}
+
+/* Wheel zoom */
+lbWrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  lbZoom(e.deltaY < 0 ? 0.15 : -0.15);
+}, { passive: false });
+
+/* Drag */
+lbWrap.addEventListener('mousedown', e => {
+  lbDrag = true; lbMx = e.clientX; lbMy = e.clientY;
+  lbDx = lbTransX; lbDy = lbTransY;
+  lbWrap.classList.add('grabbing');
+});
+window.addEventListener('mousemove', e => {
+  if (!lbDrag) return;
+  lbTransX = lbDx + (e.clientX - lbMx);
+  lbTransY = lbDy + (e.clientY - lbMy);
+  lbApply();
+});
+window.addEventListener('mouseup', () => { lbDrag = false; lbWrap.classList.remove('grabbing'); });
+
+/* Touch zoom + drag */
+let lbTouches = [];
+lbWrap.addEventListener('touchstart', e => { lbTouches = [...e.touches]; }, { passive: true });
+lbWrap.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (e.touches.length === 2) {
+    const prev = Math.hypot(lbTouches[0].clientX - lbTouches[1].clientX, lbTouches[0].clientY - lbTouches[1].clientY);
+    const curr = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    lbScale = Math.min(lbMaxScale, Math.max(lbMinScale, lbScale * (curr / prev)));
+    lbApply();
+    lbTouches = [...e.touches];
+  } else if (e.touches.length === 1 && lbTouches.length === 1) {
+    lbTransX += e.touches[0].clientX - lbTouches[0].clientX;
+    lbTransY += e.touches[0].clientY - lbTouches[0].clientY;
+    lbApply();
+    lbTouches = [...e.touches];
+  }
+}, { passive: false });
+
+/* Escape + background click */
+lb.addEventListener('click', e => { if (e.target === lb) lbClose(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') lbClose(); });
+
+/* Double-click reset */
+lbWrap.addEventListener('dblclick', lbReset);
+
+/* Rasm larni bog'lash */
+document.querySelectorAll('.img-wrap img').forEach(img => {
+  img.addEventListener('click', () => lbOpen(img.src, img.alt));
+});
 </script>
 {% endblock %}
