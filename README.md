@@ -16,7 +16,7 @@
 
 <br/>
 
-### [📄 Loyiha taqdimotini ko'rish (PDF)](taqdimot/taqdimot.pdf)
+### <a href="taqdimot/taqdimot.pdf" target="_blank">📄 Loyiha taqdimotini ko'rish (PDF)</a>
 
 </div>
 
