@@ -4,7 +4,7 @@
 
 # SinoMed
 
-**AI-powered Medical Imaging & Diagnosis Platform**
+**Sun'iy intellekt asosida tibbiy tasvirlarni tahlil qilish platformasi**
 
 *National AI Hackathon 2026 · Andijon viloyati · Fedora jamoasi*
 
@@ -14,108 +14,113 @@
 [![Branch](https://img.shields.io/badge/branch-Oybek-blue?logo=git&logoColor=white)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 
+<br/>
+
+### [📄 Loyiha taqdimotini ko'rish (PDF)](taqdimot/taqdimot.pdf)
+
 </div>
 
 ---
 
-## Overview
+## Umumiy tavsif
 
-SinoMed is a full-stack clinical AI platform that enables **medical institutions** to upload radiological images and receive instant AI-generated diagnoses across three specialties. Doctors can review, confirm, or flag AI results — creating a feedback loop for continuous model improvement. All activity is audit-logged for compliance and training data collection.
+SinoMed — tibbiy muassasalarga rentgen va gistologik tasvirlarni yuklash hamda uch yo'nalish bo'yicha AI tashxisini bir zumda olish imkonini beruvchi to'liq full-stack platforma. Shifokorlar AI natijalarini tasdiqlash yoki xato sifatida belgilash orqali modelni uzluksiz takomillashtirishga hissa qo'shadi. Barcha faoliyat muvofiqlik va trening ma'lumotlar to'plash maqsadida audit jurnalida saqlanadi.
 
-Built for the **National AI Hackathon 2026** under time constraints, production-ready in architecture.
-
----
-
-## Features
-
-| Module | Capability |
-|--------|-----------|
-| **AI Analysis** | Pneumonia (chest X-ray), Bone Age (hand X-ray), Prostate Cancer (histology) |
-| **Doctor Panel** | Confirm AI result or report error with notes |
-| **Org Admin Dashboard** | Approve / reject user registrations from own institution |
-| **Audit & Logs** | Full security audit log + per-analysis AI log with export (JSON / CSV / ZIP) |
-| **Lightbox Viewer** | Click-to-zoom image modal — zoom, drag, pinch, Esc / double-click reset |
-| **Billing** | Plan / Subscription / Payment models (UI in progress) |
-| **3-Step Registration** | Role → Institution → Credentials flow, no auto-login |
-| **Role-Based Access** | `superuser`, `org_admin`, `doctor`, `student` — granular per-page |
+**National AI Hackathon 2026** uchun qisqa muddatda ishlab chiqilgan — arxitektura jihatidan production-ready.
 
 ---
 
-## Tech Stack
+## Funksiyalar
+
+| Modul | Imkoniyat |
+|-------|-----------|
+| **AI Tahlil** | Pnevmoniya (ko'krak rentgeni), Suyak yoshi (qo'l rentgeni), Prostata saratoni (gistologiya) |
+| **Shifokor paneli** | AI natijasini tasdiqlash yoki izoh bilan xato sifatida qaytarish |
+| **Muassasa admin paneli** | O'z muassasasi foydalanuvchilarini tasdiqlash / rad etish |
+| **Audit va jurnallar** | To'liq xavfsizlik jurnali + AI tahlil logi (JSON / CSV / ZIP eksport) |
+| **Lightbox ko'rinish** | Rasmni kattalashtirish modali — zoom, drag, pinch, Esc / ikki marta bosish |
+| **Billing** | Tarif / Obuna / To'lov modellari (UI ishlanmoqda) |
+| **3 bosqichli ro'yxatdan o'tish** | Rol → Muassasa → Ma'lumotlar oqimi, avtomatik kirishsiz |
+| **Rol asosidagi ruxsat** | `superuser`, `org_admin`, `doctor`, `student` — sahifa darajasida boshqaruv |
+
+---
+
+## Texnologiyalar
 
 ```
 Backend       Django 6.0.6 · Python 3.13
-Database      PostgreSQL 17.2
-Image proc.   Pillow 11.3.0  (prostate bounding-box drawing)
-AI calls      requests       (multipart/form-data POST to FastAPI microservices)
-Frontend      Vanilla JS · CSS variables · Font Awesome 6.4.0
-Templates     Django Template Language (DTL)
-Env           python-dotenv
+Ma'lumotlar   PostgreSQL 17.2
+Tasvir        Pillow 11.3.0  (prostata aniqlash chegaralarini chizish)
+AI so'rovlar  requests       (multipart/form-data POST → FastAPI mikroservislar)
+Frontend      Vanilla JS · CSS o'zgaruvchilar · Font Awesome 6.4.0
+Shablonlar    Django Template Language (DTL)
+Muhit         python-dotenv
 ```
 
 ---
 
-## AI Models
+## AI Modellar
 
-Three independent microservices — only `AI_SERVER_IP` in `.env` needs changing if the server moves.
+Uchta mustaqil mikroservis — server o'zgarganda faqat `.env` dagi `AI_SERVER_IP` yangilanadi.
 
-| Model | Port | Input param | Response |
-|-------|------|-------------|----------|
+| Model | Port | Parametr | Javob |
+|-------|------|----------|-------|
 | `pneumonia` | `8001` | `image` | `{ status, probability, heatmap_image (base64) }` |
 | `bone_age` | `8002` | `image`, `is_female` | `{ formatlangan_yosh, jami_oylik, jinsi, yosh_yil }` |
 | `prostate` | `8003` | **`file`**, `X-API-Key` | `{ disease_probability_percent, conclusion, detections[] }` |
 
-**Prostate detection** — YOLOv5-based; bounding boxes drawn server-side with Pillow:
-- `grade3` blue · `grade4` yellow · `grade5` red
+**Prostata aniqlash** — YOLOv5 asosida; chegaralar Pillow orqali server tomonida chiziladi:
+- `grade3` ko'k · `grade4` sariq · `grade5` qizil
 
-**Bone age accuracy** — compares AI months vs actual age entered by user:
+**Suyak yoshi aniqligi** — AI hisoblagani bilan foydalanuvchi kiritgan haqiqiy yosh taqqoslanadi:
 
-| Difference | Rating |
-|-----------|--------|
-| <= 3 months | Very accurate |
-| <= 6 months | Good |
-| <= 12 months | Average |
-| > 12 months | Large gap |
+| Farq | Baho |
+|------|------|
+| <= 3 oy | Juda aniq |
+| <= 6 oy | Yaxshi |
+| <= 12 oy | O'rtacha |
+| > 12 oy | Katta farq |
 
 ---
 
-## Project Structure
+## Loyiha tuzilmasi
 
 ```
 SinoMed/
-├── accounts/          # User model, 3-step registration, approval flow, user CRUD
-├── analysis/          # Upload, AI call, result page, doctor review panel
-├── audit/             # AuditLog (security) + AnalysisLog (AI feedback)
-├── billing/           # Plan / Subscription / Payment
-├── organizations/     # Organization model, org admin dashboard
+├── accounts/          # Foydalanuvchi modeli, 3 bosqichli ro'yxat, tasdiqlash oqimi, CRUD
+├── analysis/          # Yuklash, AI so'rov, natija sahifasi, shifokor paneli
+├── audit/             # AuditLog (xavfsizlik) + AnalysisLog (AI fikr-mulohaza)
+├── billing/           # Tarif / Obuna / To'lov
+├── organizations/     # Muassasa modeli, muassasa admin paneli
 ├── config/            # settings.py, urls.py
-├── templates/         # All HTML (DTL), dark blue medical theme
+├── templates/         # Barcha HTML (DTL), to'q ko'k tibbiy mavzu
 ├── static/
 │   └── img/
-│       ├── logo-lungs.png   # Lung-only logo (used beside "SinoMed" text)
-│       └── logo.png         # Logo with built-in text (standalone use)
-├── media/             # Uploaded X-rays, gradcam heatmaps
-├── docs/              # PRD, design specs
-├── HANDOFF.md         # Developer onboarding guide
+│       ├── logo-lungs.png   # Faqat o'pka logosi ("SinoMed" text yonida)
+│       └── logo.png         # Ichida text bor logo (mustaqil foydalanish uchun)
+├── media/             # Yuklangan rentgenlar, gradcam issiqlik xaritalari
+├── taqdimot/          # Loyiha taqdimoti (PDF, PPTX)
+├── docs/              # PRD, dizayn spesifikatsiyalari
+├── HANDOFF.md         # Ishlab chiquvchi uchun qo'llanma
 └── requirements.txt
 ```
 
 ---
 
-## Roles & Permissions
+## Rollar va Ruxsatlar
 
-| Role | Dashboard | AI Analysis | Doctor Panel | Audit | User CRUD |
-|------|-----------|-------------|--------------|-------|-----------|
-| `superuser` | `/dashboard/` | All models | View only | Full | Full |
-| `org_admin` | `/org/dashboard/` | All models | View only | Own org | Own org members |
-| `doctor` | `/dashboard/` | All models | Confirm / flag | - | - |
-| `student` | `/dashboard/` | All models | View only | - | - |
+| Rol | Dashboard | AI Tahlil | Shifokor paneli | Audit | Foydalanuvchi CRUD |
+|-----|-----------|-----------|-----------------|-------|--------------------|
+| `superuser` | `/dashboard/` | Barcha | Ko'rish | To'liq | To'liq |
+| `org_admin` | `/org/dashboard/` | Barcha | Ko'rish | O'z muassasasi | O'z a'zolari |
+| `doctor` | `/dashboard/` | Barcha | Tasdiqlash / Xato | - | - |
+| `student` | `/dashboard/` | Barcha | Ko'rish | - | - |
 
 ---
 
-## Installation
+## O'rnatish
 
-### 1. Clone & create virtual environment
+### 1. Klonlash va virtual muhit
 
 ```bash
 git clone https://github.com/navideveloper/SinoMed.git
@@ -131,151 +136,151 @@ python3.13 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 2. Install dependencies
+### 2. Kutubxonalarni o'rnatish
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configure environment
+### 3. Muhit sozlash
 
-Create `.env` in the project root (never commit this file):
+Loyiha ildizida `.env` fayl yarating (hech qachon git ga yuklamang):
 
 ```env
 AI_SERVER_IP=10.49.158.145
 DB_NAME=sinomed_db
 DB_USER=postgres
-DB_PASSWORD=your_password
+DB_PASSWORD=parolingiz
 DB_HOST=localhost
 DB_PORT=5432
 DEBUG=True
-SECRET_KEY=your-secret-key-here
-# PROSTATE_API_KEY=your_key_if_required
+SECRET_KEY=uzun-va-murakkab-kalit
+# PROSTATE_API_KEY=kerak_bolsa_kiriting
 ```
 
-### 4. Database setup
+### 4. Ma'lumotlar bazasini sozlash
 
 ```bash
-# Create the database first
+# Avval bazani yarating
 psql -U postgres -c "CREATE DATABASE sinomed_db;"
 
-# Run migrations
+# Migratsiyalarni ishga tushiring
 python manage.py migrate
 
-# Load institution fixtures (6 orgs: 3 university + 3 hospital)
+# Muassasalar fixturasini yuklang (3 universitet + 3 kasalxona)
 python manage.py loaddata organizations/fixtures/initial_organizations.json
 
-# Create superuser
+# Superuser yarating
 python manage.py createsuperuser
 ```
 
-### 5. Run
+### 5. Ishga tushirish
 
 ```bash
 python manage.py runserver 8002
 ```
 
-Open [http://localhost:8002](http://localhost:8002)
+[http://localhost:8002](http://localhost:8002) da oching
 
-> **Windows note:** use `C:\Python313\python.exe` — `python.exe` may point to Python 3.14 which lacks installed packages.
+> **Windows eslatma:** `C:\Python313\python.exe` ishlating — `python.exe` Python 3.14 ga ishora qilishi mumkin (paketlar o'rnatilmagan).
 
 ---
 
-## URL Map
+## URL Xaritasi
 
 ```
-/                          Landing page
-/scan/                     Upload & analyze (select model)
-/analyze/<pk>/result/      Result detail + doctor review panel
-/api/analyze/              AJAX POST -> AI call (JSON response)
-/pricing/                  Pricing page
+/                          Asosiy sahifa
+/scan/                     Yuklash va tahlil qilish (model tanlash)
+/analyze/<pk>/result/      Natija + shifokor ko'rib chiqish paneli
+/api/analyze/              AJAX POST -> AI so'rov (JSON javob)
+/pricing/                  Narxlar sahifasi
 
-/auth/login/               Login
-/auth/register/            3-step registration
-/auth/logout/              Logout
-/auth/api/organizations/   AJAX org list (used in registration)
-/auth/users/               User list (superuser / org_admin)
-/auth/users/create/        Create user (superuser)
-/auth/users/<pk>/edit/     Edit user
-/auth/users/<pk>/delete/   Delete user
+/auth/login/               Kirish
+/auth/register/            3 bosqichli ro'yxatdan o'tish
+/auth/logout/              Chiqish
+/auth/api/organizations/   AJAX muassasalar ro'yxati (ro'yxatdan o'tishda)
+/auth/users/               Foydalanuvchilar (superuser / org_admin)
+/auth/users/create/        Foydalanuvchi yaratish (superuser)
+/auth/users/<pk>/edit/     Tahrirlash
+/auth/users/<pk>/delete/   O'chirish
 
-/org/dashboard/            Org admin panel
-/org/users/<pk>/approve/   Approve user (POST)
-/org/users/<pk>/reject/    Reject user (POST JSON)
+/org/dashboard/            Muassasa admin paneli
+/org/users/<pk>/approve/   Tasdiqlash (POST)
+/org/users/<pk>/reject/    Rad etish (POST JSON)
 
-/dashboard/                Personal cabinet
-/audit/analyses/           AI analysis log (filterable, exportable)
-/audit/log/                Security audit log (superuser only)
+/dashboard/                Shaxsiy kabinet
+/audit/analyses/           AI tahlil jurnali (filtr, eksport)
+/audit/log/                Xavfsizlik jurnali (faqat superuser)
 /admin/                    Django admin
 ```
 
 ---
 
-## Registration Flow
+## Ro'yxatdan O'tish Oqimi
 
 ```
-Step 1  Role selection       (student / doctor)
-Step 2  Institution select   (AJAX filtered by role)
-Step 3  Personal details     submit
+1-qadam   Rol tanlash        (talaba / shifokor)
+2-qadam   Muassasa tanlash   (AJAX, rolga qarab filtrlanadi)
+3-qadam   Shaxsiy ma'lumotlar -> yuborish
 
-  -> Account created: is_active=False, approval_status=pending
-  -> Org admin reviews at /org/dashboard/
-  -> Approve  user can log in
-  -> Reject   user sees rejection reason at login screen
+  -> Hisob yaratildi: is_active=False, approval_status=pending
+  -> Muassasa admin /org/dashboard/ da ko'rib chiqadi
+  -> Tasdiqlandi  -> foydalanuvchi tizimga kirishi mumkin
+  -> Rad etildi   -> login sahifasida sabab ko'rsatiladi
 ```
 
 ---
 
-## Environment Variables Reference
+## Muhit O'zgaruvchilari
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AI_SERVER_IP` | `10.49.158.145` | IP of the AI microservices server |
-| `DB_NAME` | - | PostgreSQL database name |
-| `DB_USER` | - | PostgreSQL username |
-| `DB_PASSWORD` | - | PostgreSQL password |
-| `DB_HOST` | `localhost` | PostgreSQL host |
+| O'zgaruvchi | Standart | Tavsif |
+|-------------|----------|--------|
+| `AI_SERVER_IP` | `10.49.158.145` | AI mikroservislar serveri IP manzili |
+| `DB_NAME` | - | PostgreSQL baza nomi |
+| `DB_USER` | - | PostgreSQL foydalanuvchi |
+| `DB_PASSWORD` | - | PostgreSQL paroli |
+| `DB_HOST` | `localhost` | PostgreSQL xost |
 | `DB_PORT` | `5432` | PostgreSQL port |
-| `DEBUG` | `True` | Set `False` in production |
-| `SECRET_KEY` | - | Django secret key (min 50 chars) |
-| `PROSTATE_API_KEY` | *(optional)* | API key for prostate model if required |
+| `DEBUG` | `True` | Production da `False` qiling |
+| `SECRET_KEY` | - | Django maxfiy kalit (min 50 belgi) |
+| `PROSTATE_API_KEY` | *(ixtiyoriy)* | Prostata modeli uchun API kalit |
 
-> **Changing AI server:** update only `AI_SERVER_IP` — all three endpoint URLs are derived from it automatically.
+> **AI server manzili o'zgarganda:** faqat `AI_SERVER_IP` ni yangilang — uchala endpoint URL avtomatik yangilanadi.
 
 ---
 
-## CSS Design System
+## CSS Dizayn Tizimi
 
-Dark blue medical theme — CSS variables in `base.html`:
+To'q ko'k tibbiy mavzu — `base.html` da CSS o'zgaruvchilar:
 
 ```css
---bg-dark:      #0a0f1f   /* page background  */
---bg-card:      #121a2e   /* card background  */
---bg-hover:     #1a2541   /* hover state      */
+--bg-dark:      #0a0f1f   /* sahifa foni      */
+--bg-card:      #121a2e   /* karta foni       */
+--bg-hover:     #1a2541   /* hover holati     */
 --border-color: rgba(0,183,214,0.15)
---fg-primary:   #e3f2fd   /* primary text     */
---fg-secondary: #90caf9   /* secondary text   */
---fg-muted:     #5d7fa3   /* muted / labels   */
+--fg-primary:   #e3f2fd   /* asosiy matn      */
+--fg-secondary: #90caf9   /* ikkilamchi matn  */
+--fg-muted:     #5d7fa3   /* o'chirilgan matn */
 --primary:      #0077b6
 --primary-light:#00b4d8
 --accent:       #00d4ff
 ```
 
-Icons: **Font Awesome 6.4.0** (`fas fa-*`) — CDN loaded in `base.html <head>`.
+Ikonlar: **Font Awesome 6.4.0** (`fas fa-*`) — `base.html <head>` da CDN orqali yuklanadi.
 
 ---
 
-## Developer Notes
+## Ishlab Chiquvchilar Uchun Eslatmalar
 
-- **Lightbox:** `<div id="lightbox">` must be **inside** `{% block content %}` — Django template inheritance silently discards HTML outside blocks.
-- **Logo logic:** `logo-lungs.png` (lung only) where "SinoMed" text is shown beside it; `logo.png` (with built-in text) for standalone use.
-- **Prostate API param** is `file` — all other models use `image`.
-- **Soft-delete:** not implemented; use Django admin or superuser CRUD for deletions.
+- **Lightbox:** `<div id="lightbox">` **`{% block content %}` ichida** bo'lishi shart — Django shablon meros qilishda blokdan tashqari HTML render qilinmaydi.
+- **Logo mantiq:** `logo-lungs.png` (faqat o'pka) — "SinoMed" text yonida ishlatilganda; `logo.png` (ichida text bor) — mustaqil foydalanish uchun.
+- **Prostata API parametri** `file` — boshqa barcha modellarda `image` ishlatiladi.
+- **Soft-delete:** hozircha yo'q; o'chirishlar Django admin yoki superuser CRUD orqali amalga oshiriladi.
 
-For detailed technical state, model internals, and developer onboarding see [HANDOFF.md](HANDOFF.md).
+Batafsil texnik holat, model ichki tuzilmasi va yangi ishlab chiquvchi uchun qo'llanma: [HANDOFF.md](HANDOFF.md)
 
 ---
 
-## Team
+## Jamoa
 
 **Fedora jamoasi** — National AI Hackathon 2026, Andijon viloyati
