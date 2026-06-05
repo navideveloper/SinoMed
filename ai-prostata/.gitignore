@@ -1,0 +1,35 @@
+# Dependencies and local environments
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+
+# Local Gradio/runtime files
+.gradio/
+*.pem
+
+# Training data, outputs, and model artifacts are kept outside git
+runs/
+datasetPCs/
+*.zip
+*.pt
+*.pth
+*.onnx
+*.engine
+*.torchscript
+*.tflite
+*.pb
+*.weights
+*.ckpt
+weights/
+checkpoints/
+
+# Generated helpers
+autosplit_*.txt
+*~.save
+README.zh-CN.md
+**/tutorial.ipynb
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/

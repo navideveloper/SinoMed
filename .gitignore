@@ -17,3 +17,60 @@ Thumbs.db
 *.egg-info/
 dist/
 build/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+ai-prostata/venv/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# IDE and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# SinoMed AI Prostata local artifacts
+ai-prostata/.gradio/
+ai-prostata/runs/
+ai-prostata/datasetPCs/
+ai-prostata/*.zip
+ai-prostata/*.pt
+ai-prostata/*.pth
+ai-prostata/*.onnx
+ai-prostata/*.engine
+ai-prostata/*.torchscript
+ai-prostata/*.tflite
+ai-prostata/*.pb
+ai-prostata/*~.save
+ai-prostata/autosplit_*.txt
+ai-prostata/README.zh-CN.md
+ai-prostata/**/tutorial.ipynb
+
+# Generated ML artifacts
+wandb/
+mlruns/
+weights/
+checkpoints/
+*.weights
+*.ckpt
