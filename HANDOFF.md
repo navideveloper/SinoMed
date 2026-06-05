@@ -170,7 +170,10 @@ _result_to_dict(result)                        — JSON response (+ jami_oylik b
   - `fa-bullseye` / `fa-circle-check` / `fa-circle-xmark` bone age aniqligi (JS `innerHTML` orqali)
   - `fa-mars` / `fa-venus` jins radio tugmalar
 - **Scan sahifasi**: model selectbox → bone_age tanlanganda tug'ilgan sana + jins fieldlari chiqadi
-- **Logo**: `static/img/logo.png` (yashil o'pka), navbar oq background konteynerda
+- **Logo**:
+  - `static/img/logo-lungs.png` — faqat o'pka (navbar + auth sahifasida, yonida "SinoMed" text bor)
+  - `static/img/logo.png` — ichida "SinoMed" text bor (mustaqil ko'rsatiladigan joylar uchun)
+  - `.logo-mark` konteynerida oq background olib tashlangan — yangi logo o'z foniga ega
 - **v1.0** badge — footer da
 
 ---
@@ -218,9 +221,12 @@ username: oybek | password: 123456
 ## Barcha docs
 ```
 HANDOFF.md                 ← bu fayl
+README.md                  ← o'zbek tilida, taqdimot PDF linki bilan
 docs/PRD.md                ← product requirements
+taqdimot/taqdimot.pdf      ← loyiha taqdimoti (GitHub da ko'rish mumkin)
+taqdimot/taqdimot.pptx     ← taqdimot manba fayli
 organizations/fixtures/initial_organizations.json
 ```
 
 ---
-*Last updated: 2026-06-05 | Branch: Oybek | refactor: emoji → Font Awesome 6 icons (11 fayl, 12 template)*
+*Last updated: 2026-06-05 | Branch: Oybek | chore: logo yangilandi, README o'zbekcha, taqdimot qo'shildi*
