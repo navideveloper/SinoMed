@@ -34,6 +34,7 @@
   .badge-student { background: rgba(0,212,255,.1); color: var(--accent); border-color: rgba(0,212,255,.2); }
   .badge-university { background: rgba(255,152,0,.15); color: #ffb74d; border-color: rgba(255,152,0,.3); }
   .badge-org_admin { background: rgba(139,92,246,.15); color: #c4b5fd; border-color: rgba(139,92,246,.3); }
+  .badge-superuser { background: rgba(255,193,7,.15); color: #ffd54f; border-color: rgba(255,193,7,.3); }
   .badge-active { background: rgba(76,175,80,.15); color: #81c784; border-color: rgba(76,175,80,.3); }
   .badge-inactive { background: rgba(244,67,54,.1); color: #ef5350; border-color: rgba(244,67,54,.2); }
   .view-link { color: var(--primary-light); font-weight: 500; font-size: .8rem; }
@@ -138,7 +139,11 @@
                 </div>
               </td>
               <td>
-                <span class="badge badge-{{ u.role }}">{{ u.get_role_display }}</span>
+                {% if u.is_superuser %}
+                  <span class="badge badge-superuser"><i class="fas fa-star"></i> SuperAdmin</span>
+                {% else %}
+                  <span class="badge badge-{{ u.role }}">{{ u.get_role_display }}</span>
+                {% endif %}
               </td>
               <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
                 {% if u.organization %}
