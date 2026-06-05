@@ -316,12 +316,22 @@ def user_update_balance(request, pk):
 
 @login_required
 def user_create_view(request):
-    """SuperAdmin only: create any user (doctor/student/org_admin)."""
-    if not request.user.is_superuser:
+    """SuperAdmin: create any user. Org admin: create student/doctor for own org."""
+    if not (request.user.is_superuser or request.user.is_org_admin):
         return redirect('dashboard')
 
     from organizations.models import Organization
-    organizations = Organization.objects.filter(is_active=True).order_by('name')
+    is_org_admin_creating = request.user.is_org_admin and not request.user.is_superuser
+
+    if is_org_admin_creating:
+        organizations = Organization.objects.filter(
+            pk=request.user.organization_id, is_active=True
+        )
+        roles = [(r.value, r.label) for r in User.Role
+                 if r not in (User.Role.ORG_ADMIN,)]
+    else:
+        organizations = Organization.objects.filter(is_active=True).order_by('name')
+        roles = User.Role.choices
 
     error = None
     if request.method == 'POST':
@@ -330,61 +340,75 @@ def user_create_view(request):
         phone = request.POST.get('phone', '').strip()
         password = request.POST.get('password', '').strip()
         role = request.POST.get('role', '')
-        org_id = request.POST.get('organization_id', '').strip()
-        balance = request.POST.get('balance', '0').strip()
-        is_superuser_flag = request.POST.get('is_superuser') == 'on'
-        approval_status = request.POST.get('approval_status', User.ApprovalStatus.APPROVED)
 
-        if User.objects.filter(username=username).exists():
-            error = 'Bu username allaqachon band'
-        elif phone and User.objects.filter(phone=phone).exists():
-            error = 'Bu telefon raqam allaqachon ro\'yxatdan o\'tgan'
+        # org_admin: force own org, block superuser escalation
+        if is_org_admin_creating:
+            org_id = str(request.user.organization_id or '')
+            is_superuser_flag = False
+            approval_status = User.ApprovalStatus.APPROVED
+            balance = '0'
+            # Prevent role abuse: only student/doctor allowed
+            if role not in (User.Role.STUDENT, User.Role.DOCTOR):
+                error = 'Faqat talaba yoki shifokor yaratish mumkin'
         else:
-            organization = None
-            if org_id:
+            org_id = request.POST.get('organization_id', '').strip()
+            is_superuser_flag = request.POST.get('is_superuser') == 'on'
+            approval_status = request.POST.get('approval_status', User.ApprovalStatus.APPROVED)
+            balance = request.POST.get('balance', '0').strip()
+
+        if not error:
+            if User.objects.filter(username=username).exists():
+                error = 'Bu username allaqachon band'
+            elif phone and User.objects.filter(phone=phone).exists():
+                error = 'Bu telefon raqam allaqachon ro\'yxatdan o\'tgan'
+            else:
+                organization = None
+                if org_id:
+                    try:
+                        organization = Organization.objects.get(pk=org_id)
+                    except Organization.DoesNotExist:
+                        pass
+
+                names = full_name.split(' ', 1) if full_name else ['', '']
                 try:
-                    organization = Organization.objects.get(pk=org_id)
-                except Organization.DoesNotExist:
-                    pass
+                    bal = float(balance or 0)
+                except ValueError:
+                    bal = 0.0
 
-            names = full_name.split(' ', 1) if full_name else ['', '']
-            try:
-                bal = float(balance or 0)
-            except ValueError:
-                bal = 0.0
+                user_obj = User.objects.create_user(
+                    username=username,
+                    password=password or User.objects.make_random_password(16),
+                    first_name=names[0],
+                    last_name=names[1] if len(names) > 1 else '',
+                    phone=phone or None,
+                    role=role,
+                    organization=organization,
+                    institution=organization.name if organization else '',
+                    balance=bal,
+                    is_active=True,
+                    approval_status=approval_status,
+                    is_superuser=is_superuser_flag,
+                    is_staff=is_superuser_flag,
+                )
 
-            user_obj = User.objects.create_user(
-                username=username,
-                password=password or User.objects.make_random_password(16),
-                first_name=names[0],
-                last_name=names[1] if len(names) > 1 else '',
-                phone=phone or None,
-                role=role,
-                organization=organization,
-                institution=organization.name if organization else '',
-                balance=bal,
-                is_active=True,
-                approval_status=approval_status,
-                is_superuser=is_superuser_flag,
-                is_staff=is_superuser_flag,
-            )
-
-            from audit.models import AuditLog
-            AuditLog.objects.create(
-                user=request.user,
-                action=AuditLog.Action.REGISTER,
-                ip_address=request.META.get('REMOTE_ADDR'),
-                data={'created_user': user_obj.username, 'role': role, 'by': 'superadmin'},
-            )
-            messages.success(request, f'Foydalanuvchi "{user_obj.username}" yaratildi')
-            return redirect('user_detail', pk=user_obj.pk)
+                from audit.models import AuditLog
+                creator_label = 'org_admin' if is_org_admin_creating else 'superadmin'
+                AuditLog.objects.create(
+                    user=request.user,
+                    action=AuditLog.Action.REGISTER,
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                    data={'created_user': user_obj.username, 'role': role, 'by': creator_label},
+                )
+                messages.success(request, f'Foydalanuvchi "{user_obj.username}" yaratildi')
+                return redirect('user_detail', pk=user_obj.pk)
 
     return render(request, 'accounts/user_form.html', {
         'mode': 'create',
         'organizations': organizations,
-        'roles': User.Role.choices,
+        'roles': roles,
         'approval_choices': User.ApprovalStatus.choices,
         'error': error,
+        'is_org_admin_creating': is_org_admin_creating,
     })
 
 
