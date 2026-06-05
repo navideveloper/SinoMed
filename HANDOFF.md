@@ -161,6 +161,8 @@ _result_to_dict(result)                        — JSON response (+ jami_oylik b
 
 ## UI xususiyatlari
 - **Lightbox**: barcha rasmlarga bosish → modal, zoom (+/-/wheel), drag, pinch (mobil), Esc/dblclick reset
+  - ⚠️ Qoida: lightbox `<div id="lightbox">` `{% block content %}` **ichida** (endblock dan oldin) bo'lishi shart
+  - Django template inheritance da blokdan tashqari HTML render bo'lmaydi → `getElementById` null qaytaradi
 - **Scan sahifasi**: model selectbox → bone_age tanlanganda tug'ilgan sana + jins fieldlari chiqadi
 - **Logo**: `static/img/logo.png` (yashil o'pka), navbar oq background konteynerda
 - **v1.0** badge — footer da
@@ -215,4 +217,4 @@ organizations/fixtures/initial_organizations.json
 ```
 
 ---
-*Last updated: 2026-06-05 | Branch: Oybek | Latest: 8334cd6*
+*Last updated: 2026-06-05 | Branch: Oybek | Fix: lightbox div {% block content %} ichiga ko'chirildi*
