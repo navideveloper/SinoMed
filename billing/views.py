@@ -33,11 +33,22 @@ def dashboard(request):
             total=Count('analyses', filter=Q(analyses__status=Analysis.Status.COMPLETED))
         ).order_by('-total')[:10]
 
+    # Shifokor uchun: o'z muassasasidagi ko'rilmagan tahlillar
+    pending_reviews = []
+    if user.is_doctor and user.organization_id:
+        from analysis.models import AnalysisResult
+        pending_reviews = Analysis.objects.filter(
+            user__organization_id=user.organization_id,
+            status=Analysis.Status.COMPLETED,
+            result__doctor_confirmed__isnull=True,
+        ).select_related('user', 'result').order_by('-created_at')[:10]
+
     context = {
         'analyses': analyses,
         'total_analyses': total_analyses,
         'avg_confidence': round(avg_confidence, 1) if avg_confidence else 0,
         'month_analyses': month_analyses,
         'leaderboard': leaderboard,
+        'pending_reviews': pending_reviews,
     }
     return render(request, 'dashboard/dashboard.html', context)

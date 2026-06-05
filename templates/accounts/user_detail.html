@@ -106,7 +106,7 @@
             <div style="font-size:.78rem;color:var(--fg-muted);margin-bottom:.4rem;font-weight:600">BALANS O'ZGARTIRISH</div>
             <div class="balance-form">
               <input type="number" id="balance-amount" class="balance-input" placeholder="+/- so'm" step="1000">
-              <button class="btn-primary" onclick="updateBalance()">Saqlash</button>
+              <button type="button" class="btn-primary" onclick="updateBalance()">Saqlash</button>
             </div>
           </div>
           {% endif %}
@@ -214,8 +214,9 @@ async function toggleUser() {
 }
 
 async function updateBalance() {
-  const amount = parseFloat(document.getElementById('balance-amount').value);
-  if (isNaN(amount)) { showToast('Summani kiriting'); return; }
+  const input = document.getElementById('balance-amount');
+  const amount = parseFloat(input.value);
+  if (!input.value || isNaN(amount)) { showToast('⚠ Summani kiriting'); return; }
   const res = await fetch(`/auth/users/${USER_PK}/update-balance/`, {
     method: 'POST',
     headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
@@ -223,9 +224,12 @@ async function updateBalance() {
   });
   const data = await res.json();
   if (res.ok) {
-    document.getElementById('balance-display').textContent = data.balance.toLocaleString() + " so'm";
-    document.getElementById('balance-amount').value = '';
-    showToast(data.message);
+    const display = document.getElementById('balance-display');
+    if (display) display.textContent = data.balance.toLocaleString('uz-UZ') + " so'm";
+    input.value = '';
+    showToast('✓ ' + data.message);
+  } else {
+    showToast('✗ ' + (data.error || 'Xato yuz berdi'));
   }
 }
 </script>

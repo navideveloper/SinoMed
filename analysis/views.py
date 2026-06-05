@@ -395,7 +395,17 @@ def api_analyze(request):
 
 @login_required
 def result_detail(request, pk):
-    analysis = get_object_or_404(Analysis, pk=pk, user=request.user)
+    user = request.user
+    # Shifokor o'z muassasasidagi barcha tahlillarni ko'ra oladi
+    if user.is_superuser:
+        analysis = get_object_or_404(Analysis, pk=pk)
+    elif user.is_doctor and user.organization_id:
+        analysis = get_object_or_404(
+            Analysis, pk=pk,
+            user__organization_id=user.organization_id
+        )
+    else:
+        analysis = get_object_or_404(Analysis, pk=pk, user=user)
 
     if request.method == 'POST' and request.user.is_doctor:
         action = request.POST.get('action')

@@ -474,6 +474,47 @@
         <div class="stat-card"><div class="stat-val">3</div><div class="stat-lbl">AI model</div></div>
       </div>
 
+      {% if user.is_doctor and pending_reviews %}
+      <div class="section-card" style="border-color:rgba(0,180,216,.3);background:rgba(0,119,182,.06)">
+        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <i class="fas fa-stethoscope" style="color:var(--primary-light)"></i>
+            Ko'rilmagan tahlillar
+            <span style="background:rgba(244,67,54,.15);color:#ef5350;border:1px solid rgba(244,67,54,.3);padding:.1rem .45rem;border-radius:20px;font-size:.68rem;font-weight:700">{{ pending_reviews|length }}</span>
+          </div>
+          <span style="font-size:.75rem;color:var(--fg-muted)">Muassasangizdagi bemorlar tahlillari</span>
+        </div>
+        <div class="table-wrap">
+          <table class="htable">
+            <thead>
+              <tr><th>Sana</th><th>Bemor</th><th>Tahlil turi</th><th>AI natija</th><th>Ishonch</th><th></th></tr>
+            </thead>
+            <tbody>
+              {% for a in pending_reviews %}
+              <tr>
+                <td style="font-size:.75rem;font-family:var(--mono)">{{ a.created_at|date:"d.m.Y" }}</td>
+                <td>
+                  <span style="font-weight:600;color:var(--fg-secondary)">{{ a.user.get_full_name|default:a.user.username }}</span>
+                  <span style="font-size:.7rem;color:var(--fg-muted)"> ({{ a.user.get_role_display }})</span>
+                </td>
+                <td>{{ a.get_model_type_display }}</td>
+                <td>
+                  {% if a.result %}
+                    {% if a.result.diagnosis_type == 'normal' %}<span class="badge badge-ok">Normal</span>
+                    {% elif a.result.diagnosis_type == 'warning' %}<span class="badge badge-warn">E'tibor</span>
+                    {% else %}<span class="badge badge-danger">Patologiya</span>{% endif %}
+                  {% else %}—{% endif %}
+                </td>
+                <td style="font-family:var(--mono)">{% if a.result %}{{ a.result.confidence|floatformat:1 }}%{% else %}—{% endif %}</td>
+                <td><a href="{% url 'result_detail' a.pk %}" class="view-link" style="font-size:.82rem">Ko'rib chiqish →</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
       {% if user.is_superuser or user.is_university %}
       <a href="{% url 'analysis_log' %}?verdict=flagged" style="text-decoration:none">
         <div class="section-card" style="background:rgba(244,67,54,.06);border-color:rgba(244,67,54,.25);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .2s;margin-bottom:2rem">
