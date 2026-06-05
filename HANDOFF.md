@@ -149,36 +149,45 @@ Plan, Subscription, Payment
 ### Ulangan modellar (2026-06-05)
 | Model | Endpoint | Holat |
 |-------|----------|-------|
-| `pneumonia` | `http://127.0.0.1:8001/api/` | ✅ Ulangan |
-| `bone_age`  | TBD | ⏳ Credentials kutilmoqda |
+| `pneumonia` | `http://192.168.48.79:8001/api/` | ✅ Ulangan |
+| `bone_age`  | `http://192.168.48.79:8002/api/predict-bone-age` | ✅ Ulangan |
 | `prostate`  | TBD | ⏳ Credentials kutilmoqda |
 
-### API format (pnevmoniya)
+> AI modellar `192.168.48.79` IP li laptop da ishlaydi.
+> Test uchun ikkala qurilma **bitta tarmoqda** bo'lishi shart.
+
+### API formatlar
 ```
+# Pnevmoniya
+POST multipart/form-data  →  {status, probability, heatmap_image (base64)}
+
+# Bone Age
 POST multipart/form-data
-Parametr: image (file)
-Javob:   {status, probability, heatmap_image (base64)}
+  image     — fayl (majburiy)
+  is_female — text: "true" (ixtiyoriy, default: erkak)
+Javob: {formatlangan_yosh, jami_oylik, jinsi, yosh_yil}
 ```
 
 ### settings.py
 ```python
 AI_ENDPOINTS = {
-    'pneumonia': os.getenv('PNEUMONIA_AI_URL', 'http://127.0.0.1:8001/api/'),
-    'bone_age':  os.getenv('BONE_AGE_AI_URL',  ''),
-    'prostate':  os.getenv('PROSTATE_AI_URL',  ''),
+    'pneumonia': os.getenv('PNEUMONIA_AI_URL', 'http://192.168.48.79:8001/api/'),
+    'bone_age':  os.getenv('BONE_AGE_AI_URL',  'http://192.168.48.79:8002/api/predict-bone-age'),
+    'prostate':  os.getenv('PROSTATE_AI_URL',  ''),  # TBD
 }
+AI_SERVICE_TIMEOUT = 30
 ```
 
-### IP o'zgarsa
-`.env` fayliga yozing:
+### IP o'zgarsa — faqat .env ga yozing:
 ```env
 PNEUMONIA_AI_URL=http://yangi-ip:8001/api/
+BONE_AGE_AI_URL=http://yangi-ip:8002/api/predict-bone-age
 ```
 
-### Yangi model credentials kelganda
-1. `settings.py` → `AI_ENDPOINTS` ga URL qo'shing
-2. `analysis/views.py` → `_status_to_diagnosis_type()` ga yangi status qo'shing
-3. `.env` ga `BONE_AGE_AI_URL=...` yozing
+### Prostate credentials kelganda
+1. `.env` → `PROSTATE_AI_URL=http://192.168.48.79:PORT/endpoint`
+2. `analysis/views.py` → `_parse_ai_response()` prostate parser allaqachon bor
+3. Javob formati boshqacha bo'lsa — parser ni yangilang
 
 ---
 
