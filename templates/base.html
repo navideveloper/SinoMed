@@ -345,13 +345,13 @@
   </div>
 </nav>
 
+{% if messages %}
 <div class="container messages-container">
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
 </div>
+{% endif %}
 
 {% block content %}{% endblock %}
 
