@@ -146,48 +146,52 @@ Plan, Subscription, Payment
 
 ## AI Service integratsiya
 
-### Ulangan modellar (2026-06-05)
-| Model | Endpoint | Holat |
-|-------|----------|-------|
-| `pneumonia` | `http://192.168.48.79:8001/api/` | ✅ Ulangan |
-| `bone_age`  | `http://192.168.48.79:8002/api/predict-bone-age` | ✅ Ulangan |
-| `prostate`  | TBD | ⏳ Credentials kutilmoqda |
+### AI modellari — to'liq holat (2026-06-05)
 
-> AI modellar `192.168.48.79` IP li laptop da ishlaydi.
-> Test uchun ikkala qurilma **bitta tarmoqda** bo'lishi shart.
+| Model | Server | Port | Holat |
+|-------|--------|------|-------|
+| `pneumonia` | `172.20.10.4` | `8001` | ✅ Ulangan |
+| `bone_age`  | `172.20.10.4` | `8002` | ✅ Ulangan |
+| `prostate`  | `172.20.10.4` | `8003` | ✅ Ulangan |
+
+> Bitta tarmoqda bo'lish shart (Wi-Fi/kabel).
 
 ### API formatlar
-```
-# Pnevmoniya
-POST multipart/form-data  →  {status, probability, heatmap_image (base64)}
 
-# Bone Age
-POST multipart/form-data
-  image     — fayl (majburiy)
-  is_female — text: "true" (ixtiyoriy, default: erkak)
-Javob: {formatlangan_yosh, jami_oylik, jinsi, yosh_yil}
+```
+# Pnevmoniya — POST http://172.20.10.4:8001/api/
+param: image (file)
+javob: {status, probability, heatmap_image (base64)}
+
+# Bone Age — POST http://172.20.10.4:8002/api/predict-bone-age
+params: image (file) + is_female (text, ixtiyoriy)
+javob:  {formatlangan_yosh, jami_oylik, jinsi, yosh_yil}
+UI: tug'ilgan oy/yil kiritilsa → AI oylar vs haqiqiy oylar taqqoslanadi
+
+# Prostate — POST http://172.20.10.4:8003/predict
+param: file (file) — NB: "file", "image" emas!
+header: X-API-Key (ixtiyoriy, .env: PROSTATE_API_KEY)
+javob: {disease_probability_percent, conclusion, detections_count, detections[]}
 ```
 
 ### settings.py
 ```python
 AI_ENDPOINTS = {
-    'pneumonia': os.getenv('PNEUMONIA_AI_URL', 'http://192.168.48.79:8001/api/'),
-    'bone_age':  os.getenv('BONE_AGE_AI_URL',  'http://192.168.48.79:8002/api/predict-bone-age'),
-    'prostate':  os.getenv('PROSTATE_AI_URL',  ''),  # TBD
+    'pneumonia': os.getenv('PNEUMONIA_AI_URL', 'http://172.20.10.4:8001/api/'),
+    'bone_age':  os.getenv('BONE_AGE_AI_URL',  'http://172.20.10.4:8002/api/predict-bone-age'),
+    'prostate':  os.getenv('PROSTATE_AI_URL',  'http://172.20.10.4:8003/predict'),
 }
+PROSTATE_API_KEY = os.getenv('PROSTATE_API_KEY', '')
 AI_SERVICE_TIMEOUT = 30
 ```
 
-### IP o'zgarsa — faqat .env ga yozing:
+### IP o'zgarsa — .env ga yozing:
 ```env
 PNEUMONIA_AI_URL=http://yangi-ip:8001/api/
 BONE_AGE_AI_URL=http://yangi-ip:8002/api/predict-bone-age
+PROSTATE_AI_URL=http://yangi-ip:8003/predict
+PROSTATE_API_KEY=secret-key-value
 ```
-
-### Prostate credentials kelganda
-1. `.env` → `PROSTATE_AI_URL=http://192.168.48.79:PORT/endpoint`
-2. `analysis/views.py` → `_parse_ai_response()` prostate parser allaqachon bor
-3. Javob formati boshqacha bo'lsa — parser ni yangilang
 
 ---
 

@@ -35,19 +35,30 @@ def _save_heatmap(result: AnalysisResult, b64_data: str) -> None:
 def _call_ai(model_type: str, image_path: str, extra_data: dict = None) -> dict:
     """
     AI servisiga multipart/form-data POST jo'natadi.
-    extra_data — qo'shimcha form fields (masalan bone_age uchun is_female).
+    Prostate: 'file' parametri + X-API-Key header.
+    Pneumonia/BoneAge: 'image' parametri.
     """
     url = settings.AI_ENDPOINTS.get(model_type, '')
     if not url:
         raise ValueError(f"'{model_type}' uchun AI endpoint sozlanmagan")
 
+    # Prostate: parametr nomi 'file', qolganlarida 'image'
+    file_param = 'file' if model_type == 'prostate' else 'image'
+
+    headers = {}
+    if model_type == 'prostate':
+        api_key = getattr(settings, 'PROSTATE_API_KEY', '')
+        if api_key:
+            headers['X-API-Key'] = api_key
+
     with open(image_path, 'rb') as f:
-        files = {'image': (f.name, f, 'image/jpeg')}
-        data = extra_data or {}
+        import os as _os
+        filename = _os.path.basename(image_path)
         resp = http_client.post(
             url,
-            files=files,
-            data=data,
+            files={file_param: (filename, f, 'image/jpeg')},
+            data=extra_data or {},
+            headers=headers,
             timeout=settings.AI_SERVICE_TIMEOUT,
         )
 
@@ -96,21 +107,35 @@ def _parse_ai_response(model_type: str, ai_resp: dict) -> dict:
         }
 
     elif model_type == 'prostate':
-        # credentials TBD — o'xshash pnevmoniya formatida bo'lishi kutilmoqda
-        raw_status = ai_resp.get('status', "NOMA'LUM")
-        s = raw_status.upper()
-        if s in ('NORMAL', 'SOGLOM'):
-            dtype = AnalysisResult.DiagnosisType.NORMAL
-        elif s in ('SARATON', 'CANCER', 'PROSTATE', 'PATHOLOGY'):
+        # OpenAPI spec: {disease_probability_percent, conclusion, detections_count, detections}
+        probability   = int(ai_resp.get('disease_probability_percent', 0))
+        conclusion    = ai_resp.get('conclusion', "Noma'lum")
+        det_count     = ai_resp.get('detections_count', 0)
+        detections    = ai_resp.get('detections', [])
+
+        if probability >= 70:
             dtype = AnalysisResult.DiagnosisType.DANGER
-        else:
+        elif probability >= 40:
             dtype = AnalysisResult.DiagnosisType.WARNING
+        else:
+            dtype = AnalysisResult.DiagnosisType.NORMAL
+
+        # Aniqlangan sohalar ro'yxati (label + confidence)
+        det_text = ''
+        if detections:
+            parts = [f"{d['label']} ({d['confidence_percent']}%)" for d in detections[:5]]
+            det_text = ' | '.join(parts)
+
+        note = conclusion
+        if det_count:
+            note += f"\n{det_count} ta soha aniqlandi" + (f": {det_text}" if det_text else '')
+
         return {
-            'diagnosis':   raw_status,
+            'diagnosis':   conclusion,
             'dtype':       dtype,
-            'confidence':  float(ai_resp.get('probability', ai_resp.get('confidence', 0.0))),
-            'note':        '',
-            'heatmap_b64': ai_resp.get('heatmap_image', ''),
+            'confidence':  float(probability),
+            'note':        note,
+            'heatmap_b64': '',
         }
 
     # Fallback
@@ -124,7 +149,7 @@ def _parse_ai_response(model_type: str, ai_resp: dict) -> dict:
 
 
 def _result_to_dict(result: AnalysisResult) -> dict:
-    return {
+    d = {
         'analysis_id':    result.analysis_id,
         'diagnosis':      result.diagnosis,
         'diagnosis_type': result.diagnosis_type,
@@ -132,7 +157,13 @@ def _result_to_dict(result: AnalysisResult) -> dict:
         'note':           result.note,
         'gradcam_url':    result.gradcam_image.url if result.gradcam_image else None,
         'status':         'completed',
+        'model_type':     result.analysis.model_type,
     }
+    # Bone age: jami_oylik ni JS comparison uchun qaytaramiz
+    if result.analysis.model_type == 'bone_age' and result.raw_output:
+        d['jami_oylik'] = result.raw_output.get('jami_oylik')
+        d['jinsi']      = result.raw_output.get('jinsi', '')
+    return d
 
 
 # ---------------------------------------------------------------------------
