@@ -99,6 +99,8 @@ Endpointlar:
 - `POST /predict` - `image/*` fayl qabul qiladi va JSON natija qaytaradi.
 - `GET /docs` - SinoMed UI template bilan tayyorlangan Swagger hujjatlari.
 
+API javobidagi `detections[].box` koordinatalari bo'yicha frontend rasm ustiga chiziqlar chizishi uchun qo'llanma: [docs/api-drawing-guide.md](docs/api-drawing-guide.md).
+
 Misol:
 
 ```bash
