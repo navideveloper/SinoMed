@@ -145,15 +145,40 @@ Plan, Subscription, Payment
 ---
 
 ## AI Service integratsiya
-```python
-# config/settings.py
-AI_SERVICE_URL = os.getenv('AI_SERVICE_URL', 'http://localhost:8001')
 
-# analysis/views.py — api_analyze view
-# POST: AI_SERVICE_URL/predict
-# Payload: {model_type, image_path}
-# Credentials .env ga yoziladi — hali kelmagan
+### Ulangan modellar (2026-06-05)
+| Model | Endpoint | Holat |
+|-------|----------|-------|
+| `pneumonia` | `http://127.0.0.1:8001/api/` | ✅ Ulangan |
+| `bone_age`  | TBD | ⏳ Credentials kutilmoqda |
+| `prostate`  | TBD | ⏳ Credentials kutilmoqda |
+
+### API format (pnevmoniya)
 ```
+POST multipart/form-data
+Parametr: image (file)
+Javob:   {status, probability, heatmap_image (base64)}
+```
+
+### settings.py
+```python
+AI_ENDPOINTS = {
+    'pneumonia': os.getenv('PNEUMONIA_AI_URL', 'http://127.0.0.1:8001/api/'),
+    'bone_age':  os.getenv('BONE_AGE_AI_URL',  ''),
+    'prostate':  os.getenv('PROSTATE_AI_URL',  ''),
+}
+```
+
+### IP o'zgarsa
+`.env` fayliga yozing:
+```env
+PNEUMONIA_AI_URL=http://yangi-ip:8001/api/
+```
+
+### Yangi model credentials kelganda
+1. `settings.py` → `AI_ENDPOINTS` ga URL qo'shing
+2. `analysis/views.py` → `_status_to_diagnosis_type()` ga yangi status qo'shing
+3. `.env` ga `BONE_AGE_AI_URL=...` yozing
 
 ---
 

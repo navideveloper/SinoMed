@@ -1,14 +1,84 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
-from .models import Analysis, AnalysisResult
+import base64
 import json
-import urllib.request
-import urllib.error
 
+import requests as http_client
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.core.files.base import ContentFile
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from .models import Analysis, AnalysisResult
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _status_to_diagnosis_type(status: str) -> str:
+    """Map AI `status` string to DiagnosisType choice."""
+    s = (status or '').upper()
+    if s in ('NORMAL', 'SOGLOM', 'HEALTHY'):
+        return AnalysisResult.DiagnosisType.NORMAL
+    if s in ('PNEVMONIYA', 'PNEUMONIA', 'SARATON', 'CANCER', 'PROSTATE', 'PATHOLOGY'):
+        return AnalysisResult.DiagnosisType.DANGER
+    return AnalysisResult.DiagnosisType.WARNING
+
+
+def _save_heatmap(result: AnalysisResult, b64_data: str) -> None:
+    """Decode base64 heatmap and save to gradcam_image field."""
+    if not b64_data:
+        return
+    try:
+        # Strip "data:image/png;base64," prefix if present
+        raw = b64_data.split(',', 1)[-1]
+        img_bytes = base64.b64decode(raw)
+        result.gradcam_image.save(
+            f'heatmap_{result.analysis_id}.png',
+            ContentFile(img_bytes),
+            save=True,
+        )
+    except Exception:
+        pass  # heatmap optional — tahlil natijasiga ta'sir qilmaydi
+
+
+def _call_ai(model_type: str, image_path: str) -> dict:
+    """
+    AI servisiga multipart/form-data POST jo'natadi.
+    Javob: {'status': str, 'probability': float, 'heatmap_image': str|None}
+    Xato bo'lsa: {'error': str} yoki exception
+    """
+    url = settings.AI_ENDPOINTS.get(model_type, '')
+    if not url:
+        raise ValueError(f"'{model_type}' uchun AI endpoint sozlanmagan")
+
+    with open(image_path, 'rb') as f:
+        resp = http_client.post(
+            url,
+            files={'image': (f.name, f, 'image/jpeg')},
+            timeout=settings.AI_SERVICE_TIMEOUT,
+        )
+
+    resp.raise_for_status()
+    return resp.json()
+
+
+def _result_to_dict(result: AnalysisResult) -> dict:
+    return {
+        'analysis_id':    result.analysis_id,
+        'diagnosis':      result.diagnosis,
+        'diagnosis_type': result.diagnosis_type,
+        'confidence':     result.confidence,
+        'note':           result.note,
+        'gradcam_url':    result.gradcam_image.url if result.gradcam_image else None,
+        'status':         'completed',
+    }
+
+
+# ---------------------------------------------------------------------------
+# Views
+# ---------------------------------------------------------------------------
 
 def index(request):
     return render(request, 'index.html')
@@ -25,7 +95,7 @@ def upload_analyze(request):
         image = request.FILES.get('image')
 
         if not image or model_type not in dict(Analysis.ModelType.choices):
-            return JsonResponse({'error': 'Noto\'g\'ri ma\'lumot'}, status=400)
+            return JsonResponse({'error': "Noto'g'ri ma'lumot"}, status=400)
 
         analysis = Analysis.objects.create(
             user=request.user,
@@ -52,6 +122,7 @@ def upload_analyze(request):
 @login_required
 @require_POST
 def api_analyze(request):
+    """AJAX: rasm AI servisiga yuboriladi, natija qaytariladi."""
     try:
         data = json.loads(request.body)
         analysis_id = data.get('analysis_id')
@@ -60,6 +131,7 @@ def api_analyze(request):
 
     analysis = get_object_or_404(Analysis, pk=analysis_id, user=request.user)
 
+    # Allaqachon tahlil qilingan bo'lsa — qayta qaytaramiz
     if hasattr(analysis, 'result'):
         return JsonResponse(_result_to_dict(analysis.result))
 
@@ -67,74 +139,70 @@ def api_analyze(request):
     analysis.save(update_fields=['status'])
 
     from audit.models import AuditLog, AnalysisLog
+
+    result = None
     error_type = None
     error_detail = ''
 
     try:
-        ai_url = f"{settings.AI_SERVICE_URL}/predict"
-        image_path = analysis.image.path
+        ai_resp = _call_ai(analysis.model_type, analysis.image.path)
 
-        with open(image_path, 'rb') as f:
-            image_data = f.read()
+        # AI xato qaytargan bo'lsa
+        if 'error' in ai_resp:
+            raise ValueError(ai_resp['error'])
 
-        req = urllib.request.Request(
-            ai_url,
-            data=image_data,
-            headers={
-                'Content-Type': 'application/octet-stream',
-                'X-Model-Type': analysis.model_type,
-            },
-            method='POST',
-        )
+        # Javobni parse qilamiz
+        raw_status   = ai_resp.get('status', 'NOMA\'LUM')
+        probability  = float(ai_resp.get('probability', 0.0))
+        heatmap_b64  = ai_resp.get('heatmap_image', '')
 
-        with urllib.request.urlopen(req, timeout=settings.AI_SERVICE_TIMEOUT) as resp:
-            ai_response = json.loads(resp.read().decode())
+        diagnosis_type = _status_to_diagnosis_type(raw_status)
 
         result = AnalysisResult.objects.create(
             analysis=analysis,
-            diagnosis=ai_response.get('diagnosis', 'Noma\'lum'),
-            diagnosis_type=ai_response.get('diagnosis_type', 'warning'),
-            confidence=ai_response.get('confidence', 0.0),
-            note=ai_response.get('note', ''),
-            raw_output=ai_response,
+            diagnosis=raw_status,
+            diagnosis_type=diagnosis_type,
+            confidence=probability,
+            note='',
+            raw_output=ai_resp,
         )
+
+        # Heatmap ni saqlash
+        _save_heatmap(result, heatmap_b64)
 
         analysis.status = Analysis.Status.COMPLETED
         analysis.save(update_fields=['status'])
 
         AnalysisLog.objects.create(
             analysis=analysis,
-            ai_diagnosis=result.diagnosis,
-            ai_confidence=result.confidence,
-            ai_raw_output=ai_response,
+            ai_diagnosis=raw_status,
+            ai_confidence=probability,
+            ai_raw_output=ai_resp,
             institution=request.user.institution,
         )
 
-    except TimeoutError as e:
-        error_type = AnalysisLog.ErrorType.TIMEOUT
+    except http_client.Timeout as e:
+        error_type   = AnalysisLog.ErrorType.TIMEOUT
         error_detail = str(e)
         analysis.status = Analysis.Status.ERROR
         analysis.save(update_fields=['status'])
         result = AnalysisResult.objects.create(
             analysis=analysis,
-            diagnosis="Tahlil qilib bo'lmadi",
+            diagnosis="Vaqt tugadi",
             diagnosis_type=AnalysisResult.DiagnosisType.WARNING,
             confidence=0.0,
-            note=str(e),
-            raw_output={'error': str(e)},
+            note=error_detail,
+            raw_output={'error': error_detail},
         )
         AnalysisLog.objects.create(
-            analysis=analysis,
-            ai_diagnosis='',
-            ai_confidence=0.0,
-            ai_raw_output={'error': str(e)},
-            error_type=error_type,
-            error_detail=error_detail,
+            analysis=analysis, ai_diagnosis='', ai_confidence=0.0,
+            ai_raw_output={'error': error_detail},
+            error_type=error_type, error_detail=error_detail,
             institution=request.user.institution,
         )
 
     except Exception as e:
-        error_type = AnalysisLog.ErrorType.SERVICE_ERROR
+        error_type   = AnalysisLog.ErrorType.SERVICE_ERROR
         error_detail = str(e)
         analysis.status = Analysis.Status.ERROR
         analysis.save(update_fields=['status'])
@@ -143,16 +211,13 @@ def api_analyze(request):
             diagnosis="Tahlil qilib bo'lmadi",
             diagnosis_type=AnalysisResult.DiagnosisType.WARNING,
             confidence=0.0,
-            note=str(e),
-            raw_output={'error': str(e)},
+            note=error_detail,
+            raw_output={'error': error_detail},
         )
         AnalysisLog.objects.create(
-            analysis=analysis,
-            ai_diagnosis='',
-            ai_confidence=0.0,
-            ai_raw_output={'error': str(e)},
-            error_type=error_type,
-            error_detail=error_detail,
+            analysis=analysis, ai_diagnosis='', ai_confidence=0.0,
+            ai_raw_output={'error': error_detail},
+            error_type=error_type, error_detail=error_detail,
             institution=request.user.institution,
         )
 
@@ -216,15 +281,3 @@ def result_detail(request, pk):
         'result': getattr(analysis, 'result', None),
     }
     return render(request, 'analysis/result.html', context)
-
-
-def _result_to_dict(result):
-    return {
-        'analysis_id': result.analysis_id,
-        'diagnosis': result.diagnosis,
-        'diagnosis_type': result.diagnosis_type,
-        'confidence': result.confidence,
-        'note': result.note,
-        'gradcam_url': result.gradcam_image.url if result.gradcam_image else None,
-        'status': 'completed',
-    }

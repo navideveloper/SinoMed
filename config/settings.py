@@ -94,6 +94,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# AI model service (Abdurasul's FastAPI service)
-AI_SERVICE_URL = os.getenv('AI_SERVICE_URL', 'http://localhost:8001')
+# AI model endpoints (Abdurasul's FastAPI service)
+# IP o'zgarsa — .env fayliga yozing: PNEUMONIA_AI_URL=http://new-ip:8001/api/
 AI_SERVICE_TIMEOUT = 30
+AI_ENDPOINTS = {
+    'pneumonia': os.getenv('PNEUMONIA_AI_URL', 'http://127.0.0.1:8001/api/'),
+    'bone_age':  os.getenv('BONE_AGE_AI_URL',  ''),   # credentials kutilmoqda
+    'prostate':  os.getenv('PROSTATE_AI_URL',  ''),   # credentials kutilmoqda
+}
