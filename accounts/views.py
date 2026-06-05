@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.db.models import Count, Q
 from django.core.paginator import Paginator
 import json as _json
+from decimal import Decimal, InvalidOperation
 
 from .models import User
 from organizations.models import Organization
@@ -297,13 +298,13 @@ def user_update_balance(request, pk):
 
     try:
         data = _json.loads(request.body)
-        amount = float(data.get('amount', 0))
-    except (ValueError, KeyError):
+        amount = Decimal(str(data.get('amount', 0)))
+    except (ValueError, KeyError, InvalidOperation):
         return JsonResponse({'error': 'Noto\'g\'ri summa'}, status=400)
 
     target_user.balance += amount
     if target_user.balance < 0:
-        target_user.balance = 0
+        target_user.balance = Decimal('0')
     target_user.save(update_fields=['balance'])
 
     return JsonResponse({
@@ -512,3 +513,32 @@ def user_delete_view(request, pk):
 
     messages.success(request, f'"{username}" o\'chirildi')
     return JsonResponse({'deleted': True, 'message': f'"{username}" o\'chirildi'})
+
+
+@login_required
+@require_POST
+def user_change_password(request, pk):
+    """SuperAdmin only: set a new password for any user."""
+    if not request.user.is_superuser:
+        return JsonResponse({'error': 'Faqat superuser'}, status=403)
+
+    target_user = get_object_or_404(User, pk=pk)
+
+    try:
+        data = _json.loads(request.body)
+        new_password = data.get('password', '').strip()
+        confirm = data.get('confirm', '').strip()
+    except Exception:
+        return JsonResponse({'error': 'So\'rov xato'}, status=400)
+
+    if not new_password:
+        return JsonResponse({'error': 'Parol bo\'sh bo\'lmasin'}, status=400)
+    if len(new_password) < 6:
+        return JsonResponse({'error': 'Parol kamida 6 ta belgi'}, status=400)
+    if new_password != confirm:
+        return JsonResponse({'error': 'Parollar mos kelmadi'}, status=400)
+
+    target_user.set_password(new_password)
+    target_user.save(update_fields=['password'])
+
+    return JsonResponse({'message': f'{target_user.username} paroli yangilandi'})

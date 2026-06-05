@@ -9,6 +9,7 @@ urlpatterns = [
     path('users/<int:pk>/', views.user_detail_view, name='user_detail'),
     path('users/<int:pk>/toggle-active/', views.user_toggle_active, name='user_toggle_active'),
     path('users/<int:pk>/update-balance/', views.user_update_balance, name='user_update_balance'),
+    path('users/<int:pk>/change-password/', views.user_change_password, name='user_change_password'),
     # API endpoint for org selection in registration form
     path('api/organizations/', views.api_organizations, name='api_organizations'),
     # SuperAdmin CRUD

@@ -109,6 +109,16 @@
               <button type="button" class="btn-primary" onclick="updateBalance()">Saqlash</button>
             </div>
           </div>
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-color)">
+            <div style="font-size:.78rem;color:var(--fg-muted);margin-bottom:.4rem;font-weight:600">PAROLNI O'ZGARTIRISH</div>
+            <div class="balance-form">
+              <input type="password" id="new-password" class="balance-input" placeholder="Yangi parol (min 6 belgi)">
+              <input type="password" id="confirm-password" class="balance-input" placeholder="Parolni tasdiqlang">
+              <button type="button" class="btn-primary" style="background:linear-gradient(135deg,#5c6bc0,#7986cb)" onclick="changePassword()">
+                <i class="fas fa-key"></i> Parolni yangilash
+              </button>
+            </div>
+          </div>
           {% endif %}
 
         </div>
@@ -211,6 +221,27 @@ async function toggleUser() {
     showToast(data.message);
   }
   btn.disabled = false;
+}
+
+async function changePassword() {
+  const pwd = document.getElementById('new-password').value;
+  const confirm = document.getElementById('confirm-password').value;
+  if (!pwd) { showToast('⚠ Parolni kiriting'); return; }
+  if (pwd.length < 6) { showToast('⚠ Parol kamida 6 ta belgi'); return; }
+  if (pwd !== confirm) { showToast('⚠ Parollar mos kelmadi'); return; }
+  const res = await fetch(`/auth/users/${USER_PK}/change-password/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: pwd, confirm })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    document.getElementById('new-password').value = '';
+    document.getElementById('confirm-password').value = '';
+    showToast('✓ ' + data.message);
+  } else {
+    showToast('✗ ' + (data.error || 'Xato yuz berdi'));
+  }
 }
 
 async function updateBalance() {
