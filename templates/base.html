@@ -278,9 +278,6 @@
           <span class="nav-label">Narxlar</span>
         </button>
       </a>
-      <button class="theme-toggle" id="themeToggle" title="Rangi o'zgartirish" onclick="toggleTheme()">
-        <i class="fas fa-sun" id="themeIcon"></i>
-      </button>
       {% if user.is_authenticated %}
         {% if user.is_org_admin %}
         <a href="{% url 'org_dashboard' %}">
@@ -316,7 +313,17 @@
             <span class="nav-label">Foydalanuvchilar</span>
           </button>
         </a>
+        {% elif user.is_doctor %}
+        <a href="{% url 'analysis_log' %}">
+          <button class="btn btn-ghost" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <span class="nav-label">Audit</span>
+          </button>
+        </a>
         {% endif %}
+        <button class="theme-toggle" id="themeToggle" title="Rangi o'zgartirish" onclick="toggleTheme()">
+          <i class="fas fa-sun" id="themeIcon"></i>
+        </button>
         <a href="{% url 'logout' %}">
           <button class="btn btn-outline" type="button">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -324,6 +331,9 @@
           </button>
         </a>
       {% else %}
+        <button class="theme-toggle" id="themeToggle" title="Rangi o'zgartirish" onclick="toggleTheme()">
+          <i class="fas fa-sun" id="themeIcon"></i>
+        </button>
         <a href="{% url 'login' %}">
           <button class="btn btn-outline" type="button">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>

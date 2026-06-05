@@ -53,11 +53,13 @@
         <h1>Tahlil loglari</h1>
         <p style="color:var(--fg-muted);font-size:.85rem;margin-top:.25rem">AI tahlillar tarixi va shifokor xulosalari</p>
       </div>
+      {% if user.is_superuser or user.is_org_admin %}
       <div class="export-btns">
         <a href="{% url 'export_json' %}?format=json"><button class="btn-export"><i class="fas fa-download"></i> JSON</button></a>
         <a href="{% url 'export_json' %}?format=csv"><button class="btn-export"><i class="fas fa-download"></i> CSV</button></a>
         <a href="{% url 'export_zip' %}"><button class="btn-export btn-export-zip"><i class="fas fa-box-archive"></i> ZIP arxiv</button></a>
       </div>
+      {% endif %}
     </div>
 
     {% if user.is_superuser %}
