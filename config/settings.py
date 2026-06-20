@@ -12,6 +12,8 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,46.224.219.146').split(',')
 
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -103,7 +105,8 @@ AI_SERVICE_TIMEOUT = 30
 AI_SERVER_BASE = os.getenv('AI_SERVER_BASE', 'http://localhost').rstrip('/')
 
 AI_ENDPOINTS = {
-    'pneumonia': os.getenv('PNEUMONIA_AI_URL', f'{AI_SERVER_BASE}:8001/'),
-    'bone_age':  os.getenv('BONE_AGE_AI_URL',  f'{AI_SERVER_BASE}:8002/'),
-    'prostate':  os.getenv('PROSTATE_AI_URL',  f'{AI_SERVER_BASE}:8003/'),
+    'pneumonia': os.getenv('PNEUMONIA_AI_URL', f'{AI_SERVER_BASE}:8001/api/'),
+    'bone_age':  os.getenv('BONE_AGE_AI_URL',  f'{AI_SERVER_BASE}:8002/api/predict-bone-age'),
+    'prostate':  os.getenv('PROSTATE_AI_URL',  f'{AI_SERVER_BASE}:8003/predict'),
 }
+PROSTATE_API_KEY = os.getenv('PROSTATE_API_KEY', '')
