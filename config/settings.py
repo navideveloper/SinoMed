@@ -98,9 +98,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AI_SERVICE_TIMEOUT = 30
 # AI_SERVER_BASE — to'liq base URL (http yoki https, port yo'q, slash yo'q)
-# Misol: AI_SERVER_BASE=http://192.168.1.10
-#        AI_SERVER_BASE=https://prostataapi.starify.uz
-AI_SERVER_BASE = os.getenv('AI_SERVER_BASE', 'http://172.20.10.4').rstrip('/')
+# VPS (lokal): AI_SERVER_BASE=http://localhost
+# Tashqi server: AI_SERVER_BASE=https://prostataapi.starify.uz
+AI_SERVER_BASE = os.getenv('AI_SERVER_BASE', 'http://localhost').rstrip('/')
 
 AI_ENDPOINTS = {
     'pneumonia': os.getenv('PNEUMONIA_AI_URL', f'{AI_SERVER_BASE}:8001/'),
