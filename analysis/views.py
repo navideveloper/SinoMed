@@ -141,7 +141,7 @@ def _parse_ai_response(model_type: str, ai_resp: dict) -> dict:
         # {"status": "PNEVMONIYA", "probability": 98.45, "heatmap_image": "..."}
         raw_status = ai_resp.get('status', "NOMA'LUM")
         s = raw_status.upper()
-        if s in ('NORMAL', 'SOGLOM', 'HEALTHY'):
+        if s in ('NORMAL', 'SOGLOM', "SOG'LOM", 'HEALTHY'):
             dtype = AnalysisResult.DiagnosisType.NORMAL
         elif s in ('PNEVMONIYA', 'PNEUMONIA'):
             dtype = AnalysisResult.DiagnosisType.DANGER
