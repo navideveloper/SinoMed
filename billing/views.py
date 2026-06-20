@@ -1,42 +1,38 @@
 from django.shortcuts import render
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, Q
-from analysis.models import Analysis
+from django.utils import timezone
+from analysis.models import Analysis, AnalysisResult
 
 
 @login_required
-def dashboard(request):
+def dashboard(request): 
     user = request.user
+    User = get_user_model()
     analyses = Analysis.objects.filter(user=user).select_related('result')[:10]
 
     total_analyses = Analysis.objects.filter(user=user, status=Analysis.Status.COMPLETED).count()
 
-    from django.db.models import Avg
     avg_confidence = None
     if total_analyses:
-        from analysis.models import AnalysisResult
         avg_confidence = AnalysisResult.objects.filter(
             analysis__user=user
         ).aggregate(avg=Avg('confidence'))['avg']
 
-    from django.utils import timezone
     this_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     month_analyses = Analysis.objects.filter(user=user, created_at__gte=this_month).count()
 
     leaderboard = []
     if user.is_doctor or user.is_student:
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
         leaderboard = User.objects.filter(
             role__in=[User.Role.DOCTOR, User.Role.STUDENT]
         ).annotate(
             total=Count('analyses', filter=Q(analyses__status=Analysis.Status.COMPLETED))
         ).order_by('-total')[:10]
 
-    # Shifokor uchun: o'z muassasasi + superuser tahlillaridan ko'rilmaganlar
     pending_reviews = []
     if user.is_doctor and user.organization_id:
-        from django.db.models import Q
         pending_reviews = Analysis.objects.filter(
             Q(user__organization_id=user.organization_id) | Q(user__is_superuser=True),
             status=Analysis.Status.COMPLETED,
